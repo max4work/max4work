@@ -1,0 +1,14 @@
+# Backups
+backups/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# iCloud
+*.icloud
+
+# Editor
+.vscode/
+.idea/

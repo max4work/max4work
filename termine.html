@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<link rel="icon" href="logo.png" type="image/png">
+<link rel="manifest" href="manifest.json">
+<link rel="canonical" href="https://max4work.com/termine.html">
+<meta name="description" content="max4work – Ihre digitale Bürolösung für Rechnungen, Kunden und mehr.">
+<meta property="og:site_name" content="max4work">
+<meta property="og:url" content="https://max4work.com/termine.html">
+<title>max4work – Termine</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/shared.css">
+<script src="shared.js"></script>
+<style>
+.topbar-right { display: flex; gap: 8px; align-items: center; }
+.btn { padding: 7px 15px; border-radius: 8px; font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; border: none; transition: all 0.12s; display: inline-flex; align-items: center; gap: 6px; }
+.btn-blue { background: var(--accent); color: var(--text); font-weight: 600; }
+.btn-blue:hover { background: #b8c930; }
+.btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+.btn-ghost:hover { background: var(--soft); }
+.cal-layout { display: grid; grid-template-columns: 320px 1fr; flex: 1; }
+.cal-left { background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+.month-nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px 10px; }
+.month-title { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
+.nav-arrow { width: 28px; height: 28px; border-radius: 50%; border: none; background: transparent; cursor: pointer; font-size: 16px; color: var(--accent); display: flex; align-items: center; justify-content: center; transition: background 0.12s; }
+.nav-arrow:hover { background: var(--accent-pale); }
+.weekdays { display: grid; grid-template-columns: 28px repeat(7, 1fr); padding: 0 12px; margin-bottom: 4px; }
+.wd { font-size: 11px; font-weight: 600; color: var(--muted); text-align: center; padding: 4px 0; letter-spacing: 0.3px; }
+.wd.sun { color: var(--red); }
+.wd.kw-head { font-size: 9px; font-weight: 500; color: transparent; }
+.days-grid { display: grid; grid-template-columns: 28px repeat(7, 1fr); padding: 0 12px 16px; gap: 2px; }
+.kw-cell { display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 500; color: #7B1C2E; line-height: 1; padding-right: 2px; }
+.day-cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; position: relative; transition: background 0.1s; }
+.day-cell:hover:not(.empty):not(.today):not(.selected) { background: var(--soft); }
+.day-cell .day-nr { font-size: 14px; font-weight: 400; color: var(--text); line-height: 1; }
+.day-cell.other-month .day-nr { color: #C7C7CC; }
+.day-cell.sunday .day-nr { color: var(--red); }
+.day-cell.today .day-nr { background: var(--accent); color: #fff; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+.day-cell.selected:not(.today) .day-nr { background: var(--soft); width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 500; color: var(--accent); }
+.day-cell.has-events::after { content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; border-radius: 50%; background: var(--accent); }
+.day-cell.today.has-events::after { background: rgba(255,255,255,0.8); }
+.mini-list { flex: 1; border-top: 1px solid var(--border); overflow-y: auto; }
+.mini-list-head { padding: 12px 20px 6px; font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; }
+.mini-event { display: flex; align-items: center; gap: 10px; padding: 9px 20px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.1s; }
+.mini-event:last-child { border-bottom: none; }
+.mini-event:hover { background: var(--soft); }
+.mini-event-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.mini-event-title { font-size: 13px; font-weight: 500; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mini-event-time { font-size: 11.5px; color: var(--muted); white-space: nowrap; }
+.mini-empty { padding: 20px; text-align: center; color: var(--muted); font-size: 13px; }
+.cal-right { display: flex; flex-direction: column; overflow: hidden; }
+.day-header { padding: 20px 28px 16px; border-bottom: 1px solid var(--border); background: var(--surface); }
+.day-header-date { font-size: 28px; font-weight: 300; letter-spacing: -0.5px; }
+.day-header-date strong { font-weight: 600; color: var(--accent); }
+.day-header-weekday { font-size: 13px; color: var(--muted); margin-top: 2px; }
+.time-grid { flex: 1; overflow-y: auto; position: relative; }
+.time-slot { display: flex; min-height: 56px; border-bottom: 1px solid var(--border); }
+.time-label { width: 60px; padding: 6px 12px 0 0; text-align: right; font-size: 11px; color: var(--muted); flex-shrink: 0; font-weight: 400; line-height: 1; }
+.time-content { flex: 1; position: relative; border-left: 1px solid var(--border); padding: 4px 12px 4px 8px; }
+.time-now-line { position: absolute; left: 60px; right: 0; height: 2px; background: var(--red); z-index: 5; }
+.time-now-dot { position: absolute; left: 54px; width: 10px; height: 10px; border-radius: 50%; background: var(--red); transform: translateY(-4px); z-index: 5; }
+.event-block { border-radius: 6px; padding: 5px 8px; margin-bottom: 3px; cursor: pointer; transition: opacity 0.1s; position: relative; }
+.event-block:hover { opacity: 0.85; }
+.event-block-title { font-size: 12.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.event-block-sub { font-size: 11px; opacity: 0.85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 200; display: none; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+.overlay.open { display: flex; }
+.modal { background: var(--surface); border-radius: 18px; width: 100%; max-width: 460px; padding: 28px; box-shadow: 0 24px 64px rgba(0,0,0,.18); animation: pop .18s ease-out; }
+@keyframes pop { from { transform: scale(0.94); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+.modal-title { font-size: 16px; font-weight: 600; }
+.modal-close { background: var(--soft); border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 16px; color: var(--muted); display: flex; align-items: center; justify-content: center; }
+.modal-close:hover { color: var(--text); }
+.field { margin-bottom: 14px; }
+.field label { font-size: 12px; font-weight: 500; color: var(--muted); display: block; margin-bottom: 5px; }
+.field input, .field select, .field textarea { width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 9px; font-family: inherit; font-size: 13.5px; color: var(--text); background: var(--bg); outline: none; transition: border 0.15s; }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); background: var(--surface); }
+.field textarea { resize: none; height: 72px; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.modal-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 22px; }
+.btn-danger { background: transparent; color: var(--red); border: none; font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer; padding: 7px 0; }
+.btn-danger:hover { text-decoration: underline; }
+.color-picker { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.cp-dot { width: 24px; height: 24px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform 0.12s, box-shadow 0.12s; flex-shrink: 0; }
+.cp-dot:hover { transform: scale(1.18); }
+.cp-dot.on { border-color: var(--text); box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--text); transform: scale(1.1); }
+.cp-custom { width: 24px; height: 24px; border-radius: 50%; cursor: pointer; border: 2px dashed var(--border); background: conic-gradient(red,yellow,lime,cyan,blue,magenta,red); overflow: hidden; position: relative; flex-shrink: 0; transition: transform 0.12s; }
+.cp-custom:hover { transform: scale(1.18); }
+.cp-custom input[type="color"] { position: absolute; inset: -4px; opacity: 0; cursor: pointer; width: 200%; height: 200%; }
+.cp-custom.on { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--text); }
+.detail-row { display: flex; gap: 10px; align-items: flex-start; padding: 7px 0; border-bottom: 1px solid var(--border); }
+.detail-row:last-child { border-bottom: none; }
+.detail-icon { font-size: 15px; color: var(--muted); width: 18px; flex-shrink: 0; margin-top: 1px; }
+.detail-val { font-size: 13.5px; }
+.kunde-wrap { position: relative; }
+.kunde-dd { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 9px; box-shadow: 0 8px 24px rgba(0,0,0,.12); z-index: 300; max-height: 220px; overflow-y: auto; display: none; }
+.kunde-dd-item { padding: 9px 12px; cursor: pointer; border-bottom: 1px solid var(--border); }
+.kunde-dd-item:last-child { border-bottom: none; }
+.kunde-dd-item:hover { background: var(--soft); }
+.kunde-dd-name { font-size: 13px; font-weight: 500; }
+.kunde-dd-sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+</style>
+
+<!-- mob-only-injected -->
+<style>
+@media (max-width: 768px) {
+  .cal-layout { display: flex !important; flex-direction: column; }
+  .cal-left { border-right: none !important; border-bottom: 1px solid var(--border); max-height: 420px; }
+  /* Topbar: Heute + Exportieren + Importieren ausblenden, nur Terminvergabe */
+  .topbar-right .btn-ghost { display: none !important; }
+}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand"><img class="brand-logo" src="" alt="max4work" style="height:28px;width:28px;object-fit:contain;border-radius:4px;"><div class="brand-name">max4work</div></div>
+  <nav>
+    <div class="nav-group">
+      <div class="nav-group-label">Übersicht</div>
+      <a class="nav-link" href="index.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg></span> Dashboard</a>
+      <a class="nav-link" href="auswertung.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span> Auswertung</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Buchhaltung</div>
+      <a class="nav-link" href="rechnungen.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span> Rechnungen <span class="pill" id="offenPill">0</span></a>
+      <a class="nav-link" href="belege.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg></span> Belege</a>
+      <a class="nav-link" href="kassenbuch.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg></span> Kassenbuch</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Stammdaten</div>
+      <a class="nav-link on" href="termine.html" aria-current="page"><span class="nav-icon">◷</span> Termine</a>
+      <a class="nav-link" href="kunden.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Kunden</a>
+      <a class="nav-link" href="produkte.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span> Produkte</a>
+      <a class="nav-link" href="einstellungen.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span> Einstellungen</a>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-label">Werkzeuge</div>
+      <a class="nav-link" href="werkzeuge.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span> Werkzeuge</a>
+      <a class="nav-link" href="fahrtenbuch.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M5 17H3a2 2 0 0 1-2-2V9l3-5h10l3 5h2a2 2 0 0 1 2 2v1"/><path d="M17 17H9"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg></span> Fahrtenbuch</a>
+    </div>
+  </nav>
+  <div class="sidebar-user">
+    <div class="av" aria-hidden="true"></div>
+    <div><div class="av-name">Jürgen Stupar</div><div class="av-sub">Einzelunternehmer</div></div>
+  </div>
+</aside>
+<main class="main">
+  <div class="topbar">
+    <div class="page-name">Termine</div>
+    <div class="topbar-right">
+      <button type="button" class="btn btn-ghost" onclick="goToday()">Heute</button>
+      <button type="button" class="btn btn-ghost" onclick="exportICS()" title="Alle Termine als .ics exportieren – direkt in iOS Kalender importierbar">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Exportieren
+      </button>
+      <button type="button" class="btn btn-ghost" onclick="importICS()" title="Termine aus .ics Datei importieren (z. B. vom Smartphone-Kalender)">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Importieren
+      </button>
+      <button type="button" class="btn btn-blue" onclick="openModal()">Terminvergabe</button>
+    </div>
+  </div>
+  <div class="cal-layout">
+    <div class="cal-left">
+      <div class="month-nav">
+        <button type="button" class="nav-arrow" onclick="prevMonth()">‹</button>
+        <div class="month-title" id="monthTitle"></div>
+        <button type="button" class="nav-arrow" onclick="nextMonth()">›</button>
+      </div>
+      <div class="weekdays">
+        <div class="wd kw-head">KW</div>
+        <div class="wd">Mo</div><div class="wd">Di</div><div class="wd">Mi</div>
+        <div class="wd">Do</div><div class="wd">Fr</div><div class="wd">Sa</div><div class="wd sun">So</div>
+      </div>
+      <div class="days-grid" id="daysGrid"></div>
+      <div class="mini-list">
+        <div class="mini-list-head" id="miniHead">Heute</div>
+        <div id="miniList"></div>
+      </div>
+    </div>
+    <div class="cal-right">
+      <div class="day-header">
+        <div class="day-header-date" id="dayHeaderDate"></div>
+        <div class="day-header-weekday" id="dayHeaderWeekday"></div>
+      </div>
+      <div class="time-grid" id="timeGrid"></div>
+    </div>
+  </div>
+</main>
+
+<div class="overlay" id="overlay" onclick="overlayClick(event)">
+  <div class="modal" id="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="modal-title">Neuer Termin</div>
+      <button type="button" class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="detail-view" style="display:none;">
+      <div id="detail-content"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-danger" id="btn-delete">Löschen</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
+          <button type="button" class="btn btn-ghost" id="btn-fahrt" style="color:var(--dark);font-weight:600;">🚗 Fahrt erfassen</button>
+          <button type="button" class="btn btn-ghost" onclick="closeModal()">Schließen</button>
+          <button type="button" class="btn btn-blue" id="btn-edit">Bearbeiten</button>
+        </div>
+      </div>
+    </div>
+    <div id="edit-view">
+      <div class="field"><label>Titel *</label><div class="kunde-wrap"><input type="text" id="f-titel" placeholder="z. B. Fensterreinigung" oninput="titelTerminInput(this.value)" autocomplete="off"><div class="kunde-dd" id="titelTerminDd"></div></div></div>
+      <div class="field-row">
+        <div class="field"><label>Datum</label><input type="date" id="f-datum"></div>
+        <div class="field"><label>Ganztägig</label><select id="f-ganztag" onchange="toggleTime()"><option value="nein">Nein</option><option value="ja">Ja</option></select></div>
+      </div>
+      <div id="time-fields" class="field-row">
+        <div class="field"><label>Von</label><input type="time" id="f-von" value="08:00"></div>
+        <div class="field"><label>Bis</label><input type="time" id="f-bis" value="09:00"></div>
+      </div>
+      <div class="field"><label>Kunde / Ort</label><div class="kunde-wrap"><input type="text" id="f-kunde" placeholder="z. B. Familie Hoffmann, Kastanienweg 4" oninput="kundeTerminInput(this.value)" autocomplete="off"><div class="kunde-dd" id="kundeTerminDd"></div></div></div>
+      <div class="field"><label>Notiz</label><textarea id="f-notiz" placeholder="Schlüssel, Parkplatz, Besonderheiten …"></textarea></div>
+      <div class="field"><label>Farbe</label><div class="color-picker" id="colorPicker"></div></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-danger" id="btn-delete-edit" style="visibility:hidden;">Löschen</button>
+        <div style="display:flex;gap:8px;">
+          <button type="button" class="btn btn-ghost" onclick="closeModal()">Abbrechen</button>
+          <button type="button" class="btn btn-blue" onclick="saveTermin()">Speichern</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="icsFileInput" accept=".ics,text/calendar" style="display:none" onchange="_handleICSFile(this)">
+<script src="js/termine.js"></script>
+</body>
+</html>

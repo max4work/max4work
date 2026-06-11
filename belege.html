@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<link rel="icon" href="logo.png" type="image/png">
+<link rel="manifest" href="manifest.json">
+<link rel="canonical" href="https://max4work.com/belege.html">
+<meta property="og:site_name" content="max4work">
+<title>max4work – Belege</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/shared.css">
+<script src="shared.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+<style>
+/* belege-spezifisch: topbar-right mit align-items */
+.topbar-right { display: flex; gap: 8px; align-items: center; }
+.content { padding: 24px 28px; display: grid; grid-template-columns: 340px 1fr; gap: 20px; align-items: start; }
+
+/* Buttons */
+.btn { padding: 7px 14px; border-radius: 8px; font-size: 12.5px; font-weight: 500; font-family: inherit; cursor: pointer; border: none; transition: all .12s; display: inline-flex; align-items: center; gap: 5px; }
+.btn-blue { background: var(--accent); color: var(--text); font-weight: 600; }
+.btn-blue:hover { background: #b8c930; }
+.btn-ghost { background: var(--soft); color: var(--text); }
+.btn-ghost:hover { background: #dddede; }
+.btn-dark { background: var(--dark); color: #fff; }
+.btn-dark:hover { background: #1a2418; }
+.btn-full { width: 100%; justify-content: center; padding: 10px; font-size: 13px; margin-top: 6px; }
+
+/* Form */
+.form-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; position: sticky; top: 64px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+.panel-head { padding: 14px 18px; border-bottom: 1px solid var(--border); font-size: 13.5px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; }
+.panel-.field { margin-bottom: 11px; }
+.field label { display: block; font-size: 10.5px; font-weight: 600; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: .4px; }
+.field input, .field textarea, .field select { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 13px; color: var(--text); background: var(--surface); outline: none; transition: border-color .12s; }
+.field input:focus, .field textarea:focus, .field select:focus { border-color: var(--accent); }
+.field input.detected { border-color: var(--green); background: #f0fdf4; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* OCR Scan */
+.scan-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.scan-btn { position: relative; border: 1.5px dashed var(--border); border-radius: 10px; padding: 12px 8px; text-align: center; cursor: pointer; transition: all .12s; overflow: hidden; }
+.scan-btn:hover { border-color: var(--accent); background: var(--accent-pale); }
+.scan-btn input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.scan-btn-icon { display: flex; align-items: center; justify-content: center; margin-bottom: 4px; color: var(--muted); }
+.scan-btn-label { font-size: 11.5px; font-weight: 600; color: var(--accent); }
+.scan-btn-sub { font-size: 10px; color: var(--muted); margin-top: 1px; }
+
+/* OCR Status */
+.ocr-status { display: none; background: var(--dark); color: #fff; border-radius: 8px; padding: 10px 14px; margin-bottom: 10px; font-size: 12px; }
+.ocr-bar { height: 3px; background: rgba(255,255,255,.2); border-radius: 2px; margin-top: 6px; }
+.ocr-bar-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width .3s; width: 0%; }
+.ocr-detected { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 8px 12px; margin-bottom: 10px; display: none; font-size: 12px; }
+.ocr-detected strong { color: var(--dark); }
+
+/* Image preview */
+.img-preview-wrap { position: relative; margin-bottom: 10px; display: none; }
+.img-preview { width: 100%; border-radius: 8px; border: 1px solid var(--border); max-height: 160px; object-fit: cover; cursor: zoom-in; }
+.img-remove-btn { position: absolute; top: 6px; right: 6px; background: rgba(0,0,0,.6); color: #fff; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; }
+
+/* Kategorie */
+.kat-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; margin-bottom: 8px; }
+.kat-chip { border: 1.5px solid var(--border); border-radius: 8px; padding: 7px 4px; text-align: center; cursor: pointer; transition: all .12s; font-size: 11px; font-weight: 500; color: var(--muted); }
+.kat-chip:hover { border-color: var(--accent); color: var(--text); }
+.kat-chip.on { border-color: var(--accent); background: var(--accent-pale); color: var(--text); font-weight: 600; }
+.kat-chip-icon { display: flex; align-items: center; justify-content: center; margin-bottom: 4px; color: var(--muted); }
+.kat-chip.on .kat-chip-icon { color: var(--dark); }
+
+/* Steuerrelevant */
+.steuer-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: var(--soft); border-radius: 8px; margin-bottom: 10px; }
+.steuer-label { font-size: 12.5px; font-weight: 500; }
+.steuer-sub { font-size: 11px; color: var(--muted); }
+.toggle { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-track { position: absolute; inset: 0; background: var(--border); border-radius: 22px; cursor: pointer; transition: background .2s; }
+.toggle input:checked + .toggle-track { background: var(--green); }
+.toggle-track::after { content: ''; position: absolute; left: 3px; top: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+.toggle input:checked + .toggle-track::after { transform: translateX(18px); }
+
+/* List panel */
+.list-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+.list-toolbar { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.filter-chips { display: flex; gap: 4px; }
+.fchip { padding: 4px 11px; border-radius: 20px; font-size: 12px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--muted); transition: all .12s; }
+.fchip.on { background: var(--accent-pale); color: var(--text); border-color: var(--accent); }
+.beleg-row { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border); gap: 10px; transition: background .1s; }
+.beleg-row:last-child { border-bottom: none; }
+.beleg-row:hover { background: var(--soft); }
+.beleg-thumb { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border); flex-shrink: 0; cursor: zoom-in; }
+.beleg-no-thumb { width: 40px; height: 40px; border-radius: 8px; background: var(--soft); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.subtyp-btn { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 500; font-family: inherit; cursor: pointer; border: 1.5px solid var(--border); background: var(--surface); color: var(--muted); transition: all .12s; }
+.subtyp-btn:hover { border-color: var(--accent); color: var(--text); }
+.subtyp-btn.on { border-color: var(--accent); background: var(--accent-pale); color: var(--text); font-weight: 600; }
+.tank-calc { background: var(--accent-pale); border: 1px solid #d4e86e; border-radius: 8px; padding: 8px 12px; font-size: 12.5px; font-weight: 600; color: var(--dark); margin-bottom: 8px; display: none; }
+.beleg-detail { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.beleg-info { flex: 1; min-width: 0; }
+.beleg-titel { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.beleg-meta { font-size: 11.5px; color: var(--muted); margin-top: 2px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.badge-kat { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 20px; background: var(--soft); color: var(--muted); }
+.badge-steuer { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 20px; background: #FEF3C7; color: #92600A; }
+.beleg-betrag { font-size: 13px; font-weight: 600; color: var(--red); min-width: 68px; text-align: right; flex-shrink: 0; }
+.beleg-del { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 16px; padding: 2px 4px; transition: color .12s; flex-shrink: 0; }
+.beleg-del:hover { color: var(--red); }
+.summe-bar { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--border); }
+.summe-cell { padding: 12px 16px; font-size: 12.5px; }
+.summe-cell:first-child { border-right: 1px solid var(--border); }
+.summe-label { color: var(--muted); margin-bottom: 2px; }
+.summe-value { font-size: 15px; font-weight: 700; }
+.summe-value.red { color: var(--red); }
+.summe-value.amber { color: var(--amber); }
+.empty { padding: 40px 20px; text-align: center; color: var(--muted); font-size: 13px; }
+
+/* Kamera-Panel */
+.cam-panel { display:none; background:#111; border-radius:12px; overflow:hidden; margin-bottom:10px; }
+.cam-video { width:100%; display:block; max-height:220px; object-fit:cover; }
+.cam-controls { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:#111; }
+.cam-hint { color:rgba(255,255,255,.45); font-size:11px; }
+.cam-capture-btn { background:var(--accent); color:var(--text); border:none; border-radius:50%; width:46px; height:46px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .12s; flex-shrink:0; }
+.cam-capture-btn:hover { background:#b8c930; transform:scale(1.06); }
+.cam-close-btn { background:rgba(255,255,255,.15); color:#fff; border:none; border-radius:8px; padding:6px 11px; cursor:pointer; font-size:12px; font-family:inherit; }
+.cam-close-btn:hover { background:rgba(255,255,255,.28); }
+
+/* Lightbox */
+#lightbox { display:none; position:fixed; inset:0; background:rgba(0,0,0,.88); z-index:999; align-items:center; justify-content:center; cursor:zoom-out; }
+#lightbox img { max-width:94vw; max-height:92vh; border-radius:8px; object-fit:contain; }
+</style>
+
+<!-- mob-only-injected -->
+<style>
+@media (max-width: 768px) {
+  .content { grid-template-columns: 1fr !important; }
+  .kat-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .scan-row { grid-template-columns: 1fr !important; }
+  .summe-bar { grid-template-columns: 1fr !important; }
+  .topbar-right .btn { display: none !important; }
+}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="brand"><img class="brand-logo" src="" alt="max4work" style="height:28px;width:28px;object-fit:contain;border-radius:4px;"><div class="brand-name">max4work</div></div>
+  <nav>
+    <div class="nav-group">
+      <div class="nav-group-label">Übersicht</div>
+      <a class="nav-link" href="index.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg></span> Dashboard</a>
+      <a class="nav-link" href="auswertung.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span> Auswertung</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Buchhaltung</div>
+      <a class="nav-link" href="rechnungen.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span> Rechnungen <span class="pill" id="offenPill">0</span></a>
+      <a class="nav-link on" href="belege.html" aria-current="page"><span class="nav-icon">◳</span> Belege</a>
+      <a class="nav-link" href="kassenbuch.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg></span> Kassenbuch</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Stammdaten</div>
+      <a class="nav-link" href="termine.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span> Termine</a>
+      <a class="nav-link" href="kunden.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Kunden</a>
+      <a class="nav-link" href="produkte.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span> Produkte</a>
+      <a class="nav-link" href="einstellungen.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span> Einstellungen</a>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-label">Werkzeuge</div>
+      <a class="nav-link" href="werkzeuge.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span> Werkzeuge</a>
+    </div>
+  </nav>
+  <div class="sidebar-user">
+    <div class="av" aria-hidden="true"></div>
+    <div><div class="av-name">Jürgen Stupar</div><div class="av-sub">Einzelunternehmer</div></div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="page-name">Belege</div>
+      <span style="font-size:12px;color:var(--muted)" id="topMeta"></span>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-ghost" onclick="exportNumbers()">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        Numbers
+      </button>
+      <button class="btn btn-ghost" onclick="exportExcel()">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Excel
+      </button>
+      <button class="btn btn-ghost" onclick="exportPDFAll()">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        PDF
+      </button>
+      <button class="btn btn-dark" onclick="exportSteuerberater()">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Steuerberater-Export
+      </button>
+      <button class="btn btn-ghost" onclick="exportDatevBelege()">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        DATEV
+      </button>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- Formular -->
+    <div class="form-panel">
+      <div class="panel-head">
+        <span>Beleg erfassen</span>
+        <span id="ocrBadge" style="display:none;font-size:11px;background:var(--green);color:#fff;padding:2px 8px;border-radius:20px;font-weight:600;">✓ OCR</span>
+      </div>
+      <div class="panel-body">
+
+        <!-- Scan Buttons -->
+        <div class="scan-row">
+          <div class="scan-btn" onclick="openCamPanel()">
+            <div class="scan-btn-icon">
+              <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            </div>
+            <div class="scan-btn-label">Kamera</div>
+            <div class="scan-btn-sub">Quittung scannen</div>
+          </div>
+          <div class="scan-btn">
+            <input type="file" accept="image/*,application/pdf" id="bFile" onchange="handleScan(event,'file')">
+            <div class="scan-btn-icon">
+              <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <div class="scan-btn-label">Datei</div>
+            <div class="scan-btn-sub">JPG, PNG, PDF</div>
+          </div>
+        </div>
+
+        <!-- Kamera-Panel -->
+        <div class="cam-panel" id="camPanel">
+          <video class="cam-video" id="camVideo" autoplay playsinline muted></video>
+          <div class="cam-controls">
+            <span class="cam-hint">Quittung ausrichten</span>
+            <button class="cam-capture-btn" onclick="captureBelegPhoto()" title="Foto aufnehmen">
+              <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5"/><path fill="none" stroke="currentColor" stroke-width="1.8" d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/></svg>
+            </button>
+            <button class="cam-close-btn" onclick="closeCamPanel()">Schließen</button>
+          </div>
+        </div>
+
+        <!-- OCR Status -->
+        <div class="ocr-status" id="ocrStatus">
+          <div id="ocrMsg">🔍 Analysiere Quittung...</div>
+          <div class="ocr-bar"><div class="ocr-bar-fill" id="ocrBarFill"></div></div>
+        </div>
+
+        <!-- OCR Ergebnis -->
+        <div class="ocr-detected" id="ocrDetected"></div>
+
+        <!-- Bild Vorschau -->
+        <div class="img-preview-wrap" id="imgWrap">
+          <img class="img-preview" id="imgPreview" alt="Beleg" onclick="openLightbox(this.src)">
+          <button class="img-remove-btn" onclick="removeImg()">×</button>
+        </div>
+
+        <!-- Felder -->
+        <div class="field-row">
+          <div class="field">
+            <label>Datum</label>
+            <input type="date" id="bDatum">
+          </div>
+          <div class="field">
+            <label>Betrag (€)</label>
+            <input type="number" id="bBetrag" min="0" step="0.01" placeholder="0,00">
+          </div>
+        </div>
+
+        <!-- Kategorie -->
+        <div class="field">
+          <label>Kategorie</label>
+          <div class="kat-grid">
+            <div class="kat-chip on" data-kat="Material" onclick="selectKat(this)">
+              <div class="kat-chip-icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
+              Material
+            </div>
+            <div class="kat-chip" data-kat="Werkzeug" onclick="selectKat(this)">
+              <div class="kat-chip-icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.77 3.77z"/></svg></div>
+              Werkzeug
+            </div>
+            <div class="kat-chip" data-kat="Fahrzeug" onclick="selectKat(this)">
+              <div class="kat-chip-icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path d="M5 17H3a2 2 0 0 1-2-2V9l3-5h10l3 5h2a2 2 0 0 1 2 2v1"/><path d="M17 17H9"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg></div>
+              Fahrzeug
+            </div>
+            <div class="kat-chip" data-kat="Büro" onclick="selectKat(this)">
+              <div class="kat-chip-icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>
+              Büro
+            </div>
+            <div class="kat-chip" data-kat="Sonstiges" onclick="selectKat(this)">
+              <div class="kat-chip-icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+              Sonstiges
+            </div>
+            <div class="kat-chip" data-kat="__custom__" onclick="selectKat(this)">
+              <div class="kat-chip-icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
+              Eigene
+            </div>
+          </div>
+          <input type="text" id="bKatCustom" placeholder="Eigene Kategorie eingeben..." style="display:none;margin-top:6px;">
+        </div>
+
+        <!-- Fahrzeug Sub-Typ -->
+        <div id="fahrzeugSection" style="display:none;margin-bottom:11px;">
+          <div style="font-size:10.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">Art der Ausgabe</div>
+          <div style="display:flex;gap:6px;margin-bottom:12px;">
+            <button type="button" class="subtyp-btn on" data-typ="tanken" onclick="selectSubTyp(this)">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 22V6l6-4 6 4v16"/><path d="M15 22v-4a3 3 0 0 1 6 0v4"/><path d="M3 11h12"/><path d="M9 22V11"/></svg>
+              Tanken
+            </button>
+            <button type="button" class="subtyp-btn" data-typ="parken" onclick="selectSubTyp(this)">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 17V7h4a3 3 0 0 1 0 6H9"/></svg>
+              Parken
+            </button>
+            <button type="button" class="subtyp-btn" data-typ="sonstiges" onclick="selectSubTyp(this)">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              Sonstiges
+            </button>
+          </div>
+
+          <!-- Tankkosten -->
+          <div id="tankSection">
+            <div class="field">
+              <label>Tankstelle / Ort</label>
+              <input type="text" id="tankStelle" placeholder="z.B. ARAL Hauptstraße, Shell A2">
+            </div>
+            <div class="field">
+              <label>Kraftstoffart</label>
+              <select id="tankKraftstoff">
+                <option value="Diesel">⛽ Diesel</option>
+                <option value="Super E10">Super E10</option>
+                <option value="Super E5">Super E5</option>
+                <option value="Super Plus">Super Plus</option>
+                <option value="Erdgas / CNG">Erdgas / CNG</option>
+                <option value="Strom / E-Auto">Strom / E-Auto</option>
+              </select>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label>Liter / kWh</label>
+                <input type="number" id="tankLiter" min="0" step="0.01" placeholder="z.B. 45,50" oninput="calcTankBetrag()">
+              </div>
+              <div class="field">
+                <label>Preis pro Liter (€)</label>
+                <input type="number" id="tankPreis" min="0" step="0.001" placeholder="z.B. 1,849" oninput="calcTankBetrag()">
+              </div>
+            </div>
+            <div class="tank-calc" id="tankCalcBadge"></div>
+            <div class="field">
+              <label>km-Stand</label>
+              <input type="number" id="tankKm" min="0" placeholder="z.B. 87430">
+            </div>
+            <div class="field">
+              <label>Kennzeichen <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
+              <input type="text" id="tankKennzeichen" placeholder="z.B. BS-JS 123" style="text-transform:uppercase;" list="kennzeichenList" autocomplete="off">
+            </div>
+          </div>
+
+          <!-- Parkbeleg -->
+          <div id="parkSection" style="display:none;">
+            <div class="field">
+              <label>Parkort / Adresse</label>
+              <input type="text" id="parkOrt" placeholder="z.B. Parkhaus City, Bahnhofstr. 12">
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label>Von</label>
+                <input type="time" id="parkVon">
+              </div>
+              <div class="field">
+                <label>Bis</label>
+                <input type="time" id="parkBis" oninput="calcParkDauer()">
+              </div>
+            </div>
+            <div class="field">
+              <label>Dauer</label>
+              <input type="text" id="parkDauer" readonly placeholder="– wird berechnet –" style="background:var(--soft);color:var(--muted);">
+            </div>
+            <div class="field">
+              <label>Kennzeichen <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
+              <input type="text" id="parkKennzeichen" placeholder="z.B. BS-JS 123" style="text-transform:uppercase;" list="kennzeichenList" autocomplete="off">
+            </div>
+          </div>
+        </div>
+
+        <!-- Beschreibung -->
+        <div class="field">
+          <label>Beschreibung</label>
+          <input type="text" id="bNotiz" placeholder="z.B. Tankquittung ARAL, Schrauben OBI...">
+        </div>
+
+        <!-- Steuerrelevant -->
+        <div class="steuer-row">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <svg width="16" height="16" fill="#F59E0B" stroke="#F59E0B" stroke-width="1" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <div>
+              <div class="steuer-label">Steuerrelevante Ausgabe</div>
+              <div class="steuer-sub">Für Steuerberater-Export markieren</div>
+            </div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="bSteuer" checked>
+            <div class="toggle-track"></div>
+          </label>
+        </div>
+
+        <button class="btn btn-blue btn-full" onclick="addBeleg()">+ Beleg speichern</button>
+      </div>
+    </div>
+
+    <!-- Liste -->
+    <div class="list-panel">
+      <div class="list-toolbar">
+        <div class="filter-chips">
+          <div class="fchip on" data-f="alle" onclick="setFilter(this,'alle')">Alle</div>
+          <div class="fchip" data-f="steuer" onclick="setFilter(this,'steuer')" style="display:flex;align-items:center;gap:4px;">
+            <svg width="11" height="11" fill="#F59E0B" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            Steuer
+          </div>
+          <div class="fchip" data-f="Material" onclick="setFilter(this,'Material')" style="display:flex;align-items:center;gap:4px;">
+            <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            Material
+          </div>
+          <div class="fchip" data-f="Werkzeug" onclick="setFilter(this,'Werkzeug')" style="display:flex;align-items:center;gap:4px;">
+            <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.77 3.77z"/></svg>
+            Werkzeug
+          </div>
+          <div class="fchip" data-f="Fahrzeug" onclick="setFilter(this,'Fahrzeug')" style="display:flex;align-items:center;gap:4px;">
+            <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 17H3a2 2 0 0 1-2-2V9l3-5h10l3 5h2a2 2 0 0 1 2 2v1"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+            Fahrzeug
+          </div>
+          <div class="fchip" data-f="Büro" onclick="setFilter(this,'Büro')" style="display:flex;align-items:center;gap:4px;">
+            <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            Büro
+          </div>
+        </div>
+      </div>
+      <div id="belegListe"></div>
+      <div class="summe-bar">
+        <div class="summe-cell">
+          <div class="summe-label">Gesamtausgaben</div>
+          <div class="summe-value red" id="summeGesamt">0,00 €</div>
+        </div>
+        <div class="summe-cell">
+          <div class="summe-label" style="display:flex;align-items:center;gap:5px;"><svg width="11" height="11" fill="#F59E0B" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Steuerrelevant</div>
+          <div class="summe-value amber" id="summeSteuer">0,00 €</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<datalist id="kennzeichenList"></datalist>
+
+<!-- Lightbox -->
+<div id="lightbox" onclick="this.style.display='none'">
+  <img id="lightboxImg" alt="">
+</div>
+
+<script src="js/belege.js"></script>
+</body>
+</html>

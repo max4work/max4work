@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>EÜR – Einnahmen-Überschuss-Rechnung</title>
+<script src="shared.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F2F3F0; --surface: #FFFFFF; --border: #E4E6E2;
+    --text: #1A1C18; --muted: #7B8278; --soft: #EDEEE9;
+    --accent: #C8D93A; --dark: #2B3829;
+  }
+
+  body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; padding: 32px; }
+
+  /* ── Toolbar (nur Bildschirm) ── */
+  .toolbar {
+    background: #2B3829; color: #fff; border-radius: 10px;
+    padding: 12px 20px; margin-bottom: 24px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    font-size: 13px;
+  }
+  .toolbar-left { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .toolbar strong { font-weight: 700; }
+  .toolbar span { opacity: .7; font-size: 12px; }
+  .year-tabs { display: flex; gap: 6px; }
+  .ytab {
+    padding: 5px 13px; border-radius: 7px; font-size: 12px; font-weight: 600;
+    cursor: pointer; border: 1px solid rgba(255,255,255,.2);
+    color: rgba(255,255,255,.7); transition: all .12s; background: transparent;
+  }
+  .ytab.on { background: #C8D93A; color: #1A1C18; border-color: transparent; }
+  .ytab:hover:not(.on) { background: rgba(255,255,255,.1); color: #fff; }
+  .toolbar-btns { display: flex; gap: 8px; flex-shrink: 0; }
+  .btn-print {
+    background: #C8D93A; color: #1A1C18; font-weight: 600;
+    border: none; border-radius: 7px; padding: 7px 18px;
+    font-family: inherit; font-size: 13px; cursor: pointer; white-space: nowrap;
+  }
+  .btn-print:hover { background: #b8c930; }
+  .btn-back {
+    background: rgba(255,255,255,.12); color: #fff; font-weight: 500;
+    border: none; border-radius: 7px; padding: 7px 15px;
+    font-family: inherit; font-size: 13px; cursor: pointer;
+  }
+  .btn-back:hover { background: rgba(255,255,255,.2); }
+
+  /* ── Druckdokument ── */
+  .doc {
+    background: #fff;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 52px 56px;
+    box-shadow: 0 4px 32px rgba(0,0,0,.12);
+    border-radius: 4px;
+  }
+
+  /* Kopfzeile */
+  .doc-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 28px; padding-bottom: 20px; border-bottom: 2px solid #1A1C18;
+  }
+  .doc-title { font-size: 22px; font-weight: 700; letter-spacing: -.4px; }
+  .doc-subtitle { font-size: 12.5px; color: #7B8278; margin-top: 4px; line-height: 1.5; }
+  .doc-meta { text-align: right; font-size: 12px; line-height: 2; color: #555; }
+  .doc-meta strong { color: #1A1C18; font-weight: 600; }
+
+  /* KPI-Leiste */
+  .kpi-row {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+    margin-bottom: 32px;
+  }
+  .kpi { border: 1.5px solid #E4E6E2; border-radius: 8px; padding: 14px 18px; }
+  .kpi-label { font-size: 10px; font-weight: 600; color: #7B8278; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 5px; }
+  .kpi-value { font-size: 22px; font-weight: 700; letter-spacing: -.3px; }
+  .kpi-value.green { color: #1A7A3C; }
+  .kpi-value.red { color: #991B1B; }
+  .kpi-sub { font-size: 11px; color: #9B9B9B; margin-top: 3px; }
+
+  /* Abschnitt-Titel */
+  .section-title {
+    font-size: 11px; font-weight: 700; color: #7B8278; text-transform: uppercase;
+    letter-spacing: .7px; margin-bottom: 6px; margin-top: 28px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: #E4E6E2; }
+  .section-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px; border-radius: 5px;
+    background: #2B3829; color: #C8D93A;
+    font-size: 11px; font-weight: 700; flex-shrink: 0;
+  }
+
+  /* Tabellen */
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  thead th {
+    font-size: 10px; font-weight: 700; color: #7B8278;
+    text-transform: uppercase; letter-spacing: .5px;
+    padding: 8px 12px; border-bottom: 1px solid #1A1C18; text-align: left;
+    background: #FAFAF8;
+  }
+  thead th.r { text-align: right; }
+  tbody td { padding: 9px 12px; border-bottom: 1px solid #EDEEE9; vertical-align: middle; }
+  tbody td.r { text-align: right; font-weight: 600; }
+  tbody td.muted { color: #9B9B9B; font-size: 11.5px; }
+  tbody tr:nth-child(even) td { background: #FAFAF8; }
+  tbody tr:hover td { background: #F5F8D6; }
+
+  tfoot td {
+    padding: 11px 12px; font-weight: 700; font-size: 13.5px;
+    border-top: 2px solid #1A1C18; background: #F8F9F4;
+  }
+  tfoot td.r { text-align: right; font-size: 15px; }
+
+  .sub-total {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 12px; background: #F2F3F0; border-radius: 6px;
+    margin-top: 6px; margin-bottom: 6px;
+    font-size: 12.5px;
+  }
+  .sub-total span { font-weight: 600; }
+
+  /* Gewinnermittlung-Box */
+  .gewinn-box {
+    margin-top: 28px; border: 2px solid #1A1C18; border-radius: 8px; overflow: hidden;
+  }
+  .gewinn-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 20px; border-bottom: 1px solid #E4E6E2; font-size: 13px;
+  }
+  .gewinn-row:last-child { border-bottom: none; }
+  .gewinn-row.total {
+    background: #2B3829; color: #fff;
+    font-size: 15px; font-weight: 700;
+    padding: 16px 20px;
+  }
+  .gewinn-row.total .gewinn-amount { color: #C8D93A; font-size: 18px; }
+  .gewinn-row.total .gewinn-amount.red { color: #FF6B6B; }
+  .gewinn-label { font-weight: 500; }
+  .gewinn-amount { font-weight: 700; font-size: 14px; }
+  .gewinn-amount.green { color: #1A7A3C; }
+  .gewinn-amount.red { color: #991B1B; }
+
+  /* Hinweise */
+  .hinweise {
+    margin-top: 32px; padding: 16px 20px;
+    background: #F8F9F4; border: 1px solid #E4E6E2; border-radius: 8px;
+    font-size: 11.5px; color: #555; line-height: 1.7;
+  }
+  .hinweise strong { color: #1A1C18; }
+
+  /* Unterschrift */
+  .unterschrift {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 40px;
+    margin-top: 40px; padding-top: 20px; border-top: 1px solid #E4E6E2;
+  }
+  .unt-field {
+    border-bottom: 1.5px solid #1A1C18; padding-bottom: 4px; margin-bottom: 4px; min-height: 40px;
+  }
+  .unt-label { font-size: 10px; font-weight: 600; color: #9B9B9B; text-transform: uppercase; letter-spacing: .5px; }
+
+  /* Fußzeile */
+  .doc-footer {
+    margin-top: 32px; padding-top: 14px; border-top: 1px solid #E4E6E2;
+    display: flex; justify-content: space-between;
+    font-size: 10.5px; color: #9B9B9B;
+  }
+
+  /* Leerzustand */
+  .empty-hint { padding: 20px; text-align: center; color: #9B9B9B; font-style: italic; font-size: 12px; }
+
+  /* Kategorie-Badge */
+  .kat-badge {
+    display: inline-block; padding: 1px 8px; border-radius: 10px;
+    font-size: 10.5px; font-weight: 600;
+    background: #EDEEE9; color: #555;
+  }
+
+  /* ── GoBD-Panel (nur Bildschirm) ── */
+  .godb-panel {
+    max-width: 860px; margin: 0 auto 20px;
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: 10px; overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  }
+  .godb-head {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 20px; cursor: pointer;
+    background: var(--soft); border-bottom: 1px solid var(--border);
+    user-select: none;
+  }
+  .godb-head:hover { background: var(--bg); }
+  .godb-head-title { font-weight: 700; font-size: 13px; color: var(--text); flex: 1; }
+  .godb-head-chev { font-size: 10px; color: var(--muted); transition: transform .15s; }
+  .godb-panel.open .godb-head-chev { transform: rotate(90deg); }
+  .godb-status-badge {
+    font-size: 11px; font-weight: 700; padding: 2px 9px;
+    border-radius: 20px; flex-shrink: 0;
+  }
+  .godb-all-ok  { background: #D1FAE5; color: #065F46; }
+  .godb-has-warn { background: #FEF3C7; color: #92600A; }
+  .godb-has-err  { background: #FEE2E2; color: #991B1B; }
+  .godb-items { display: flex; flex-direction: column; }
+  .godb-item {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 10px 20px; border-bottom: 1px solid var(--border); font-size: 12.5px;
+  }
+  .godb-item:last-child { border-bottom: none; }
+  .godb-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+  .godb-dot.ok  { background: #34C759; }
+  .godb-dot.warn { background: #FF9500; }
+  .godb-dot.err  { background: #FF3B30; }
+  .godb-item-label { font-weight: 600; color: var(--text); min-width: 210px; flex-shrink: 0; }
+  .godb-item-detail { color: var(--muted); flex: 1; line-height: 1.5; }
+  .godb-link {
+    font-size: 11px; color: #0066FF; font-weight: 600;
+    white-space: nowrap; text-decoration: none; flex-shrink: 0;
+  }
+  .godb-link:hover { text-decoration: underline; }
+
+  /* Druckstile */
+  @media print {
+    body { background: #fff !important; color: #1A1C18 !important; padding: 0; }
+    .toolbar, .godb-panel { display: none; }
+    .doc {
+      box-shadow: none; padding: 14mm 16mm;
+      max-width: 100%; border-radius: 0;
+    }
+    tbody tr:hover td { background: inherit; }
+    @page { margin: 10mm; size: A4; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Toolbar (nur Bildschirm) ── -->
+<div class="toolbar">
+  <div class="toolbar-left">
+    <div>
+      <strong>EÜR – Einnahmen-Überschuss-Rechnung</strong>
+      <span>&nbsp;· §4 Abs. 3 EStG</span>
+    </div>
+    <div class="year-tabs" id="yearTabs"></div>
+  </div>
+  <div class="toolbar-btns">
+    <button class="btn-back" onclick="history.back()">← Zurück</button>
+    <button class="btn-print" onclick="window.print()">&#128438; Drucken / Als PDF</button>
+  </div>
+</div>
+
+<!-- ── GoBD-Checkliste (nur Bildschirm) ── -->
+<div class="godb-panel open" id="godbPanel">
+  <div class="godb-head" onclick="toggleGodb()">
+    <div class="godb-head-title">GoBD-Prüfung – Jahresabschluss-Vorbereitung</div>
+    <span class="godb-status-badge" id="godbBadge"></span>
+    <span class="godb-head-chev">▶</span>
+  </div>
+  <div class="godb-items" id="godbItems"></div>
+</div>
+
+<!-- ── Druckdokument ── -->
+<div class="doc" id="doc">
+
+  <!-- Kopfzeile -->
+  <div class="doc-header">
+    <div>
+      <div class="doc-title" id="docTitle">EÜR <span id="docYear"></span></div>
+      <div class="doc-subtitle">
+        Einnahmen-Überschuss-Rechnung gem. §4 Abs. 3 EStG<br>
+        Wirtschaftsjahr <span id="wjZeitraum"></span>
+      </div>
+    </div>
+    <div class="doc-meta" id="docMeta"></div>
+  </div>
+
+  <!-- KPI-Leiste -->
+  <div class="kpi-row" id="kpiRow"></div>
+
+  <!-- A. Betriebseinnahmen -->
+  <div class="section-title"><span class="section-badge">A</span> Betriebseinnahmen</div>
+  <table id="einnahmenTable">
+    <thead>
+      <tr>
+        <th>Datum</th>
+        <th>Rechnungsnummer</th>
+        <th>Leistungsempfänger</th>
+        <th>Verwendungszweck / Notiz</th>
+        <th class="r">Betrag</th>
+      </tr>
+    </thead>
+    <tbody id="einnahmenBody"></tbody>
+    <tfoot id="einnahmenFoot"></tfoot>
+  </table>
+
+  <!-- B. Betriebsausgaben -->
+  <div class="section-title" style="margin-top:32px"><span class="section-badge">B</span> Betriebsausgaben</div>
+  <div id="ausgabenContent"></div>
+
+  <!-- C. Gewinnermittlung -->
+  <div class="gewinn-box" id="gewinnBox"></div>
+
+  <!-- Hinweise -->
+  <div class="hinweise" id="hinweise"></div>
+
+  <!-- Unterschrift -->
+  <div class="unterschrift">
+    <div>
+      <div class="unt-field"></div>
+      <div class="unt-label">Ort, Datum</div>
+    </div>
+    <div>
+      <div class="unt-field"></div>
+      <div class="unt-label">Unterschrift</div>
+    </div>
+  </div>
+
+  <!-- Fußzeile -->
+  <div class="doc-footer">
+    <span id="footLeft">max4work · EÜR</span>
+    <span>Seite 1 von 1</span>
+    <span id="footDate"></span>
+  </div>
+
+</div>
+
+<script>
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function fmtE(n) {
+  return parseFloat(n || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+}
+function fmtD(v) {
+  if (!v) return '—';
+  const [y, m, d] = v.split('-');
+  return `${d}.${m}.${y}`;
+}
+function todayStr() {
+  const d = new Date();
+  return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
+}
+
+// ── Daten laden ──────────────────────────────────────────────────────────────
+function loadLS(key) {
+  try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch { return []; }
+}
+function loadObj(key) {
+  try { return JSON.parse(localStorage.getItem(key) || '{}'); } catch { return {}; }
+}
+
+// ── Jahr-Ermittlung ──────────────────────────────────────────────────────────
+function getYears(zahl, bel, fahrten) {
+  const years = new Set();
+  [...zahl, ...bel].forEach(r => { if (r.datum) years.add(parseInt(r.datum.split('-')[0])); });
+  fahrten.forEach(f => { if (f.datum) years.add(parseInt(f.datum.split('-')[0])); });
+  years.add(new Date().getFullYear());
+  return [...years].sort((a, b) => b - a);
+}
+
+// ── KM-Pauschale ─────────────────────────────────────────────────────────────
+// 0,30 €/km für die ersten 20.000 km; danach 0,38 €/km (ab 2022)
+// Vereinfachung: 0,30 €/km pauschal (FA akzeptiert ohne Einzelnachweis)
+const KM_PAUSCHALE = 0.30;
+
+// ── Render ────────────────────────────────────────────────────────────────────
+let currentYear = parseInt(new URLSearchParams(location.search).get('year')) || new Date().getFullYear();
+
+function render() {
+  const zahlungen  = loadLS('max4work_zahlungen');
+  const belege     = loadLS('max4work_belege');
+  const fahrten    = loadLS('max4work_fahrtenbuch');
+  const rechnungen = loadLS('max4work_rechnungen');
+  const einst      = loadObj('max4work_einstellungen');
+
+  const years = getYears(zahlungen, belege, fahrten);
+  if (!years.includes(currentYear)) currentYear = years[0] || currentYear;
+
+  renderYearTabs(years);
+  renderDoc(zahlungen, belege, fahrten, einst, currentYear);
+  renderGodb(zahlungen, belege, fahrten, rechnungen, currentYear);
+}
+
+function setYear(y) { currentYear = y; render(); }
+
+function renderYearTabs(years) {
+  document.getElementById('yearTabs').innerHTML = years.map(y =>
+    `<div class="ytab${y === currentYear ? ' on' : ''}" onclick="setYear(${y})">${y}</div>`
+  ).join('');
+}
+
+function renderDoc(zahlungen, belege, fahrten, einst, year) {
+  const yStr = String(year);
+
+  // ── Einnahmen ────────────────────────────────────────────────────────────
+  const einJahr = zahlungen
+    .filter(z => z.datum && z.datum.startsWith(yStr))
+    .sort((a, b) => (a.datum || '').localeCompare(b.datum || ''));
+  const sumEin = einJahr.reduce((s, z) => s + Number(z.betrag || 0), 0);
+
+  // ── Ausgaben nach Kategorie ───────────────────────────────────────────────
+  const belJahr = belege.filter(b => b.datum && b.datum.startsWith(yStr));
+
+  // Kategorien ermitteln (bekannte + benutzerdefinierte)
+  const KAT_ORDER = ['Material', 'Werkzeug', 'Fahrzeug', 'Büro', 'Sonstiges'];
+  const katMap = {};
+  belJahr.forEach(b => {
+    const k = b.kat || 'Sonstiges';
+    if (!katMap[k]) katMap[k] = [];
+    katMap[k].push(b);
+  });
+  // Sortiert: bekannte zuerst, dann alphabetisch benutzerdefiniert
+  const katKeys = [
+    ...KAT_ORDER.filter(k => katMap[k]),
+    ...Object.keys(katMap).filter(k => !KAT_ORDER.includes(k)).sort()
+  ];
+
+  const sumBelege = belJahr.reduce((s, b) => s + Number(b.betrag || 0), 0);
+
+  // ── Fahrtkosten ───────────────────────────────────────────────────────────
+  const fahrtenJahr = fahrten.filter(f =>
+    f.datum && f.datum.startsWith(yStr) && f.zweck === 'dienstlich'
+  );
+  const gesamtKm = fahrtenJahr.reduce((s, f) => s + Number(f.distanz || 0), 0);
+  const sumFahrtkosten = gesamtKm * KM_PAUSCHALE;
+
+  const sumAus = sumBelege + sumFahrtkosten;
+  const gewinn = sumEin - sumAus;
+
+  // ── Firmendaten ───────────────────────────────────────────────────────────
+  const firma = einst.sFirma || einst.sName || 'Unternehmen';
+  const strasse = einst.sStrasse || '';
+  const plzOrt = [einst.sPLZ, einst.sOrt].filter(Boolean).join(' ');
+  const steuerNr = einst.sSteuernummer || einst.sStNr || '';
+  const today = todayStr();
+
+  // ── Kopfzeile ─────────────────────────────────────────────────────────────
+  document.getElementById('docYear').textContent = year;
+  document.getElementById('wjZeitraum').textContent = `01.01.${year} – 31.12.${year}`;
+  document.getElementById('footLeft').textContent = `max4work · EÜR ${year}`;
+  document.getElementById('footDate').textContent = `Erstellt am ${today}`;
+
+  const logo = loadObj('max4work_logo') ? '' : '';
+  document.getElementById('docMeta').innerHTML = `
+    <strong>${firma}</strong><br>
+    ${strasse ? strasse + '<br>' : ''}
+    ${plzOrt}<br>
+    ${steuerNr ? 'Steuer-Nr.: ' + steuerNr + '<br>' : ''}
+    Erstellt am: ${today}
+  `.trim();
+
+  // ── KPIs ──────────────────────────────────────────────────────────────────
+  document.getElementById('kpiRow').innerHTML = `
+    <div class="kpi">
+      <div class="kpi-label">Betriebseinnahmen</div>
+      <div class="kpi-value green">${fmtE(sumEin)}</div>
+      <div class="kpi-sub">${einJahr.length} Zahlungseingänge</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Betriebsausgaben</div>
+      <div class="kpi-value red">${fmtE(sumAus)}</div>
+      <div class="kpi-sub">Belege + Fahrtkosten</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">${gewinn >= 0 ? 'Gewinn' : 'Verlust'}</div>
+      <div class="kpi-value ${gewinn >= 0 ? 'green' : 'red'}">${fmtE(Math.abs(gewinn))}</div>
+      <div class="kpi-sub">Einnahmen − Ausgaben</div>
+    </div>
+  `;
+
+  // ── Einnahmen-Tabelle ─────────────────────────────────────────────────────
+  if (einJahr.length === 0) {
+    document.getElementById('einnahmenBody').innerHTML =
+      '<tr><td colspan="5" class="empty-hint">Keine Zahlungseingänge in diesem Jahr erfasst.</td></tr>';
+  } else {
+    document.getElementById('einnahmenBody').innerHTML = einJahr.map(z => `
+      <tr>
+        <td class="muted">${fmtD(z.datum)}</td>
+        <td class="muted">${z.rechNr || '—'}</td>
+        <td style="font-weight:500">${z.kunde || '—'}</td>
+        <td class="muted">${z.notiz || z.verwendung || ''}</td>
+        <td class="r">${fmtE(z.betrag)}</td>
+      </tr>`).join('');
+  }
+  document.getElementById('einnahmenFoot').innerHTML = `
+    <tr>
+      <td colspan="4"><strong>Summe Betriebseinnahmen (A)</strong></td>
+      <td class="r">${fmtE(sumEin)}</td>
+    </tr>`;
+
+  // ── Ausgaben-Block ────────────────────────────────────────────────────────
+  let ausgabenHTML = '';
+
+  // Belege nach Kategorien
+  if (katKeys.length === 0 && fahrtenJahr.length === 0) {
+    ausgabenHTML = '<div class="empty-hint">Keine Betriebsausgaben in diesem Jahr erfasst.</div>';
+  } else {
+    // Tabelle mit allen Belegen
+    ausgabenHTML += `
+      <table>
+        <thead>
+          <tr>
+            <th>Datum</th>
+            <th>Kategorie</th>
+            <th>Beschreibung / Notiz</th>
+            <th class="r">Betrag</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+    katKeys.forEach(kat => {
+      const items = katMap[kat];
+      items.sort((a, b) => (a.datum || '').localeCompare(b.datum || ''));
+      items.forEach(b => {
+        const notiz = b.notiz || b.beschreibung || '';
+        ausgabenHTML += `
+          <tr>
+            <td class="muted">${fmtD(b.datum)}</td>
+            <td><span class="kat-badge">${kat}</span></td>
+            <td class="muted">${notiz}</td>
+            <td class="r">${fmtE(b.betrag)}</td>
+          </tr>`;
+      });
+    });
+
+    // Fahrtkosten aus Fahrtenbuch
+    if (fahrtenJahr.length > 0) {
+      fahrtenJahr.sort((a, b) => (a.datum || '').localeCompare(b.datum || ''));
+      fahrtenJahr.forEach(f => {
+        const kosten = Number(f.distanz || 0) * KM_PAUSCHALE;
+        const route = [f.startOrt, f.zielOrt].filter(Boolean).join(' → ');
+        const notiz = f.kunde ? (route ? route + ' · ' + f.kunde : f.kunde) : route;
+        ausgabenHTML += `
+          <tr>
+            <td class="muted">${fmtD(f.datum)}</td>
+            <td><span class="kat-badge" style="background:#D1F5FF;color:#0369A1">Fahrtenbuch</span></td>
+            <td class="muted">${notiz || 'Dienstfahrt'} · ${Number(f.distanz || 0).toLocaleString('de-DE')} km × ${KM_PAUSCHALE.toFixed(2).replace('.',',')} €</td>
+            <td class="r">${fmtE(kosten)}</td>
+          </tr>`;
+      });
+    }
+
+    ausgabenHTML += `</tbody>`;
+
+    // Zwischensummen nach Kategorien
+    let sumRows = '';
+    katKeys.forEach(kat => {
+      const s = katMap[kat].reduce((acc, b) => acc + Number(b.betrag || 0), 0);
+      sumRows += `<tr><td>${kat}</td><td class="r">${fmtE(s)}</td></tr>`;
+    });
+    if (fahrtenJahr.length > 0) {
+      sumRows += `<tr><td>Fahrtkosten (${gesamtKm.toLocaleString('de-DE')} km × ${KM_PAUSCHALE.toFixed(2).replace('.',',')} €/km)</td><td class="r">${fmtE(sumFahrtkosten)}</td></tr>`;
+    }
+
+    ausgabenHTML += `
+        <tfoot>
+          <tr>
+            <td colspan="3"><strong>Summe Betriebsausgaben (B)</strong></td>
+            <td class="r">${fmtE(sumAus)}</td>
+          </tr>
+        </tfoot>
+      </table>`;
+  }
+
+  document.getElementById('ausgabenContent').innerHTML = ausgabenHTML;
+
+  // ── Gewinnermittlung ──────────────────────────────────────────────────────
+  document.getElementById('gewinnBox').innerHTML = `
+    <div class="gewinn-row">
+      <div class="gewinn-label">A &nbsp; Betriebseinnahmen</div>
+      <div class="gewinn-amount green">+ ${fmtE(sumEin)}</div>
+    </div>
+    <div class="gewinn-row">
+      <div class="gewinn-label">B &nbsp; Betriebsausgaben</div>
+      <div class="gewinn-amount red">− ${fmtE(sumAus)}</div>
+    </div>
+    <div class="gewinn-row total">
+      <div class="gewinn-label">${gewinn >= 0 ? 'Gewinn (A − B)' : 'Verlust (A − B)'} &nbsp;·&nbsp; §4 Abs. 3 EStG</div>
+      <div class="gewinn-amount ${gewinn >= 0 ? '' : 'red'}">${gewinn >= 0 ? '' : '−'} ${fmtE(Math.abs(gewinn))}</div>
+    </div>
+  `;
+
+  // ── Hinweise ──────────────────────────────────────────────────────────────
+  const kuGrenze = year >= 2025 ? 25000 : 22000;
+  const kuHinweis = sumEin <= kuGrenze
+    ? `<strong>Kleinunternehmer §19 UStG:</strong> Der Umsatz (${fmtE(sumEin)}) liegt unterhalb der Grenze von ${fmtE(kuGrenze)} – keine Umsatzsteuerausweisung erforderlich.`
+    : `<strong>Hinweis §19 UStG:</strong> Der Umsatz (${fmtE(sumEin)}) übersteigt die Kleinunternehmergrenze (${fmtE(kuGrenze)}). Umsatzsteuerpflicht prüfen!`;
+
+  document.getElementById('hinweise').innerHTML = `
+    <strong>Hinweise zur EÜR:</strong><br>
+    Diese Aufstellung wurde nach dem <strong>Zufluss-/Abflussprinzip (§11 EStG)</strong> erstellt.
+    Betriebseinnahmen sind die tatsächlich zugeflossenen Zahlungen; Betriebsausgaben sind
+    die tatsächlich abgeflossenen Beträge des Wirtschaftsjahres ${year}.<br><br>
+    ${kuHinweis}<br><br>
+    Fahrtkosten wurden mit der <strong>amtlichen Kilometerpauschale von ${KM_PAUSCHALE.toFixed(2).replace('.',',')} €/km</strong>
+    für dienstliche Fahrten aus dem Fahrtenbuch berechnet (${gesamtKm.toLocaleString('de-DE')} km).<br><br>
+    <strong>Diese EÜR dient als Grundlage für die Anlage EÜR (Vordruck) beim Finanzamt.
+    Bitte prüfen Sie die Angaben vor der Einreichung.</strong>
+  `;
+}
+
+// ── GoBD-Prüfung ─────────────────────────────────────────────────────────────
+function renderGodb(zahlungen, belege, fahrten, rechnungen, year) {
+  const yStr = String(year);
+  const checks = [];
+
+  // 1. Alle bezahlten Rechnungen haben Zahlungseingang?
+  const bezahlt = rechnungen.filter(r => r.status === 'bezahlt' && r.datum?.startsWith(yStr));
+  const zahlNrs = new Set(zahlungen.filter(z => z.datum?.startsWith(yStr)).map(z => z.rechNr).filter(Boolean));
+  const ohneZahlung = bezahlt.filter(r => r.nr && !zahlNrs.has(r.nr));
+  checks.push({
+    level: ohneZahlung.length === 0 ? 'ok' : 'warn',
+    label: 'Zahlungseingänge vollständig',
+    detail: ohneZahlung.length === 0
+      ? `Alle ${bezahlt.length} bezahlte(n) Rechnung(en) haben einen Zahlungseingang.`
+      : `${ohneZahlung.length} bezahlte Rechnung(en) ohne Zahlungseingang: ${ohneZahlung.map(r => r.nr).join(', ')} → in Zahlungen erfassen.`,
+    link: ohneZahlung.length > 0 ? ['rechnungen.html', 'Zahlungen öffnen'] : null
+  });
+
+  // 2. Belege vollständig (Datum + Betrag + Kategorie)
+  const belJahr = belege.filter(b => b.datum?.startsWith(yStr));
+  const unvollBelege = belJahr.filter(b => !b.datum || !b.betrag || !b.kat);
+  checks.push({
+    level: unvollBelege.length === 0 ? 'ok' : 'warn',
+    label: 'Belege vollständig',
+    detail: unvollBelege.length === 0
+      ? `${belJahr.length} Beleg(e) – alle mit Datum, Betrag und Kategorie.`
+      : `${unvollBelege.length} Beleg(e) mit fehlenden Pflichtangaben (Datum/Betrag/Kategorie).`,
+    link: unvollBelege.length > 0 ? ['belege.html', 'Belege prüfen'] : null
+  });
+
+  // 3. Dienstliche Fahrten vollständig (Start- und Zielort)
+  const dienstFahrten = fahrten.filter(f => f.datum?.startsWith(yStr) && f.zweck === 'dienstlich');
+  const unvollFahrten = dienstFahrten.filter(f => !f.startOrt || !f.zielOrt);
+  checks.push({
+    level: unvollFahrten.length === 0 ? 'ok' : 'warn',
+    label: 'Fahrtenbuch vollständig',
+    detail: unvollFahrten.length === 0
+      ? `${dienstFahrten.length} dienstliche Fahrt(en) vollständig dokumentiert.`
+      : `${unvollFahrten.length} Fahrt(en) ohne Start- oder Zielort – GoBD erfordert lückenlosen Nachweis.`,
+    link: unvollFahrten.length > 0 ? ['fahrtenbuch.html', 'Fahrtenbuch prüfen'] : null
+  });
+
+  // 4. Offene Rechnungen aus dem abzuschließenden Jahr?
+  const offeneAlt = rechnungen.filter(r => r.status === 'offen' && r.datum?.startsWith(yStr));
+  checks.push({
+    level: offeneAlt.length === 0 ? 'ok' : 'warn',
+    label: 'Keine offenen Rechnungen',
+    detail: offeneAlt.length === 0
+      ? `Alle Rechnungen aus ${year} sind abgeschlossen.`
+      : `${offeneAlt.length} Rechnung(en) aus ${year} noch offen. Vor dem Jahresabschluss klären oder als uneinbringlich markieren.`,
+    link: offeneAlt.length > 0 ? ['rechnungen.html', 'Rechnungen öffnen'] : null
+  });
+
+  // 5. Aktuelle Datensicherung?
+  const lastBackup = localStorage.getItem('max4work_last_backup');
+  const backupAge = lastBackup ? Math.round((Date.now() - Number(lastBackup)) / 86400000) : null;
+  const backupOk = backupAge !== null && backupAge <= 14;
+  checks.push({
+    level: backupOk ? 'ok' : (backupAge !== null && backupAge <= 30 ? 'warn' : 'err'),
+    label: 'Datensicherung (GoBD §14)',
+    detail: backupAge === null
+      ? 'Kein Backup gefunden. GoBD verlangt revisionssichere Aufbewahrung – Backup jetzt erstellen!'
+      : backupOk
+        ? `Letztes Backup vor ${backupAge} Tag(en) – aktuell.`
+        : `Letztes Backup vor ${backupAge} Tagen. Vor dem Abschluss neues Backup erstellen.`,
+    link: !backupOk ? ['einstellungen.html', 'Backup erstellen'] : null
+  });
+
+  // 6. Aufbewahrungspflicht-Hinweis (immer)
+  checks.push({
+    level: 'ok',
+    label: 'Aufbewahrungspflicht §147 AO',
+    detail: `Rechnungen, Belege und Fahrtenbuch sind 10 Jahre aufzubewahren (bis ${year + 10}). Backup auf iCloud/USB zusätzlich zur localStorage-Sicherung empfohlen.`,
+    link: null
+  });
+
+  // Status-Badge bestimmen
+  const hasErr  = checks.some(c => c.level === 'err');
+  const hasWarn = checks.some(c => c.level === 'warn');
+  const badge = document.getElementById('godbBadge');
+  if (hasErr) {
+    badge.textContent = 'Handlungsbedarf';
+    badge.className = 'godb-status-badge godb-has-err';
+  } else if (hasWarn) {
+    badge.textContent = 'Hinweise vorhanden';
+    badge.className = 'godb-status-badge godb-has-warn';
+  } else {
+    badge.textContent = 'GoBD-konform';
+    badge.className = 'godb-status-badge godb-all-ok';
+  }
+
+  document.getElementById('godbItems').innerHTML = checks.map(c => `
+    <div class="godb-item">
+      <div class="godb-dot ${c.level}"></div>
+      <div class="godb-item-label">${c.label}</div>
+      <div class="godb-item-detail">${c.detail}</div>
+      ${c.link ? `<a class="godb-link" href="${c.link[0]}">${c.link[1]} →</a>` : ''}
+    </div>`).join('');
+}
+
+function toggleGodb() {
+  document.getElementById('godbPanel').classList.toggle('open');
+}
+
+render();
+</script>
+</body>
+</html>

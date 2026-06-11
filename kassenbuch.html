@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Kassenbuch – max4work</title>
+<script src="shared.js"></script>
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/shared.css">
+<style>
+.content { padding: 28px 32px; max-width: 1100px; }
+
+/* Stats */
+.stats-row { display: flex; gap: 14px; margin-bottom: 24px; }
+.stat-card { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 18px 22px; }
+.stat-label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 6px; }
+.stat-value { font-size: 24px; font-weight: 700; letter-spacing: -.4px; color: var(--text); }
+.stat-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.stat-edit { font-size: 11px; color: var(--accent); cursor: pointer; margin-top: 4px; font-weight: 600; display: inline-block; }
+.stat-edit:hover { text-decoration: underline; }
+
+.clr-green { color: #1A7A3C; }
+.clr-red   { color: #991B1B; }
+
+/* Filter-Tabs */
+.toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
+.filter-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+.ftab {
+  padding: 5px 13px; border-radius: 7px; font-size: 12.5px; font-weight: 500;
+  cursor: pointer; border: 1px solid var(--border); color: var(--muted);
+  background: transparent; transition: all .12s; white-space: nowrap;
+}
+.ftab:hover { border-color: var(--text); color: var(--text); }
+.ftab.on { background: var(--dark); color: #fff; border-color: transparent; }
+
+/* Tabelle */
+.panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th {
+  font-size: 10.5px; font-weight: 700; color: var(--muted); text-transform: uppercase;
+  letter-spacing: .5px; padding: 10px 14px; border-bottom: 1px solid var(--border);
+  text-align: left; background: var(--soft);
+}
+thead th.r { text-align: right; }
+tbody td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: var(--soft); }
+
+.td-muted { color: var(--muted); font-size: 12px; white-space: nowrap; }
+.td-notiz { color: var(--text); max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.td-num   { text-align: right; font-weight: 600; white-space: nowrap; font-feature-settings: "tnum"; }
+.td-act   { text-align: right; white-space: nowrap; }
+.td-empty { text-align: center; padding: 40px !important; color: var(--muted); font-style: italic; }
+
+.art-badge {
+  display: inline-block; padding: 2px 9px; border-radius: 10px;
+  font-size: 11px; font-weight: 700;
+}
+.art-ein { background: #D1FAE5; color: #065F46; }
+.art-aus { background: #FEE2E2; color: #991B1B; }
+
+.btn-icon {
+  background: none; border: none; cursor: pointer; padding: 4px 6px;
+  color: var(--muted); border-radius: 6px; font-size: 14px; transition: all .12s;
+}
+.btn-icon:hover { background: var(--soft); color: var(--text); }
+.btn-icon-del:hover { background: #FEE2E2; color: #991B1B; }
+
+/* Modals */
+.overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.38);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 300; opacity: 0; pointer-events: none; transition: opacity .18s;
+}
+.overlay.open { opacity: 1; pointer-events: auto; }
+.modal {
+  background: var(--surface); border-radius: 16px; width: 100%; max-width: 440px;
+  box-shadow: 0 8px 40px rgba(0,0,0,.18); transform: translateY(16px);
+  transition: transform .18s; overflow: hidden;
+}
+.overlay.open .modal { transform: translateY(0); }
+.modal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 22px 14px; border-bottom: 1px solid var(--border);
+}
+.modal-head h3 { font-size: 15px; font-weight: 700; }
+.modal-close { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 20px; padding: 0 4px; line-height: 1; }
+.modal-close:hover { color: var(--text); }
+.modal-body { padding: 20px 22px; display: flex; flex-direction: column; gap: 14px; }
+.modal-footer { display: flex; gap: 8px; justify-content: flex-end; padding: 14px 22px; border-top: 1px solid var(--border); }
+
+.field-label { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .4px; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+input[type="text"], input[type="date"], input[type="number"], select, textarea {
+  width: 100%; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 9px;
+  font-family: inherit; font-size: 14px; background: var(--bg); color: var(--text);
+  transition: border-color .12s; outline: none;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+
+.btn { padding: 9px 18px; border-radius: 9px; font-family: inherit; font-size: 13.5px; font-weight: 600; border: none; cursor: pointer; transition: all .12s; }
+.btn-blue { background: var(--accent); }
+[data-design="standard"] .btn-blue { color: var(--dark); }
+[data-design="ios"] .btn-blue, [data-design="android"] .btn-blue { color: #fff; }
+.btn-ghost { background: transparent; border: 1.5px solid var(--border); color: var(--text); }
+.btn-ghost:hover { border-color: var(--text); }
+
+/* Abschluss-Modal */
+.abs-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 11px 0; border-bottom: 1px solid var(--border); font-size: 13.5px;
+}
+.abs-row:last-of-type { border-bottom: none; }
+.abs-total { background: var(--soft); padding: 13px 14px; border-radius: 9px; margin: 8px 0; border: none; font-weight: 700; font-size: 15px; }
+.abs-buchungen-titel { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin: 16px 0 8px; }
+.abs-buchung { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.abs-buchung:last-child { border-bottom: none; }
+.abs-bkat { font-size: 11px; background: var(--soft); color: var(--muted); padding: 2px 7px; border-radius: 8px; flex-shrink: 0; }
+.abs-bnotiz { flex: 1; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.abs-leer { color: var(--muted); font-style: italic; font-size: 13px; padding: 8px 0; }
+.abs-modal { max-width: 520px; }
+.abs-scroll { max-height: 60vh; overflow-y: auto; padding: 0 22px 20px; }
+
+@media (max-width: 768px) {
+  .content { padding: 16px !important; }
+  .stat-value { font-size: 19px; }
+  /* Tabelle: Kategorie + Saldo ausblenden */
+  table { min-width: 0 !important; width: 100% !important; }
+  table th:nth-child(3), table td:nth-child(3),
+  table th:nth-child(6), table td:nth-child(6) { display: none !important; }
+  /* Topbar: nur + Buchung */
+  .topbar-right .btn-ghost { display: none !important; }
+}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-dot"></div>
+    <span class="brand-name">max4work</span>
+  </div>
+  <nav>
+    <div class="nav-group">
+      <div class="nav-group-label">Übersicht</div>
+      <a class="nav-link" href="index.html"><span class="nav-icon">◻</span> Dashboard</a>
+      <a class="nav-link" href="auswertung.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span> Auswertung</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Buchhaltung</div>
+      <a class="nav-link" href="rechnungen.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span> Rechnungen <span class="pill" id="navPill">0</span></a>
+      <a class="nav-link" href="belege.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg></span> Belege</a>
+      <a class="nav-link on" href="kassenbuch.html" aria-current="page"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg></span> Kassenbuch</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Stammdaten</div>
+      <a class="nav-link" href="termine.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span> Termine</a>
+      <a class="nav-link" href="kunden.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Kunden</a>
+      <a class="nav-link" href="produkte.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span> Produkte</a>
+      <a class="nav-link" href="einstellungen.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span> Einstellungen</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Werkzeuge</div>
+      <a class="nav-link" href="werkzeuge.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span> Werkzeuge</a>
+      <a class="nav-link" href="fahrtenbuch.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M5 17H3a2 2 0 0 1-2-2V9l3-5h10l3 5h2a2 2 0 0 1 2 2v1"/><path d="M17 17H9"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg></span> Fahrtenbuch</a>
+    </div>
+  </nav>
+  <div class="sidebar-user">
+    <div class="av"></div>
+    <div><div class="av-name"></div><div class="av-sub"></div></div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <span class="page-name">Kassenbuch</span>
+    <div class="topbar-right">
+      <button class="btn btn-ghost" onclick="openAbschluss()">Tagesabschluss</button>
+      <button class="btn btn-blue" onclick="openModal()">+ Buchung</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- KPI-Leiste -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Kassenstand</div>
+        <div class="stat-value clr-green" id="kpiStand">0,00 €</div>
+        <span class="stat-edit" onclick="editAnfangsbestand()">Anfangsbestand ändern</span>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Einnahmen heute</div>
+        <div class="stat-value clr-green" id="kpiEin">0,00 €</div>
+        <div class="stat-sub">Heutige Bareinnahmen</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Ausgaben heute</div>
+        <div class="stat-value clr-red" id="kpiAus">0,00 €</div>
+        <div class="stat-sub">Heutige Barausgaben</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Buchungen gesamt</div>
+        <div class="stat-value" id="kpiCount">0</div>
+        <div class="stat-sub">Alle Einträge</div>
+      </div>
+    </div>
+
+    <!-- Filter + Tabelle -->
+    <div class="toolbar">
+      <div class="filter-tabs">
+        <button class="ftab on" data-f="alle" onclick="setFilter('alle')">Alle</button>
+        <button class="ftab" data-f="heute" onclick="setFilter('heute')">Heute</button>
+        <button class="ftab" data-f="woche" onclick="setFilter('woche')">Diese Woche</button>
+        <button class="ftab" data-f="monat" onclick="setFilter('monat')">Dieser Monat</button>
+        <button class="ftab" data-f="einnahmen" onclick="setFilter('einnahmen')">Einnahmen</button>
+        <button class="ftab" data-f="ausgaben" onclick="setFilter('ausgaben')">Ausgaben</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <table>
+        <thead>
+          <tr>
+            <th>Datum</th>
+            <th>Art</th>
+            <th>Kategorie</th>
+            <th>Notiz</th>
+            <th class="r">Betrag</th>
+            <th class="r">Saldo</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="kbBody">
+          <tr><td colspan="7" class="td-empty">Keine Buchungen vorhanden.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</main>
+
+<!-- ── Modal: Neue / Buchung bearbeiten ── -->
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="mTitle">Neue Buchung</h3>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-row">
+        <div>
+          <div class="field-label">Datum</div>
+          <input type="date" id="mDatum">
+        </div>
+        <div>
+          <div class="field-label">Art</div>
+          <select id="mArt" onchange="_updateKatOptions('')">
+            <option value="einnahme">Einnahme</option>
+            <option value="ausgabe">Ausgabe</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div>
+          <div class="field-label">Betrag (€)</div>
+          <input type="text" id="mBetrag" placeholder="0,00" inputmode="decimal">
+        </div>
+        <div>
+          <div class="field-label">Kategorie</div>
+          <select id="mKat"></select>
+        </div>
+      </div>
+      <div>
+        <div class="field-label">Notiz</div>
+        <input type="text" id="mNotiz" placeholder="Beschreibung (optional)">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Abbrechen</button>
+      <button class="btn btn-blue" onclick="save()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal: Tagesabschluss ── -->
+<div class="overlay" id="abschlussOverlay" onclick="if(event.target===this)closeAbschluss()">
+  <div class="modal abs-modal">
+    <div class="modal-head">
+      <h3>Tagesabschluss</h3>
+      <button class="modal-close" onclick="closeAbschluss()">&times;</button>
+    </div>
+    <div class="abs-scroll" id="abschlussContent"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeAbschluss()">Schließen</button>
+      <button class="btn btn-blue" onclick="window.print()">Drucken</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/kassenbuch.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  initSidebarSubNav();
+  initMobileNav();
+  updatePill();
+  _checkBackup();
+  load();
+});
+</script>
+</body>
+</html>

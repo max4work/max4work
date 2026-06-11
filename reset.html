@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>max4work – Zurücksetzen</title>
+<style>
+  body { font-family: system-ui, sans-serif; background: #f5f5f5; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+  .box { background: #fff; border-radius: 12px; padding: 40px; max-width: 420px; width: 100%; box-shadow: 0 4px 20px rgba(0,0,0,0.12); text-align: center; }
+  h2 { margin: 0 0 8px; color: #c00; }
+  p { color: #555; margin: 0 0 24px; font-size: 15px; line-height: 1.5; }
+  button { background: #c00; color: #fff; border: none; border-radius: 8px; padding: 14px 32px; font-size: 16px; cursor: pointer; font-weight: 600; }
+  button:hover { background: #a00; }
+  #done { display: none; color: #2a7a2a; font-weight: 600; margin-top: 16px; }
+  a { color: #555; font-size: 14px; display: block; margin-top: 20px; }
+</style>
+</head>
+<body>
+<div class="box">
+  <h2>Alle Daten löschen</h2>
+  <p>Alle Kunden, Rechnungen, Termine, Belege, Fahrtenbuch-Einträge und Einstellungen werden unwiderruflich gelöscht.<br><br>Die App-Dateien bleiben unverändert.</p>
+  <button onclick="doReset()">Jetzt zurücksetzen</button>
+  <div id="done">✓ Erledigt – alle Daten gelöscht.</div>
+  <a href="index.html">→ Zur App</a>
+</div>
+<script>
+function doReset() {
+  Object.keys(localStorage)
+    .filter(k => k.startsWith('max4work_'))
+    .forEach(k => localStorage.removeItem(k));
+  document.querySelector('button').style.display = 'none';
+  document.getElementById('done').style.display = 'block';
+}
+</script>
+</body>
+</html>

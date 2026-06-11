@@ -1,0 +1,1658 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<link rel="icon" href="logo.png" type="image/png">
+<link rel="manifest" href="manifest.json">
+<link rel="canonical" href="https://max4work.com/einstellungen.html">
+<meta name="description" content="max4work – Ihre digitale Bürolösung für Rechnungen, Kunden und mehr.">
+<meta property="og:site_name" content="max4work">
+<meta property="og:url" content="https://max4work.com/einstellungen.html">
+<title>max4work – Einstellungen</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/shared.css">
+<script src="shared.js"></script>
+<style>
+    .content { padding: 28px 32px; max-width: 1221px; display: flex; flex-direction: column; gap: 20px; }
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+  .panel-head { padding: 16px 20px; border-bottom: 1px solid var(--border); font-size: 13.5px; font-weight: 600; }
+  .panel-body { padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 11px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
+  .field input, .field textarea { width: 100%; padding: 8px 11px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 13px; color: var(--text); background: var(--surface); outline: none; transition: border-color 0.12s; }
+  .field input:focus, .field textarea:focus { border-color: var(--accent); }
+  .field textarea { resize: vertical; min-height: 80px; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .btn { padding: 9px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; border: none; transition: all 0.12s; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-blue { background: var(--accent); color: var(--text); font-weight: 600; }
+  .btn-blue:hover { background: #b8c930; }
+  .btn-ghost { background: var(--soft); color: var(--text); }
+  .btn-ghost:hover { background: var(--soft); }
+  .save-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .save-hint { font-size: 12px; color: var(--muted); }
+  .save-hint.ok { color: var(--green); font-weight: 500; }
+
+  /* FIX: Logo-Sektion in Einstellungen */
+  .logo-section { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .logo-preview-small { max-height: 48px; max-width: 120px; object-fit: contain; border-radius: 4px; border: 1px solid var(--border); }
+  .logo-no-preview { font-size: 12px; color: var(--muted); font-style: italic; }
+  .logo-upload-area { border: 1.5px dashed var(--border); border-radius: 8px; padding: 10px 14px; cursor: pointer; position: relative; display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--accent); font-weight: 500; }
+  .logo-upload-area:hover { border-color: var(--accent); background: var(--accent-pale); }
+  .logo-upload-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .logo-remove-btn { font-size: 12px; color: var(--red); background: none; border: none; cursor: pointer; font-family: inherit; font-weight: 500; }
+  .logo-remove-btn:hover { text-decoration: underline; }
+  .logo-upload { border: 1.5px dashed var(--border); border-radius: 8px; padding: 14px; text-align: center; cursor: pointer; transition: all 0.12s; position: relative; }
+  .logo-upload:hover { border-color: var(--accent); background: var(--accent-pale); }
+  .logo-upload input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; z-index: 1; }
+  .logo-upload-text { font-size: 12px; color: var(--muted); position: relative; z-index: 2; pointer-events: none; }
+  .logo-upload-text span { color: var(--accent); font-weight: 500; }
+
+  /* Toggle-Schalter */
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .toggle-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .toggle-label { font-size: 13.5px; font-weight: 500; }
+  .toggle-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .toggle { position: relative; width: 42px; height: 24px; flex-shrink: 0; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-track { position: absolute; inset: 0; background: var(--border); border-radius: 24px; cursor: pointer; transition: background .2s; }
+  .toggle input:checked + .toggle-track { background: var(--accent); }
+  .toggle-track::after { content: ''; position: absolute; left: 3px; top: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+  .toggle input:checked + .toggle-track::after { transform: translateX(18px); }
+
+  /* App-Design-Auswahl */
+  .app-design-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .app-design-card { border: 2px solid var(--border); border-radius: 12px; padding: 14px 12px 12px; cursor: pointer; transition: all .15s; text-align: center; user-select: none; background: var(--surface); }
+  .app-design-card:hover { border-color: var(--accent); }
+  .app-design-card.on { border-color: var(--accent); background: var(--accent-pale); box-shadow: 0 0 0 1px var(--accent); }
+  .app-design-preview { width: 100%; height: 58px; border-radius: 8px; margin-bottom: 8px; overflow: hidden; position: relative; display: flex; gap: 4px; padding: 5px; box-sizing: border-box; }
+  .adp-sidebar { width: 28px; height: 100%; border-radius: 5px; flex-shrink: 0; }
+  .adp-content { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+  .adp-bar { height: 8px; border-radius: 3px; }
+  .adp-card { height: 14px; border-radius: 4px; }
+  .app-design-name { font-size: 12.5px; font-weight: 600; color: var(--text); }
+  .app-design-desc { font-size: 10.5px; color: var(--muted); margin-top: 2px; }
+
+  /* Erscheinungsbild */
+  .scheme-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+  .scheme-card { border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 8px; cursor: pointer; text-align: center; transition: all .13s; user-select: none; background: var(--surface); }
+  .scheme-card:hover { border-color: var(--accent); }
+  .scheme-card.on { border-color: var(--accent); background: var(--accent-pale); box-shadow: 0 0 0 1px var(--accent); }
+  .scheme-preview { width: 100%; height: 44px; border-radius: 7px; margin-bottom: 7px; overflow: hidden; display: flex; border: 1px solid rgba(0,0,0,.07); }
+  .scheme-name { font-size: 12px; font-weight: 600; color: var(--text); }
+
+  /* Theme-Design */
+  .theme-grid { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+  .theme-swatch { width: 34px; height: 34px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: transform .12s, box-shadow .12s; position: relative; }
+  .theme-swatch:hover { transform: scale(1.12); }
+  .theme-swatch.on { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px #1A1C18; transform: scale(1.08); }
+  .theme-swatch span { position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--muted); white-space: nowrap; }
+  .theme-custom-row { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
+  .custom-color-preview { width: 34px; height: 34px; border-radius: 50%; border: 2px dashed var(--border); overflow: hidden; position: relative; cursor: pointer; flex-shrink: 0; }
+  .custom-color-preview input[type="color"] { position: absolute; inset: -6px; opacity: 0; cursor: pointer; width: 200%; height: 200%; }
+
+  /* Layout-Editor */
+  .layout-list { display: flex; flex-direction: column; }
+  .layout-item { display: flex; align-items: center; gap: 10px; padding: 10px 4px; border-bottom: 1px solid var(--border); border-radius: 6px; transition: background .1s; }
+  .layout-item:last-child { border-bottom: none; }
+  .layout-item.drag-over { box-shadow: 0 -2px 0 var(--accent); }
+  .layout-item.dragging { opacity: .35; }
+  .drag-handle { color: var(--muted); cursor: grab; padding: 4px 6px; font-size: 18px; flex-shrink: 0; line-height: 1; letter-spacing: -1px; user-select: none; }
+  .drag-handle:active { cursor: grabbing; }
+  .layout-item-name { flex: 1; font-size: 13.5px; font-weight: 500; min-width: 0; }
+  .layout-vis-badge { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }
+  .layout-vis-on  { background: #D1F2E0; color: #1A7A3C; }
+  .layout-vis-off { background: var(--soft); color: var(--muted); text-decoration: line-through; }
+  .size-toggle { display: flex; background: var(--soft); border-radius: 7px; padding: 2px; gap: 2px; flex-shrink: 0; }
+  .size-btn { padding: 4px 10px; border-radius: 5px; font-size: 11.5px; font-weight: 500; cursor: pointer; border: none; background: transparent; color: var(--muted); font-family: inherit; transition: all .12s; }
+  .size-btn.on { background: var(--surface); color: var(--text); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+  .size-btn:disabled { opacity: .35; cursor: not-allowed; }
+  .layout-hint { font-size: 11.5px; color: var(--muted); margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); line-height: 1.6; }
+
+  /* Kompakte Typografie-/Farb-Controls im Blatt-Design */
+  .inv-chip { padding: 5px 11px; border: 1.5px solid var(--border); border-radius: 20px; font-size: 12px; font-weight: 500; cursor: pointer; color: var(--muted); transition: all .12s; white-space: nowrap; background: var(--surface); }
+  .inv-chip:hover { border-color: var(--accent); color: var(--text); }
+  .inv-chip.on { border-color: var(--accent); background: var(--accent-pale); color: var(--text); font-weight: 600; }
+  .inv-chip-row { display: flex; gap: 5px; flex-wrap: wrap; }
+  .inv-color-swatch { width: 26px; height: 26px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: transform .1s; box-shadow: 0 1px 4px rgba(0,0,0,.18); flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .inv-color-swatch:hover { transform: scale(1.15); }
+  .inv-color-swatch.on { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--text); transform: scale(1.05); }
+  .inv-color-auto { border: 1.5px dashed var(--border) !important; background: var(--soft) !important; box-shadow: none !important; font-size: 9px; font-weight: 700; color: var(--muted); }
+  .inv-color-auto.on { border-color: var(--accent) !important; color: var(--accent); box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent) !important; }
+
+  /* Tab-Navigation */
+  .stab-nav { display: flex; gap: 3px; background: var(--soft); border-radius: 11px; padding: 4px; }
+  .stab { flex: 1; padding: 8px 8px; border-radius: 8px; font-size: 12.5px; font-weight: 500; cursor: pointer; color: var(--muted); transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 5px; border: none; background: transparent; font-family: inherit; white-space: nowrap; }
+  .stab.on { background: var(--surface); color: var(--text); font-weight: 600; box-shadow: 0 1px 5px rgba(0,0,0,.1); }
+  .stab:hover:not(.on) { color: var(--text); background: rgba(255,255,255,.5); }
+  .settings-section { display: flex; flex-direction: column; gap: 20px; }
+
+  /* Handbuch */
+  .hb-list { display: flex; flex-direction: column; gap: 6px; }
+  .hb-sec { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--surface); }
+  .hb-head { display: flex; align-items: center; gap: 10px; padding: 14px 18px; cursor: pointer; transition: background .12s; user-select: none; }
+  .hb-head:hover { background: var(--soft); }
+  .hb-icon { font-size: 18px; flex-shrink: 0; line-height: 1; }
+  .hb-title { flex: 1; font-size: 13.5px; font-weight: 600; }
+  .hb-badge { font-size: 9.5px; font-weight: 700; padding: 2px 7px; border-radius: 20px; background: var(--accent); color: var(--dark); flex-shrink: 0; }
+  .hb-badge.upd { background: #D1FAE5; color: #065F46; }
+  .hb-chev { font-size: 10px; color: var(--muted); transition: transform .18s; flex-shrink: 0; }
+  .hb-sec.open .hb-chev { transform: rotate(90deg); }
+  .hb-  .hb-sec.open .hb-  .hb-intro { font-size: 13px; color: var(--muted); margin-bottom: 12px; line-height: 1.6; }
+  .hb-steps { counter-reset: hbstep; display: flex; flex-direction: column; gap: 0; }
+  .hb-step { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
+  .hb-step:last-child { border-bottom: none; padding-bottom: 0; }
+  .hb-step::before { counter-increment: hbstep; content: counter(hbstep); min-width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: var(--dark); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .hb-step p { font-size: 13.5px; line-height: 1.65; color: var(--text); }
+  .hb-step p em { font-style: normal; background: var(--soft); border-radius: 4px; padding: 1px 6px; font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .hb-step p strong { color: var(--text); }
+  .hb-tip { margin-top: 12px; background: var(--accent-pale); border-radius: 8px; padding: 10px 14px; font-size: 12.5px; line-height: 1.65; color: var(--dark); }
+  .hb-tip b { font-weight: 600; }
+  .hb-neu { display: inline-flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 700; background: var(--accent); color: var(--dark); padding: 1px 6px; border-radius: 20px; vertical-align: middle; margin-left: 3px; }
+
+  /* Rechnungs-Vorlagen */
+  .inv-tpl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .inv-tpl-card { border: 2px solid var(--border); border-radius: 12px; padding: 14px; cursor: pointer; transition: all .15s; background: var(--surface); display: flex; gap: 10px; align-items: flex-start; }
+  .inv-tpl-card:hover { border-color: var(--accent); }
+  .inv-tpl-card.on { border-color: var(--accent); background: var(--accent-pale); box-shadow: 0 0 0 1px var(--accent); }
+  .inv-tpl-icon { font-size: 22px; line-height: 1; flex-shrink: 0; margin-top: 1px; }
+  .inv-tpl-title { font-size: 13.5px; font-weight: 600; margin-bottom: 3px; }
+  .inv-tpl-desc { font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+  .inv-tpl-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .inv-tpl-tag { font-size: 10px; padding: 2px 6px; background: var(--soft); border-radius: 20px; color: var(--muted); }
+  .inv-tpl-card.on .inv-tpl-tag { background: rgba(200,217,58,.2); }
+
+  /* Schriftart Custom-Dropdown */
+  .fdd-wrap { position: relative; }
+  .fdd-trigger { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 8px 11px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 15px; color: var(--text); background: var(--surface); cursor: pointer; transition: border-color .12s; user-select: none; gap: 8px; }
+  .fdd-trigger:hover, .fdd-wrap.open .fdd-trigger { border-color: var(--accent); }
+  .fdd-arrow { flex-shrink: 0; color: var(--muted); transition: transform .15s; }
+  .fdd-wrap.open .fdd-arrow { transform: rotate(180deg); }
+  .fdd-list { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--surface); border: 1.5px solid var(--accent); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.12); z-index: 200; max-height: 240px; overflow-y: auto; display: none; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+  .fdd-wrap.open .fdd-list { display: block; }
+  .fdd-list::-webkit-scrollbar { width: 5px; }
+  .fdd-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  .fdd-option { padding: 7px 12px; cursor: pointer; font-size: 15px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: background .1s; line-height: 1.35; }
+  .fdd-option:hover { background: var(--soft); }
+  .fdd-option.on { background: var(--accent-pale); font-weight: 600; }
+  .fdd-sep { height: 1px; background: var(--border); margin: 4px 0; }
+
+  /* Sichtbare Felder – Chips */
+  .inv-fields-grid { display: flex; flex-wrap: wrap; gap: 7px; }
+  .inv-field-chip { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border: 1.5px solid var(--border); border-radius: 20px; cursor: pointer; font-size: 12.5px; font-weight: 500; color: var(--muted); transition: all .13s; user-select: none; background: var(--surface); }
+  .inv-field-chip:hover { border-color: var(--accent); color: var(--text); }
+  .inv-field-chip.on { border-color: var(--accent); background: var(--accent-pale); color: var(--text); }
+  .inv-field-check { font-size: 11px; font-weight: 700; width: 14px; text-align: center; flex-shrink: 0; }
+  .inv-field-chip.on .inv-field-check { color: var(--accent); }
+  .inv-field-chip:not(.on) .inv-field-check { color: var(--border); }
+
+  /* Rechnungsblatt-Design: Zwei-Spalten-Layout */
+  #section-rechnung { grid-template-columns: 1fr 595px; gap: 22px; align-items: start; }
+  .inv-controls-col { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+
+  .inv-preview-sticky { position: sticky; top: 20px; display: flex; flex-direction: column; gap: 10px; }
+  .inv-preview-label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; text-align: center; }
+  .inv-a4-outer { background: #d8d8d8; border-radius: 8px; padding: 14px 10px 10px; box-shadow: inset 0 1px 3px rgba(0,0,0,.12); }
+  .inv-a4-scroll { max-height: calc(100vh - 90px); overflow-x: hidden; overflow-y: auto; border-radius: 2px; }
+  .inv-a4-scroll::-webkit-scrollbar { width: 4px; }
+  .inv-a4-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,.2); border-radius: 2px; }
+  .inv-a4-paper { background: #fff; width: 100%; min-height: 841px; position: relative; box-shadow: 0 2px 12px rgba(0,0,0,.18), 0 1px 3px rgba(0,0,0,.1); font-family: 'Outfit', sans-serif; font-size: 8px; color: #222; line-height: 1.5; }
+  .inv-falz { position: absolute; left: 0; right: 0; display: flex; align-items: center; pointer-events: none; z-index: 2; }
+  .inv-falz-tick { width: 14px; height: 1px; background: #bbb; flex-shrink: 0; }
+  .inv-falz-tick-r { width: 14px; height: 1px; background: #bbb; flex-shrink: 0; }
+  .inv-falz-line { flex: 1; border-top: 1px dashed rgba(0,0,0,.1); }
+  .inv-falz-label { position: absolute; left: 16px; font-size: 5.5px; color: #bbb; font-family: sans-serif; font-weight: 600; letter-spacing: .3px; white-space: nowrap; transform: translateY(-8px); }
+
+  /* Logo-Position Steuerung */
+  .logo-pos-group { display: flex; flex-direction: column; gap: 8px; }
+  .logo-pos-group-label { font-size: 11px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
+  .logo-pos-btns { display: flex; gap: 8px; }
+  .logo-pos-btn { flex: 1; padding: 10px 4px 8px; border: 1.5px solid var(--border); border-radius: 10px; cursor: pointer; transition: all .13s; background: var(--surface); display: flex; flex-direction: column; align-items: center; gap: 5px; user-select: none; }
+  .logo-pos-btn:hover { border-color: var(--accent); background: var(--accent-pale); }
+  .logo-pos-btn.on { border-color: var(--accent); background: var(--accent-pale); box-shadow: 0 0 0 1px var(--accent); }
+  .logo-pos-btn-label { font-size: 11px; font-weight: 500; color: var(--muted); }
+  .logo-pos-btn.on .logo-pos-btn-label { color: var(--text); font-weight: 600; }
+
+  /* Beispiel-Text Chips */
+  .inv-example-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .inv-example-chip { font-size: 11.5px; padding: 5px 10px; background: var(--soft); border: 1px solid var(--border); border-radius: 7px; cursor: pointer; color: var(--muted); transition: all .12s; max-width: 100%; line-height: 1.4; }
+  .inv-example-chip:hover { background: var(--accent-pale); border-color: var(--accent); color: var(--text); }
+
+  /* Kartenanbieter-Auswahl */
+  .map-provider-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+  .map-provider-card { display:flex; flex-direction:column; align-items:center; gap:4px; padding:12px 8px 10px; border:1.5px solid var(--border); border-radius:10px; cursor:pointer; transition:all .13s; text-align:center; user-select:none; }
+  .map-provider-card:hover { border-color:var(--accent); background:var(--accent-pale); }
+  .map-provider-card.on { border-color:var(--accent); background:var(--accent-pale); box-shadow:0 0 0 1px var(--accent); }
+  .map-provider-icon { font-size:20px; line-height:1; margin-bottom:2px; }
+  .map-provider-name { font-size:12px; font-weight:600; color:var(--text); }
+  .map-provider-desc { font-size:10.5px; color:var(--muted); line-height:1.35; margin-top:1px; }
+
+  /* Dokument-Typ & Layout-Design */
+  .doctype-sel { width:100%; padding:9px 12px; border:1px solid var(--border); border-radius:8px; font-family:inherit; font-size:13px; color:var(--text); background:var(--surface); outline:none; cursor:pointer; }
+  .doctype-sel:focus { border-color:var(--accent); }
+  .inv-layout-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; }
+  .inv-layout-card { border:2px solid var(--border); border-radius:10px; padding:7px 5px 6px; cursor:pointer; transition:all .15s; background:var(--surface); text-align:center; user-select:none; }
+  .inv-layout-card:hover { border-color:var(--accent); }
+  .inv-layout-card.on { border-color:var(--accent); background:var(--accent-pale); box-shadow:0 0 0 1px var(--accent); }
+  .inv-layout-thumb { width:100%; height:50px; border-radius:4px; margin-bottom:5px; overflow:hidden; border:1px solid rgba(0,0,0,.09); position:relative; background:#fff; }
+  .inv-layout-name { font-size:10.5px; font-weight:600; color:var(--text); }
+
+  /* Portal-Karten */
+  .portal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .portal-info { display: flex; align-items: flex-start; gap: 10px; flex: 1; min-width: 0; }
+  .portal-icon { font-size: 22px; line-height: 1; flex-shrink: 0; margin-top: 1px; }
+  .portal-title { font-size: 14px; font-weight: 600; }
+  .portal-desc { font-size: 12px; color: var(--muted); margin-top: 2px; line-height: 1.5; }
+  .portal-notice { background: var(--soft); border-radius: 8px; padding: 10px 14px; font-size: 12px; color: var(--muted); line-height: 1.7; }
+  .portal-link { flex-shrink: 0; }
+
+  /* ── E-Mail-Editor ── */
+  .email-toolbar { display:flex; flex-wrap:wrap; gap:2px; padding:6px 10px; background:var(--soft); border-bottom:1px solid var(--border); align-items:center; min-height:40px; }
+  .etb-sep { width:1px; height:20px; background:var(--border); margin:0 5px; flex-shrink:0; }
+  .etb-btn { padding:0 6px; border-radius:4px; border:1px solid transparent; background:transparent; cursor:pointer; font-family:inherit; font-size:13px; color:var(--text); transition:all .1s; display:inline-flex; align-items:center; justify-content:center; height:26px; min-width:26px; }
+  .etb-btn:hover { background:var(--surface); border-color:var(--border); }
+  .etb-btn.etb-active { background:var(--accent-pale); border-color:var(--accent); }
+  .etb-select { height:26px; padding:0 6px; border:1px solid var(--border); border-radius:4px; font-family:inherit; font-size:12px; background:var(--surface); color:var(--text); cursor:pointer; outline:none; }
+  .etb-select:focus { border-color:var(--accent); }
+  .etb-color-wrap { position:relative; display:inline-flex; align-items:center; }
+  .etb-color-btn { width:26px; height:26px; border-radius:4px; border:1px solid var(--border); cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; background:var(--surface); padding:3px 4px; }
+  .etb-color-lbl { font-size:12px; font-weight:700; line-height:1; }
+  .etb-color-bar { width:14px; height:3px; border-radius:2px; background:#000; flex-shrink:0; }
+  .etb-color-input { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+  .email-editor { min-height:150px; padding:12px 14px; outline:none; font-family:Arial,sans-serif; font-size:13px; line-height:1.7; color:var(--text); background:var(--surface); }
+  .email-editor:empty::before { content:attr(data-placeholder); color:var(--muted); pointer-events:none; display:block; }
+  .vtab-row { display:flex; gap:6px; flex-wrap:wrap; }
+  .vtab { padding:6px 14px; border-radius:7px; font-size:12.5px; font-weight:500; cursor:pointer; border:1.5px solid var(--border); background:var(--surface); color:var(--muted); transition:all .12s; font-family:inherit; }
+  .vtab.on { background:var(--accent-pale); border-color:var(--accent); color:var(--text); font-weight:600; }
+  .email-chip-row { display:flex; flex-wrap:wrap; gap:5px; }
+  .email-chip { font-size:11px; padding:4px 9px; background:var(--soft); border:1px solid var(--border); border-radius:6px; cursor:pointer; color:var(--muted); transition:all .12s; line-height:1.4; }
+  .email-chip:hover { background:var(--accent-pale); border-color:var(--accent); color:var(--text); }
+  /* Datentransfer-Tab */
+  .panel-head-title { font-size: 13.5px; font-weight: 600; }
+  .panel-head-sub { font-size: 12px; color: var(--muted); }
+  .btn-dark { background: var(--dark); color: #fff; }
+  .btn-dark:hover { background: #1a2418; }
+  .btn-sm { padding: 5px 12px; font-size: 12px; }
+  .app-grid { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .app-chip { border: 1.5px solid var(--border); border-radius: 8px; padding: 7px 14px; font-size: 12.5px; font-weight: 500; cursor: pointer; transition: all .12s; background: var(--surface); }
+  .app-chip:hover { border-color: var(--accent); background: var(--accent-pale); }
+  .app-chip.on { border-color: var(--accent); background: var(--accent-pale); font-weight: 600; }
+  .upload-zone { border: 2px dashed var(--border); border-radius: 10px; padding: 28px 20px; text-align: center; cursor: pointer; position: relative; transition: all .12s; }
+  .upload-zone:hover, .upload-zone.drag { border-color: var(--accent); background: var(--accent-pale); }
+  .upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .upload-icon { font-size: 28px; margin-bottom: 8px; }
+  .upload-label { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+  .upload-sub { font-size: 12px; color: var(--muted); }
+  .mapping-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px 0; }
+  .mapping-row { display: flex; align-items: center; gap: 8px; }
+  .mapping-target { font-size: 12px; font-weight: 500; min-width: 130px; }
+  .mapping-select { flex: 1; padding: 6px 10px; border: 1px solid var(--border); border-radius: 7px; font-family: inherit; font-size: 12px; outline: none; }
+  .mapping-select:focus { border-color: var(--accent); }
+  .mapping-match { color: var(--green); font-size: 12px; }
+  .mapping-miss { color: var(--muted); font-size: 12px; }
+  .preview-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; margin: 14px 0; max-height: 220px; overflow-y: auto; }
+  .preview-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .preview-table th { background: #fafaf8; padding: 8px 12px; text-align: left; font-weight: 600; color: var(--muted); border-bottom: 1px solid var(--border); white-space: nowrap; position: sticky; top: 0; }
+  .preview-table td { padding: 7px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  .preview-table tr:last-child td { border-bottom: none; }
+  .import-result { padding: 12px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; display: none; }
+  .import-result.ok { background: #D1FAE5; color: #065F46; }
+  .import-result.err { background: #FEE2E2; color: #991B1B; }
+  .export-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+  .export-card { border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
+  .export-card-icon { font-size: 24px; margin-bottom: 8px; }
+  .export-card-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .export-card-count { font-size: 11.5px; color: var(--muted); margin-bottom: 12px; }
+  .format-hint { background: var(--soft); border-radius: 8px; padding: 12px 16px; font-size: 12px; color: var(--muted); margin-bottom: 16px; line-height: 1.6; }
+  .format-hint strong { color: var(--text); }
+  .section-label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
+</style>
+
+<!-- mob-only-injected -->
+<style>
+@media (max-width: 768px) {
+  .stab-nav { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; }
+  .stab { flex: 0 0 auto; }
+  .field-row { grid-template-columns: 1fr !important; }
+  .scheme-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .app-design-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .inv-tpl-grid { grid-template-columns: 1fr !important; }
+  .inv-layout-grid { grid-template-columns: repeat(3, 1fr) !important; }
+  .map-provider-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .export-grid { grid-template-columns: 1fr !important; }
+  .mapping-grid { grid-template-columns: 1fr !important; }
+  .preview-table { min-width: 0 !important; }
+  #section-rechnung { grid-template-columns: 1fr !important; }
+  #section-rechnung > *:not(.inv-controls-col) { display: none !important; }
+  #unsavedBar { left: 0 !important; bottom: calc(56px + env(safe-area-inset-bottom, 0px)) !important; }
+  .save-bar { flex-wrap: wrap; }
+  .topbar-right .btn { display: none !important; }
+}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand"><img class="brand-logo" src="" alt="max4work" style="height:28px;width:28px;object-fit:contain;border-radius:4px;"><div class="brand-name">max4work</div></div>
+  <nav>
+    <div class="nav-group">
+      <div class="nav-group-label">Übersicht</div>
+      <a class="nav-link" href="index.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg></span> Dashboard</a>
+      <a class="nav-link" href="auswertung.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span> Auswertung</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Buchhaltung</div>
+      <a class="nav-link" href="rechnungen.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span> Rechnungen <span class="pill" id="offenPill">0</span></a>
+      <a class="nav-link" href="belege.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg></span> Belege</a>
+      <a class="nav-link" href="kassenbuch.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg></span> Kassenbuch</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Stammdaten</div>
+      <a class="nav-link" href="termine.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span> Termine</a>
+      <a class="nav-link" href="kunden.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Kunden</a>
+      <a class="nav-link" href="produkte.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span> Produkte</a>
+      <a class="nav-link on" href="einstellungen.html" aria-current="page"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span> Einstellungen</a>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-label">Werkzeuge</div>
+      <a class="nav-link" href="werkzeuge.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span> Werkzeuge</a>
+      <a class="nav-link" href="fahrtenbuch.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M5 17H3a2 2 0 0 1-2-2V9l3-5h10l3 5h2a2 2 0 0 1 2 2v1"/><path d="M17 17H9"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg></span> Fahrtenbuch</a>
+    </div>
+  </nav>
+  <div class="sidebar-user" aria-label="Benutzerprofil">
+    <div class="av" aria-hidden="true"></div>
+    <div><div class="av-name">Jürgen Stupar</div><div class="av-sub">Einzelunternehmer</div></div>
+  </div>
+</aside>
+<main class="main">
+  <div class="topbar">
+    <div class="page-name" id="topbarTitle">Einstellungen – Design</div>
+  </div>
+  <div class="content">
+
+    <!-- Tab-Navigation -->
+    <div class="stab-nav" role="tablist">
+      <button class="stab on" data-section="design" onclick="showSection('design')" role="tab">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 12a4 4 0 0 1 4-4"/><circle cx="12" cy="8" r="1.2" fill="currentColor" stroke="none"/><circle cx="16" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="8" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg>
+        Design
+      </button>
+      <button class="stab" data-section="firma" onclick="showSection('firma')" role="tab">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+        Firma
+      </button>
+      <button class="stab" data-section="funktionen" onclick="showSection('funktionen')" role="tab">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="8" cy="6" r="2" fill="currentColor" stroke="none"/><circle cx="16" cy="12" r="2" fill="currentColor" stroke="none"/><circle cx="10" cy="18" r="2" fill="currentColor" stroke="none"/></svg>
+        Funktionen
+      </button>
+      <button class="stab" data-section="daten" onclick="showSection('daten')" role="tab">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4.03 3-9 3S3 13.66 3 12"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/></svg>
+        Daten &amp; Sync
+      </button>
+      <button class="stab" data-section="portale" onclick="showSection('portale')" role="tab">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Portale
+      </button>
+      <button class="stab" data-section="handbuch" onclick="showSection('handbuch')" role="tab">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        Handbuch
+      </button>
+      <button class="stab" data-section="rechnung" onclick="showSection('rechnung')" role="tab">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></svg>
+        Blatt-Design
+      </button>
+      <button class="stab" data-section="email" onclick="showSection('email')" role="tab">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 7L2 7"/></svg>
+        E-Mail
+      </button>
+      <button class="stab" data-section="datentransfer" onclick="showSection('datentransfer')" role="tab">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Datentransfer
+      </button>
+    </div>
+
+    <!-- ══ DESIGN ══════════════════════════════════════════════════════ -->
+    <div class="settings-section" id="section-design">
+
+    <!-- Erscheinungsbild -->
+    <div class="panel">
+      <div class="panel-head">Erscheinungsbild</div>
+      <div class="panel-body">
+        <div class="scheme-grid">
+
+          <!-- Hell -->
+          <div class="scheme-card" id="sc-light" onclick="selectScheme('light')">
+            <div class="scheme-preview">
+              <div style="width:22%;background:#fff;border-right:1px solid #E4E6E2;padding:4px;display:flex;flex-direction:column;gap:3px">
+                <div style="height:3px;background:#C8D93A;border-radius:2px"></div>
+                <div style="height:3px;background:#EDEEE9;border-radius:2px"></div>
+                <div style="height:3px;background:#EDEEE9;border-radius:2px"></div>
+              </div>
+              <div style="flex:1;background:#F2F3F0;padding:4px;display:flex;flex-direction:column;gap:3px">
+                <div style="height:8px;background:#fff;border-radius:2px"></div>
+                <div style="height:5px;background:#fff;border-radius:2px;width:72%"></div>
+              </div>
+            </div>
+            <div class="scheme-name">Hell</div>
+          </div>
+
+          <!-- Halb/Halb -->
+          <div class="scheme-card" id="sc-split" onclick="selectScheme('split')">
+            <div class="scheme-preview">
+              <div style="width:36%;background:#1C1F1B;border-right:2px solid #2C2F2A;padding:4px;display:flex;flex-direction:column;gap:3px">
+                <div style="height:3px;background:#C8D93A;border-radius:2px"></div>
+                <div style="height:3px;background:#232622;border-radius:2px"></div>
+                <div style="height:3px;background:#232622;border-radius:2px"></div>
+              </div>
+              <div style="flex:1;background:#F2F3F0;padding:4px;display:flex;flex-direction:column;gap:3px">
+                <div style="height:8px;background:#fff;border-radius:2px"></div>
+                <div style="height:5px;background:#fff;border-radius:2px;width:72%"></div>
+              </div>
+            </div>
+            <div class="scheme-name">Halb/Halb</div>
+          </div>
+
+          <!-- Dunkel -->
+          <div class="scheme-card" id="sc-dark" onclick="selectScheme('dark')">
+            <div class="scheme-preview">
+              <div style="width:22%;background:#1C1F1B;border-right:1px solid #2C2F2A;padding:4px;display:flex;flex-direction:column;gap:3px">
+                <div style="height:3px;background:#C8D93A;border-radius:2px"></div>
+                <div style="height:3px;background:#232622;border-radius:2px"></div>
+                <div style="height:3px;background:#232622;border-radius:2px"></div>
+              </div>
+              <div style="flex:1;background:#111312;padding:4px;display:flex;flex-direction:column;gap:3px">
+                <div style="height:8px;background:#1C1F1B;border-radius:2px"></div>
+                <div style="height:5px;background:#1C1F1B;border-radius:2px;width:72%"></div>
+              </div>
+            </div>
+            <div class="scheme-name">Dunkel</div>
+          </div>
+
+          <!-- System -->
+          <div class="scheme-card" id="sc-system" onclick="selectScheme('system')">
+            <div class="scheme-preview">
+              <div style="width:50%;display:flex">
+                <div style="width:28%;background:#fff;border-right:1px solid #E4E6E2"></div>
+                <div style="flex:1;background:#F2F3F0"></div>
+              </div>
+              <div style="width:50%;display:flex;border-left:1px solid #2C2F2A">
+                <div style="width:28%;background:#1C1F1B;border-right:1px solid #2C2F2A"></div>
+                <div style="flex:1;background:#111312"></div>
+              </div>
+            </div>
+            <div class="scheme-name">System</div>
+          </div>
+
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">System folgt automatisch der Geräteeinstellung. Halb/Halb: Seitenleiste dunkel, Hauptbereich hell.</div>
+      </div>
+    </div>
+
+    <!-- App-Design -->
+    <div class="panel">
+      <div class="panel-head">App-Design</div>
+      <div class="panel-body">
+        <div class="field">
+          <label>Design-Stil wählen</label>
+          <div class="app-design-grid" id="appDesignGrid">
+
+            <!-- Standard -->
+            <div class="app-design-card" id="adcard-standard" onclick="selectAppDesign('standard')">
+              <div class="app-design-preview" style="background:#F2F3F0;">
+                <div class="adp-sidebar" style="background:#FFFFFF;border:1px solid #E4E6E2;"></div>
+                <div class="adp-content">
+                  <div class="adp-bar" style="background:#FFFFFF;border:1px solid #E4E6E2;width:70%;"></div>
+                  <div class="adp-card" style="background:#FFFFFF;border:1px solid #E4E6E2;"></div>
+                  <div class="adp-card" style="background:#C8D93A;width:60%;"></div>
+                </div>
+              </div>
+              <div class="app-design-name">max4work</div>
+              <div class="app-design-desc">Aktuelles Design</div>
+            </div>
+
+            <!-- iOS -->
+            <div class="app-design-card" id="adcard-ios" onclick="selectAppDesign('ios')">
+              <div class="app-design-preview" style="background:#F2F2F7;">
+                <div class="adp-sidebar" style="background:rgba(255,255,255,0.9);border:1px solid #C6C6C8;"></div>
+                <div class="adp-content">
+                  <div class="adp-bar" style="background:rgba(255,255,255,0.9);border:1px solid #C6C6C8;width:70%;"></div>
+                  <div class="adp-card" style="background:#FFFFFF;border:1px solid #C6C6C8;border-radius:13px;"></div>
+                  <div class="adp-card" style="background:#007AFF;border-radius:13px;width:60%;"></div>
+                </div>
+              </div>
+              <div class="app-design-name">iOS</div>
+              <div class="app-design-desc">Apple Design</div>
+            </div>
+
+            <!-- Android -->
+            <div class="app-design-card" id="adcard-android" onclick="selectAppDesign('android')">
+              <div class="app-design-preview" style="background:#FFFBFE;">
+                <div class="adp-sidebar" style="background:#ECE6F0;border-radius:5px;"></div>
+                <div class="adp-content">
+                  <div class="adp-bar" style="background:#ECE6F0;border-radius:50px;width:70%;"></div>
+                  <div class="adp-card" style="background:#ECE6F0;border-radius:16px;border:none;"></div>
+                  <div class="adp-card" style="background:#6750A4;border-radius:50px;width:60%;"></div>
+                </div>
+              </div>
+              <div class="app-design-name">Android</div>
+              <div class="app-design-desc">Material Design 3</div>
+            </div>
+
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--muted);">Wähle ein Design – die Auswahl wird erst nach dem Speichern dauerhaft übernommen.</div>
+      </div>
+    </div>
+
+    <!-- Farbdesign -->
+    <div class="panel">
+      <div class="panel-head">Farbdesign</div>
+      <div class="panel-body">
+        <div class="field">
+          <label>Voreingestellte Themes</label>
+          <div class="theme-grid" id="themeGrid"></div>
+        </div>
+        <div class="field">
+          <label>Eigene Akzentfarbe</label>
+          <div class="theme-custom-row">
+            <div class="custom-color-preview" id="customColorPreview">
+              <input type="color" id="customColorInput" value="#ffffff" oninput="previewCustomColor(this.value)" onchange="trackCustomColor(this.value)">
+            </div>
+            <div>
+              <div style="font-size:13px;font-weight:500;">Beliebige Farbe wählen</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:2px;" id="customColorHex">#ffffff</div>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--muted);">Das Farbdesign wird sofort als Vorschau angezeigt und nach dem Speichern dauerhaft übernommen.</div>
+      </div>
+    </div>
+
+    </div><!-- /section-design -->
+
+    <!-- ══ FIRMA ═══════════════════════════════════════════════════════ -->
+    <div class="settings-section" id="section-firma" style="display:none">
+
+    <div class="panel">
+      <div class="panel-head">Unternehmensdaten</div>
+      <div class="panel-body">
+        <div class="field-row">
+          <div class="field"><label>Firmenname</label><input id="sName" placeholder=""></div>
+          <div class="field"><label>Ansprechpartner</label><input id="sContact" placeholder=""></div>
+        </div>
+        <div class="field"><label>Straße &amp; Hausnummer</label><input id="sStreet"></div>
+        <div class="field-row">
+          <div class="field"><label>PLZ</label><input id="sPlz" placeholder=""></div>
+          <div class="field"><label>Ort</label><input id="sCity" placeholder=""></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Telefon</label><input id="sTel" placeholder=""></div>
+          <div class="field"><label>E-Mail</label><input id="sEmail" placeholder=""></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Website</label><input id="sWeb"></div>
+          <div class="field"><label>Steuer-Nr.</label><input id="sStNr"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">Bankverbindung</div>
+      <div class="panel-body">
+        <div class="field"><label>Bank</label><input id="sBank" placeholder=""></div>
+        <div class="field"><label>IBAN</label><input id="sIBAN" placeholder=""></div>
+        <div class="field"><label>BIC</label><input id="sBIC" placeholder=""></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">Standard-Zahlungstext für Rechnungen</div>
+      <div class="panel-body">
+        <div class="field">
+          <label>Zahlungstext</label>
+          <textarea id="invPayment" rows="4">Zahlungsbedingungen: Zahlung innerhalb von 7 Tagen ab Rechnungseingang ohne Abzüge.
+
+Bitte überweisen Sie den Rechnungsbetrag unter Angabe der Rechnungsnummer auf das unten angegebene Konto.</textarea>
+        </div>
+        <div style="font-size:12px;color:var(--muted)">Dieser Text wird automatisch in jede neue Rechnung eingefügt.</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">Firmenlogo</div>
+      <div class="panel-body">
+        <div style="position:relative;">
+          <div class="logo-upload" id="logoArea_f">
+            <input type="file" accept="image/*" id="logoFileInput_f" onchange="handleLogoUploadFirma(event)">
+            <div id="logoNone_f">
+              <div style="font-size:22px;margin-bottom:4px;pointer-events:none">🖼️</div>
+              <div class="logo-upload-text">Logo hochladen oder <span>ändern</span><br><small>PNG, JPG, SVG</small></div>
+            </div>
+            <div id="logoPreviewBox_f" style="display:none; position:relative; z-index:2; pointer-events:none;">
+              <img id="logoPreviewImg_f" style="max-height:52px;max-width:140px;object-fit:contain;border-radius:4px;" src="" alt="Logo">
+            </div>
+          </div>
+          <button type="button" id="logoRemoveBtn_f" onclick="removeLogo()" style="display:none; position:absolute; top:-8px; right:-8px; width:22px; height:22px; border-radius:50%; background:var(--red); color:white; font-size:13px; border:none; cursor:pointer; z-index:10; font-weight:700; line-height:1; align-items:center; justify-content:center;">×</button>
+        </div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:8px;">Das Logo erscheint auf Rechnungen und in der Sidebar. PNG oder JPG, max. ~1 MB.</div>
+      </div>
+    </div>
+
+    <!-- Mahnungseinstellungen -->
+    <div class="panel">
+      <div class="panel-head">Mahnungseinstellungen</div>
+      <div class="panel-body" style="gap:0;">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Texte und Gebühren für Mahnstufen 1–3. Werden beim Erstellen einer Mahnung vorausgefüllt.</div>
+        <div id="mahnStufen"></div>
+        <div style="margin-top:12px;">
+          <button type="button" class="btn btn-blue" onclick="saveMahnSettings()">Mahnungseinstellungen speichern</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="save-bar">
+      <span class="save-hint" id="saveHint">Änderungen werden lokal gespeichert.</span>
+      <div style="display:flex;gap:8px">
+        <button type="button" class="btn btn-ghost" onclick="reset()">Zurücksetzen</button>
+        <button type="button" class="btn btn-blue" onclick="speichern()">Speichern</button>
+      </div>
+    </div>
+
+    </div><!-- /section-firma -->
+
+    <!-- ══ FUNKTIONEN ══════════════════════════════════════════════════ -->
+    <div class="settings-section" id="section-funktionen" style="display:none">
+
+    <div class="panel">
+      <div class="panel-head">App-Funktionen</div>
+      <div class="panel-body">
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Kunden-Assistent</div>
+            <div class="toggle-desc">Erkennt bekannte Kunden automatisch und schlägt die letzte Rechnung als Vorlage vor.</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="autoSuggestInvoice" checked onchange="updateToggle('autoSuggestInvoice', this.checked)">
+            <div class="toggle-track"></div>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Live-Vorschau beim Bearbeiten</div>
+            <div class="toggle-desc">Zeigt die Rechnungsvorschau in Echtzeit während der Eingabe.</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="livePreview" checked onchange="updateToggle('livePreview', this.checked)">
+            <div class="toggle-track"></div>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Überfällige Rechnungen hervorheben</div>
+            <div class="toggle-desc">Markiert offene Rechnungen nach Fälligkeitsdatum rot in der Liste.</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="highlightOverdue" checked onchange="updateToggle('highlightOverdue', this.checked)">
+            <div class="toggle-track"></div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- OCR-Integration -->
+    <div class="panel">
+      <div class="panel-head">OCR-Integration (Fahrzeugschein auslesen)</div>
+      <div class="panel-body">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Funktioniert sofort ohne Key (Demo-Key). Für mehr als ~50 Scans/Tag: kostenlosen Key auf <a href="https://ocr.space" target="_blank" style="color:var(--accent);text-decoration:none;">ocr.space</a> registrieren (25.000/Monat gratis).</div>
+        <div class="field" style="margin-bottom:10px;">
+          <label>OCR.space API-Key <span style="font-weight:400;text-transform:none;letter-spacing:0;">(leer lassen für Demo-Key)</span></label>
+          <input type="text" id="ocrApiKeyInput" placeholder="K12345678" autocomplete="off">
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <button class="btn btn-blue" onclick="saveOcrKey()" style="padding:7px 16px;font-size:12.5px;">Speichern</button>
+          <button class="btn btn-ghost" onclick="clearOcrKey()" id="ocrKeyClearBtn" style="padding:7px 16px;font-size:12.5px;display:none;">Entfernen</button>
+          <span id="ocrKeyStatus" style="font-size:12px;color:var(--muted);"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kartenanbieter -->
+    <div class="panel">
+      <div class="panel-head">Kartenanbieter</div>
+      <div class="panel-body">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Welche App soll beim Klick auf eine Adresse (Kunden-Karte) geöffnet werden?</div>
+        <div class="map-provider-grid" id="kartenAnbieterGrid"></div>
+      </div>
+    </div>
+
+    <!-- Auswertungs-Panels -->
+    <div class="panel">
+      <div class="panel-head">Auswertung – sichtbare Fenster</div>
+      <div class="panel-body">
+        <div style="font-size:12px;color:var(--muted);padding-bottom:4px;">Wähle, welche Bereiche in der Auswertung angezeigt werden. Neue Panels hier ergänzen.</div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Kennzahlen (KPI-Übersicht)</div>
+            <div class="toggle-desc">Die 4 Karten: Jahresumsatz, Ausgaben, Gewinn/Verlust und offene Forderungen.</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="panel_kpiGrid" checked onchange="updateToggle('panel_kpiGrid', this.checked)">
+            <div class="toggle-track"></div>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Meine Bank</div>
+            <div class="toggle-desc">Zeigt konfigurierte Bankkonten mit Einnahmen, Ausgaben und Saldo.</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="panel_bank" checked onchange="updateToggle('panel_bank', this.checked)">
+            <div class="toggle-track"></div>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Top 5 Kunden</div>
+            <div class="toggle-desc">Ranking der umsatzstärksten Kunden des Jahres mit Balken und Anteil.</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="panel_top5" checked onchange="updateToggle('panel_top5', this.checked)">
+            <div class="toggle-track"></div>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Kleinunternehmergrenze §19 UStG</div>
+            <div class="toggle-desc">Ring und Balken mit aktuellem Umsatz gegenüber der gesetzlichen Grenze.</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="panel_kleinunternehmer" checked onchange="updateToggle('panel_kleinunternehmer', this.checked)">
+            <div class="toggle-track"></div>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Ausstehende Rechnungen</div>
+            <div class="toggle-desc">Übersicht über offene, überfällige und teilbezahlte Rechnungen mit Detailtabelle.</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="panel_ausstehend" checked onchange="updateToggle('panel_ausstehend', this.checked)">
+            <div class="toggle-track"></div>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Umsatz pro Monat</div>
+            <div class="toggle-desc">Balkendiagramm und Monatsdetails mit Einnahmen und Ausgaben.</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="panel_chartMonat" checked onchange="updateToggle('panel_chartMonat', this.checked)">
+            <div class="toggle-track"></div>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Einnahmen vs. Ausgaben</div>
+            <div class="toggle-desc">Donut-Diagramm mit dem Verhältnis von Einnahmen zu Ausgaben.</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="panel_chartVergleich" checked onchange="updateToggle('panel_chartVergleich', this.checked)">
+            <div class="toggle-track"></div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Auswertungs-Layout -->
+    <div class="panel">
+      <div class="panel-head">
+        <span>Auswertungs-Layout</span>
+        <span style="font-size:11px;color:var(--muted)">Reihenfolge &amp; Größe</span>
+      </div>
+      <div class="panel-body" style="gap:8px;">
+        <div style="font-size:12px;color:var(--muted);">Ziehe die Fenster in die gewünschte Reihenfolge. Fenster mit <strong style="color:var(--text)">Halb</strong> werden nebeneinander angezeigt.</div>
+        <div class="layout-list" id="layoutList"></div>
+        <div class="layout-hint">
+          <strong style="color:var(--text)">Voll</strong> = ganze Breite &nbsp;·&nbsp;
+          <strong style="color:var(--text)">Halb</strong> = halbe Breite (zwei nebeneinander) &nbsp;·&nbsp;
+          Sichtbarkeit in «Auswertung – sichtbare Fenster» oben.
+        </div>
+      </div>
+    </div>
+
+    </div><!-- /section-funktionen -->
+
+    <!-- ══ DATEN & SYNC ════════════════════════════════════════════════ -->
+    <div class="settings-section" id="section-daten" style="display:none">
+
+    <!-- Datensicherung -->
+    <div class="panel">
+      <div class="panel-head">
+        <span>Datensicherung</span>
+        <span id="backupStatusBadge" style="font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600;"></span>
+      </div>
+      <div class="panel-body" style="gap:14px;">
+
+        <div class="field-row" style="align-items:end;">
+          <div class="field">
+            <label>Erinnerungsintervall</label>
+            <select id="backupInterval" onchange="saveBackupInterval(this.value)">
+              <option value="3">Alle 3 Tage</option>
+              <option value="7" selected>Alle 7 Tage</option>
+              <option value="14">Alle 14 Tage</option>
+              <option value="30">Monatlich</option>
+              <option value="0">Deaktiviert</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Letztes Backup</label>
+            <input type="text" id="lastBackupDate" readonly style="background:var(--soft);color:var(--muted);">
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button type="button" class="btn btn-dark" onclick="doQuickBackup()" style="flex:1;">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Backup jetzt erstellen
+          </button>
+          <button type="button" class="btn btn-ghost" onclick="document.getElementById('restoreInput').click()" style="flex:1;">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Backup wiederherstellen
+          </button>
+          <input type="file" id="restoreInput" accept=".json" style="display:none" onchange="restoreBackup(event)">
+        </div>
+
+        <div style="background:var(--soft);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--muted);line-height:1.7;">
+          <strong style="color:var(--text);">Was wird gesichert:</strong> Alle Rechnungen, Kunden, Belege, Termine, Produkte, Einstellungen und Zahlungen.<br>
+          Die Backup-Datei kann auf iCloud, Google Drive oder einem USB-Stick gespeichert werden.
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Steuerberater-Jahrespaket -->
+    <div class="panel">
+      <div class="panel-head">
+        <span>Steuerberater-Jahrespaket</span>
+        <span style="font-size:11px;background:var(--accent-pale);color:var(--dark);padding:2px 8px;border-radius:20px;font-weight:600;">ZIP</span>
+      </div>
+      <div class="panel-body" style="gap:14px;">
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;">
+          Alles in einem ZIP: DATEV-Buchungsstapel, Rechnungen, Belege, Fahrtenbuch und eine EÜR-Zusammenfassung — direkt zum Steuerberater weiterleiten.
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+          <div class="field" style="margin:0;flex:1;min-width:120px;">
+            <label>Geschäftsjahr</label>
+            <select id="stbJahr"></select>
+          </div>
+          <button type="button" class="btn btn-dark" onclick="exportSteuerberater()" style="flex-shrink:0;">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Jahrespaket erstellen
+          </button>
+        </div>
+        <div id="stbStatus" style="display:none;font-size:12px;padding:8px 12px;border-radius:8px;background:var(--soft);"></div>
+        <div style="background:var(--soft);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--muted);line-height:1.8;">
+          <strong style="color:var(--text);">Inhalt des ZIP:</strong><br>
+          DATEV_Rechnungen.csv &nbsp;·&nbsp; DATEV_Ausgaben.csv &nbsp;·&nbsp; Rechnungen.json &nbsp;·&nbsp; Belege.json &nbsp;·&nbsp; Fahrtenbuch.json &nbsp;·&nbsp; EÜR_Zusammenfassung.txt
+        </div>
+      </div>
+    </div>
+
+    <!-- GoBD-Export -->
+    <div class="panel">
+      <div class="panel-head">
+        <span>GoBD-Buchführungsexport</span>
+        <span style="font-size:11px;background:var(--accent-pale);color:var(--dark);padding:2px 8px;border-radius:20px;font-weight:600;">GoBD</span>
+      </div>
+      <div class="panel-body" style="gap:14px;">
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;">
+          Erstellt eine ZIP-Datei mit allen archivierten Rechnungen, Belegen und dem vollständigen Audit-Log — geeignet für Steuerberater und Betriebsprüfung.
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+          <div class="field" style="margin:0;flex:1;min-width:120px;">
+            <label>Geschäftsjahr</label>
+            <select id="gobdJahr"></select>
+          </div>
+          <button type="button" class="btn btn-dark" onclick="exportGoBD()" style="flex-shrink:0;">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            ZIP exportieren
+          </button>
+        </div>
+        <div id="gobdStatus" style="display:none;font-size:12px;padding:8px 12px;border-radius:8px;background:var(--soft);"></div>
+        <div style="background:var(--soft);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--muted);line-height:1.8;">
+          <strong style="color:var(--text);">Inhalt der ZIP:</strong><br>
+          Rechnungen.json &nbsp;·&nbsp; Belege.json &nbsp;·&nbsp; GoBD_Auditlog.json &nbsp;·&nbsp; Pruefprotokoll.txt
+        </div>
+      </div>
+    </div>
+
+    <!-- iOS Kalender Abo -->
+    <div class="panel">
+      <div class="panel-head">
+        <span>iOS Kalender-Synchronisation</span>
+        <span style="font-size:11px;background:var(--accent-pale);color:var(--dark);padding:2px 8px;border-radius:20px;font-weight:600;">WebCal</span>
+      </div>
+      <div class="panel-body" style="gap:14px;">
+
+        <div style="font-size:13px;color:var(--muted);line-height:1.6;">
+          Sobald max4work auf <strong style="color:var(--text);">max4work.com</strong> läuft, kann iOS den Kalender automatisch abonnieren und im Hintergrund synchronisieren.
+        </div>
+
+        <!-- Abo-URL -->
+        <div class="field">
+          <label>WebCal Abo-Adresse</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="text" id="webcalUrl" readonly value="webcal://max4work.com/calendar.ics"
+              style="background:var(--soft);color:var(--muted);font-size:12px;font-family:monospace;cursor:text;">
+            <button type="button" class="btn btn-ghost" style="flex-shrink:0;white-space:nowrap;" onclick="copyWebcal()">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              <span id="copyBtnText">Kopieren</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Direkt öffnen -->
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+          <a id="webcalOpenBtn" href="webcal://max4work.com/calendar.ics" class="btn btn-dark" style="text-decoration:none;">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Kalender auf diesem Gerät abonnieren
+          </a>
+          <span style="font-size:12px;color:var(--muted);">Öffnet iOS/macOS Kalender direkt</span>
+        </div>
+
+        <!-- Anleitung -->
+        <div style="background:var(--soft);border-radius:10px;padding:14px 16px;">
+          <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px;">📱 So richtest du es auf dem iPhone ein:</div>
+          <ol style="font-size:12px;color:var(--muted);line-height:2;padding-left:16px;">
+            <li>Öffne die <strong style="color:var(--text);">Einstellungen</strong> App auf dem iPhone</li>
+            <li>Tippe auf <strong style="color:var(--text);">Kalender → Accounts → Account hinzufügen</strong></li>
+            <li>Wähle <strong style="color:var(--text);">„Andere" → „Kalenderabo hinzufügen"</strong></li>
+            <li>URL einfügen: <code style="background:var(--surface);padding:1px 5px;border-radius:4px;font-size:11px;">webcal://max4work.com/calendar.ics</code></li>
+            <li>Auf <strong style="color:var(--text);">„Weiter" → „Sichern"</strong> tippen</li>
+          </ol>
+          <div style="font-size:11.5px;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
+            Alternativ: In <strong style="color:var(--text);">Termine → iOS Kalender</strong> exportieren und per AirDrop aufs iPhone übertragen.
+          </div>
+        </div>
+
+        <!-- Eigene Domain -->
+        <div class="field">
+          <label>Eigene Domain (optional)</label>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="customDomain" placeholder="z.B. meine-app.de" oninput="updateWebcalUrl()">
+            <button type="button" class="btn btn-ghost" style="flex-shrink:0;" onclick="updateWebcalUrl()">Aktualisieren</button>
+          </div>
+          <div style="font-size:11.5px;color:var(--muted);margin-top:4px;">Wenn du einen eigenen Domainnamen verwendest, trage ihn hier ein.</div>
+        </div>
+
+      </div>
+    </div>
+
+    </div><!-- /section-daten -->
+
+    <!-- ══ PORTALE ═══════════════════════════════════════════════════════ -->
+    <div class="settings-section" id="section-portale" style="display:none">
+      <!-- wird von renderPortals() befüllt -->
+    </div><!-- /section-portale -->
+
+    <!-- ══ HANDBUCH ══════════════════════════════════════════════════════ -->
+    <div class="settings-section" id="section-handbuch" style="display:none">
+
+    <div class="panel">
+      <div class="panel-body" style="gap:8px">
+        <div style="font-size:13px;color:var(--muted);line-height:1.6">
+          Schritt-für-Schritt Anleitung für alle Funktionen von <strong style="color:var(--text)">max4work</strong>.
+          Klicke auf einen Bereich, um die Anleitung aufzuklappen.
+          <span class="hb-badge" style="vertical-align:middle;margin-left:6px">NEU</span> = neue oder aktualisierte Funktion.
+        </div>
+      </div>
+    </div>
+
+    <div class="hb-list">
+
+      <!-- 1 Erste Schritte -->
+      <div class="hb-sec open">
+        <div class="hb-head" onclick="toggleHb(this)">
+          <span class="hb-icon">🚀</span>
+          <span class="hb-title">Erste Schritte – Schnelleinstieg</span>
+          <span class="hb-chev">▶</span>
+        </div>
+        <div class="hb-body">
+          <p class="hb-intro">In weniger als 10 Minuten ist max4work vollständig eingerichtet.</p>
+          <div class="hb-steps">
+            <div class="hb-step"><p>Öffne <strong>Einstellungen → Firma</strong> und trage deinen Firmennamen, Anschrift, Telefon, E-Mail und Steuernummer ein. Klicke <em>Speichern</em>.</p></div>
+            <div class="hb-step"><p>Lade dein <strong>Logo</strong> hoch: Einstellungen → Design → Logo hochladen. Es erscheint automatisch auf allen Rechnungen.</p></div>
+            <div class="hb-step"><p>Lege deinen <strong>ersten Kunden</strong> an: Kunden → <em>+ Neuer Kunde</em> → Name, Adresse, Telefon ausfüllen → Speichern.</p></div>
+            <div class="hb-step"><p>Erstelle deine <strong>erste Rechnung</strong>: Rechnungen → <em>+ Neue Rechnung</em> → Kunden wählen → Positionen hinzufügen → Drucken / PDF.</p></div>
+            <div class="hb-step"><p>Überprüfe im <strong>Dashboard</strong> den Überblick: Umsatz, offene Rechnungen und nächste Termine auf einen Blick.</p></div>
+          </div>
+          <div class="hb-tip"><b>💡 Tipp:</b> Stelle unter Einstellungen → Daten &amp; Sync den Backup-Rhythmus ein. Ein wöchentliches Backup schützt vor Datenverlust.</div>
+        </div>
+      </div>
+
+      <!-- 2 Dashboard & Auswertung -->
+      <div class="hb-sec">
+        <div class="hb-head" onclick="toggleHb(this)">
+          <span class="hb-icon">📊</span>
+          <span class="hb-title">Dashboard &amp; Auswertung</span>
+          <span class="hb-chev">▶</span>
+        </div>
+        <div class="hb-body">
+          <p class="hb-intro">Das Dashboard gibt dir den täglichen Überblick. Die Auswertung zeigt detaillierte Jahresstatistiken.</p>
+          <div class="hb-steps">
+            <div class="hb-step"><p>Das <strong>Dashboard</strong> zeigt: Umsatz des Monats, offene Rechnungen, nächste Termine und aktive Kunden. Klick auf eine Karte navigiert direkt zur jeweiligen Seite.</p></div>
+            <div class="hb-step"><p>Die <strong>Auswertung</strong> zeigt Jahresumsatz, Ausgaben, Gewinn/Verlust, Top-5-Kunden und Monatsverläufe als Diagramme.</p></div>
+            <div class="hb-step"><p>Die <strong>Kleinunternehmergrenze §19 UStG</strong> wird als Ring-Diagramm angezeigt und warnt automatisch ab 80 % des Limits (22.000 € / Jahr).</p></div>
+            <div class="hb-step"><p>Unter <strong>Einstellungen → Funktionen → Auswertungs-Layout</strong> kannst du Panels ein-/ausblenden und per Drag &amp; Drop sortieren.</p></div>
+            <div class="hb-step"><p>Erstelle die <strong>EÜR (§4 Abs. 3 EStG)</strong> per Klick: Auswertung → <em>EÜR erstellen</em>. Die integrierte <strong>GoBD-Prüfung</strong> zeigt automatisch, ob Zahlungseingänge, Belege und Fahrtenbuch vollständig sind.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3 Rechnungen -->
+      <div class="hb-sec">
+        <div class="hb-head" onclick="toggleHb(this)">
+          <span class="hb-icon">📄</span>
+          <span class="hb-title">Rechnungen</span>
+          <span class="hb-chev">▶</span>
+        </div>
+        <div class="hb-body">
+          <p class="hb-intro">Rechnungen erstellen, verwalten und als PDF versenden.</p>
+          <div class="hb-steps">
+            <div class="hb-step"><p>Klicke auf <em>+ Neue Rechnung</em>. Rechnungsnummer und Datum werden automatisch vorgeschlagen.</p></div>
+            <div class="hb-step"><p><strong>Kunden wählen:</strong> Tippe den Namen ein – bekannte Kunden werden vorgeschlagen und Adressdaten automatisch ausgefüllt. Der <em>Kunden-Assistent</em> bietet die letzte Rechnung als Vorlage an.</p></div>
+            <div class="hb-step"><p><strong>Positionen hinzufügen:</strong> Beschreibung, Menge, Einheit (Std., m², Pauschal …) und Einzelpreis eintragen. Mehrere Zeilen möglich.</p></div>
+            <div class="hb-step"><p><strong>MwSt-Einstellung:</strong> Als Kleinunternehmer (§19 UStG) wird 0 % und der Pflichthinweis automatisch eingefügt.</p></div>
+            <div class="hb-step"><p><strong>Vorschau prüfen:</strong> Mit der Live-Vorschau siehst du das finale Dokument während der Eingabe in Echtzeit.</p></div>
+            <div class="hb-step"><p><strong>Drucken / PDF:</strong> Klicke <em>Drucken</em> → im Browser-Dialog „Als PDF speichern" wählen. Die Rechnung enthält Logo, Firmendaten und Bankverbindung automatisch.</p></div>
+            <div class="hb-step"><p><strong>Status verwalten:</strong> Markiere Rechnungen als <em>Bezahlt</em> sobald das Geld eingegangen ist. Überfällige Rechnungen werden rot hervorgehoben.</p></div>
+          </div>
+          <div class="hb-tip"><b>💡 Tipp:</b> Nutze <strong>Produkte &amp; Leistungen</strong> für häufig wiederkehrende Positionen – sie lassen sich beim Erstellen einer Rechnung schnell einfügen.</div>
+        </div>
+      </div>
+
+      <!-- 4 Fahrtenbuch -->
+      <div class="hb-sec">
+        <div class="hb-head" onclick="toggleHb(this)">
+          <span class="hb-icon">🚗</span>
+          <span class="hb-title">Fahrtenbuch</span>
+          <span class="hb-chev">▶</span>
+        </div>
+        <div class="hb-body">
+          <p class="hb-intro">Alle Geschäftsfahrten lückenlos dokumentieren – als Nachweis für das Finanzamt.</p>
+          <div class="hb-steps">
+            <div class="hb-step"><p>Klicke <em>+ Fahrt eintragen</em> und fülle aus: Datum, Anlass / Kunde, Startort, Zielort, gefahrene Kilometer.</p></div>
+            <div class="hb-step"><p>Die <strong>Entfernung zum Kunden</strong> (einfach, in km) kann auch direkt im Kundenprofil gespeichert werden – dann wird die Hin- und Rückfahrt automatisch berechnet.</p></div>
+            <div class="hb-step"><p>Das Fahrtenbuch summiert alle Kilometer für das Jahr. Mit der <strong>Kilometerpauschale 0,30 € / km</strong> ergibt sich der abzugsfähige Betriebsausgabenwert.</p></div>
+            <div class="hb-step"><p>Exportiere das Fahrtenbuch über <strong>Datentransfer</strong> als CSV für deine Buchhaltung oder den Steuerberater.</p></div>
+          </div>
+          <div class="hb-tip"><b>💡 Tipp:</b> Trage Fahrten am selben Tag ein – bei einer Betriebsprüfung gilt ein lückenloses, zeitnah geführtes Fahrtenbuch als Nachweis.</div>
+        </div>
+      </div>
+
+      <!-- 5 Belege & Zahlungen -->
+      <div class="hb-sec">
+        <div class="hb-head" onclick="toggleHb(this)">
+          <span class="hb-icon">📎</span>
+          <span class="hb-title">Belege &amp; Zahlungen</span>
+          <span class="hb-chev">▶</span>
+        </div>
+        <div class="hb-body">
+          <p class="hb-intro">Ausgaben belegen und Zahlungseingänge verfolgen.</p>
+          <div class="hb-steps">
+            <div class="hb-step"><p><strong>Beleg erfassen:</strong> Belege → <em>+ Beleg</em> → Datum, Betrag, Kategorie (Büromaterial, Fahrtkosten, Software …) und Beschreibung eintragen.</p></div>
+            <div class="hb-step"><p><strong>Foto anfügen:</strong> Mit <strong>Werkzeuge → Kamera</strong> ein Foto des Belegs aufnehmen und herunterladen – als Bild dem Beleg zuordnen oder digital archivieren.</p></div>
+            <div class="hb-step"><p><strong>Zahlungen verfolgen:</strong> Zahlungen → Eingang einer Rechnung bestätigen. Der Zahlungsstatus synchronisiert sich automatisch mit der Rechnung.</p></div>
+            <div class="hb-step"><p>Die Auswertung summiert alle Belege als <strong>Betriebsausgaben</strong> und zeigt sie im Gewinn/Verlust-Vergleich.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6 Termine -->
+      <div class="hb-sec">
+        <div class="hb-head" onclick="toggleHb(this)">
+          <span class="hb-icon">📅</span>
+          <span class="hb-title">Termine</span>
+          <span class="hb-chev">▶</span>
+        </div>
+        <div class="hb-body">
+          <p class="hb-intro">Kundentermine planen und mit dem iOS-Kalender synchronisieren.</p>
+          <div class="hb-steps">
+            <div class="hb-step"><p>Klicke <em>+ Termin</em> und fülle aus: Titel, Datum &amp; Uhrzeit, Kunde (optional), Dauer und Notiz.</p></div>
+            <div class="hb-step"><p>Termine erscheinen im <strong>Dashboard</strong> als „nächste Termine" – so behältst du den Überblick ohne Kalender zu öffnen.</p></div>
+            <div class="hb-step"><p><strong>iOS Kalender-Sync:</strong> Gehe zu Einstellungen → Daten &amp; Sync → <em>Kalender auf diesem Gerät abonnieren</em>. Der Kalender aktualisiert sich automatisch, sobald max4work auf max4work.com läuft.</p></div>
+            <div class="hb-step"><p>Alternativ: Termine → <em>iOS Kalender exportieren</em> und per AirDrop auf das iPhone übertragen.</p></div>
+          </div>
+          <div class="hb-tip"><b>💡 Tipp:</b> Lege im Kundenprofil den <strong>Turnus</strong> fest (monatlich, vierteljährlich …). So siehst du sofort, welche Kunden als nächstes dran sind.</div>
+        </div>
+      </div>
+
+      <!-- 7 Kunden NEU -->
+      <div class="hb-sec">
+        <div class="hb-head" onclick="toggleHb(this)">
+          <span class="hb-icon">👥</span>
+          <span class="hb-title">Kunden</span>
+          <span class="hb-badge">AKTUALISIERT</span>
+          <span class="hb-chev">▶</span>
+        </div>
+        <div class="hb-body">
+          <p class="hb-intro">Kunden verwalten, auf der Karte anzeigen und Adressen direkt in der Navigations-App öffnen.</p>
+          <div class="hb-steps">
+            <div class="hb-step"><p><strong>Kunden anlegen:</strong> <em>+ Neuer Kunde</em> → Name/Firma, Straße &amp; Nr., PLZ &amp; Ort, Telefon, E-Mail, Turnus und Entfernung in km eintragen.</p></div>
+            <div class="hb-step"><p><strong>Kunden bearbeiten:</strong> Klicke auf eine Zeile in der Kundenliste, um das Bearbeitungsformular zu öffnen. Änderungen werden sofort gespeichert.</p></div>
+            <div class="hb-step"><p><strong>Suche &amp; Filter:</strong> Nutze das Suchfeld (Name, Ort, Notiz) und die Filter-Tabs <em>Alle / Aktiv / Inaktiv</em>.</p></div>
+            <div class="hb-step"><p><span class="hb-neu">NEU</span> <strong>Kartenansicht:</strong> Klicke in der Toolbar auf <em>Karte</em>. Alle Kunden mit Adresse erscheinen als farbige Initialen-Pins auf der OpenStreetMap-Karte. Klick auf einen Pin zeigt Name, Adresse und Telefon.</p></div>
+            <div class="hb-step"><p><span class="hb-neu">NEU</span> <strong>Mini-Karte:</strong> Sobald im Kundenformular eine Adresse eingetragen ist, erscheint automatisch eine kleine Karte darunter (wie in iOS Kontakte). Klick auf die Karte öffnet die Adresse im gewählten Kartendienst.</p></div>
+            <div class="hb-step"><p><span class="hb-neu">NEU</span> <strong>Kartenanbieter wählen:</strong> Unter Einstellungen → Funktionen → <em>Kartenanbieter</em> kannst du Apple Karten, Google Maps, OpenStreetMap, Bing oder Waze auswählen.</p></div>
+          </div>
+          <div class="hb-tip"><b>💡 Tipp:</b> Die Geocodierung (Adresse → Kartenkoordinaten) wird gecacht – nach dem ersten Laden erscheinen Pins sofort, auch ohne Internetverbindung.</div>
+        </div>
+      </div>
+
+      <!-- 8 Produkte & Datentransfer -->
+      <div class="hb-sec">
+        <div class="hb-head" onclick="toggleHb(this)">
+          <span class="hb-icon">📦</span>
+          <span class="hb-title">Produkte &amp; Datentransfer</span>
+          <span class="hb-chev">▶</span>
+        </div>
+        <div class="hb-body">
+          <p class="hb-intro">Standardleistungen speichern und Daten sichern oder übertragen.</p>
+          <div class="hb-steps">
+            <div class="hb-step"><p><strong>Produkt anlegen:</strong> Produkte → <em>+ Neu</em> → Name, Beschreibung, Einheit und Standardpreis eintragen. Beim Erstellen einer Rechnung tauchen Produkte als Schnellauswahl auf.</p></div>
+            <div class="hb-step"><p><strong>Datensicherung:</strong> Einstellungen → Daten &amp; Sync → <em>Backup jetzt erstellen</em>. Die JSON-Datei enthält alle Rechnungen, Kunden, Belege, Termine, Produkte und Einstellungen.</p></div>
+            <div class="hb-step"><p><strong>Backup wiederherstellen:</strong> <em>Backup wiederherstellen</em> → JSON-Datei auswählen → bestätigen. Alle Daten werden überschrieben.</p></div>
+            <div class="hb-step"><p><strong>Datentransfer-Seite:</strong> Bietet Export als CSV (für Excel / Steuerberater), Import aus Fremdsystemen und geräteübergreifende Synchronisation.</p></div>
+          </div>
+          <div class="hb-tip"><b>💡 Tipp:</b> Speichere das Backup in iCloud, Google Drive oder auf einem USB-Stick. Aktiviere die automatische Erinnerung (7 Tage empfohlen) unter Einstellungen → Daten &amp; Sync.</div>
+        </div>
+      </div>
+
+      <!-- 9 Einstellungen NEU -->
+      <div class="hb-sec">
+        <div class="hb-head" onclick="toggleHb(this)">
+          <span class="hb-icon">⚙️</span>
+          <span class="hb-title">Einstellungen</span>
+          <span class="hb-badge">AKTUALISIERT</span>
+          <span class="hb-chev">▶</span>
+        </div>
+        <div class="hb-body">
+          <p class="hb-intro">Die Einstellungen sind in sechs Tabs unterteilt.</p>
+          <div class="hb-steps">
+            <div class="hb-step"><p><strong>Design:</strong> Wähle eine Akzentfarbe aus den Vorlagen oder definiere eine eigene. Das Design wird sofort und dauerhaft angewendet. Lade dein Firmenlogo hoch (PNG/JPG, max. ~1 MB).</p></div>
+            <div class="hb-step"><p><strong>Firma:</strong> Name, Anschrift, Kontakt, Steuernummer, Bankverbindung (IBAN, BIC) und Standard-Zahlungstext für Rechnungen. Nach Änderungen <em>Speichern</em> klicken.</p></div>
+            <div class="hb-step"><p><strong>Funktionen:</strong> Kunden-Assistent, Live-Vorschau und Überfälligkeits-Hervorhebung ein-/ausschalten. Auswertungs-Panels verwalten und sortieren.<br><span class="hb-neu">NEU</span> <strong>Kartenanbieter</strong> wählen: Apple Karten · Google Maps · OpenStreetMap · Bing · Waze.</p></div>
+            <div class="hb-step"><p><strong>Daten &amp; Sync:</strong> Backup erstellen/wiederherstellen, Backup-Erinnerungsintervall einstellen, iOS WebCal-Kalenderabo einrichten.</p></div>
+            <div class="hb-step"><p><span class="hb-neu">NEU</span> <strong>Portale &amp; Behörden:</strong> Zugangsdaten für ELSTER, BZSt Online-Portal, Finanzamt, Deutsche Rentenversicherung, Berufsgenossenschaft, sv.net und Unternehmensregister hinterlegen. Direktlink zum jeweiligen Portal per Klick. Alle Daten bleiben lokal.</p></div>
+            <div class="hb-step"><p><strong>Handbuch</strong> (diese Seite): Schritt-für-Schritt-Anleitungen für alle Funktionen – immer aktuell.</p></div>
+          </div>
+          <div class="hb-tip"><b>🔒 Datenschutz:</b> max4work speichert alle Daten ausschließlich im Browser-Speicher (localStorage) deines Geräts. Es findet keine Übertragung an externe Server statt.</div>
+        </div>
+      </div>
+
+      <!-- 10 Werkzeuge NEU -->
+      <div class="hb-sec">
+        <div class="hb-head" onclick="toggleHb(this)">
+          <span class="hb-icon">🔧</span>
+          <span class="hb-title">Werkzeuge</span>
+          <span class="hb-badge">NEU</span>
+          <span class="hb-chev">▶</span>
+        </div>
+        <div class="hb-body">
+          <p class="hb-intro">Fünf integrierte Tools für den Arbeitsalltag – erreichbar über <em>Werkzeuge</em> in der Sidebar.</p>
+          <div class="hb-steps">
+            <div class="hb-step"><p><strong>📄 Angebot / Kostenvoranschlag:</strong> Angebotsnummer und Datum werden automatisch vergeben. Empfänger aus der Kundenliste wählen oder manuell eingeben. Positionen mit Beschreibung, Menge, Einheit und Preis hinzufügen. <em>Drucken / PDF</em> → im Browser-Dialog „Als PDF speichern" → per E-Mail versenden.</p></div>
+            <div class="hb-step"><p><strong>📐 m² Rechner:</strong> <em>+ Raum</em> klicken → Name, Länge, Breite eingeben → Bodenfläche wird sofort berechnet. Höhe optional: ergibt zusätzlich Wand- und Deckenfläche. Abzug für Türen und Fenster möglich. <em>Ergebnis kopieren</em> speichert alle Werte in die Zwischenablage.</p></div>
+            <div class="hb-step"><p><strong>📷 Kamera:</strong> <em>Kamera starten</em> → Kamerazugriff im Browser erlauben. Auslöser-Button für Fotos. Galerie erscheint unten – einzelne Fotos herunterladen (⬇) oder löschen (✕). Ideal für Belegfotos und Vorher-/Nachher-Dokumentation.</p></div>
+            <div class="hb-step"><p><strong>🔢 MwSt-Rechner:</strong> Betrag eingeben → Netto oder Brutto als Eingabetyp wählen → Steuersatz 19 % / 7 % / 0 % wählen. Alle drei Werte (Netto, MwSt-Betrag, Brutto) werden sofort berechnet und können einzeln kopiert werden.</p></div>
+            <div class="hb-step"><p><strong>⏱ Stundensatz-Rechner:</strong> Gewünschtes Netto-Jahreseinkommen, Arbeitstage, Urlaubs-/Feiertage, abrechenbare Stunden pro Tag, monatliche Fixkosten und Sicherheitspuffer (%) einstellen. Der <strong>Mindeststundensatz</strong> und der <strong>empfohlene Stundensatz</strong> (inkl. Puffer) werden sofort angezeigt.</p></div>
+          </div>
+          <div class="hb-tip"><b>💡 Tipp:</b> Erstelle ein Angebot → lasse es bestätigen → übertrage die Positionen direkt in eine neue Rechnung. Die Kundenliste in beiden Tools ist identisch.</div>
+        </div>
+      </div>
+
+      <!-- 11 Sidebar-Navigation NEU -->
+      <div class="hb-sec">
+        <div class="hb-head" onclick="toggleHb(this)">
+          <span class="hb-icon">🗂️</span>
+          <span class="hb-title">Sidebar-Navigation &amp; Untermenüs</span>
+          <span class="hb-badge">NEU</span>
+          <span class="hb-chev">▶</span>
+        </div>
+        <div class="hb-body">
+          <p class="hb-intro">Die Sidebar zeigt für Kunden, Einstellungen und Werkzeuge direkte Untermenü-Links.</p>
+          <div class="hb-steps">
+            <div class="hb-step"><p><strong>Kunden → Liste / Karte:</strong> Klicke in der Sidebar auf <em>Liste</em> oder <em>Karte</em> unter „Kunden" – die Ansicht wechselt sofort, auch wenn du gerade auf einer anderen Seite bist.</p></div>
+            <div class="hb-step"><p><strong>Einstellungen → Design / Firma / Funktionen / Daten &amp; Sync / Portale / Handbuch:</strong> Direkt zum gewünschten Tab springen ohne erst die Einstellungen-Seite zu öffnen.</p></div>
+            <div class="hb-step"><p><strong>Werkzeuge → Angebot / m² / Kamera / MwSt / Stundensatz:</strong> Jedes Tool direkt aus der Sidebar starten.</p></div>
+            <div class="hb-step"><p>Die zuletzt aktive Unteransicht wird gemerkt – beim nächsten Besuch der Seite öffnet sich automatisch der richtige Tab oder die richtige Ansicht.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 12 Jahresabschluss, EÜR & GoBD -->
+      <div class="hb-sec">
+        <div class="hb-head" onclick="toggleHb(this)">
+          <span class="hb-icon">🏛️</span>
+          <span class="hb-title">Jahresabschluss, EÜR &amp; GoBD-konforme Vorbereitung</span>
+          <span class="hb-badge upd">AKTUALISIERT</span>
+          <span class="hb-chev">▶</span>
+        </div>
+        <div class="hb-body">
+          <p class="hb-intro">Schritt für Schritt zum steuerlich korrekten Jahresabschluss – GoBD-konform und druckfertig.</p>
+          <div class="hb-steps">
+            <div class="hb-step"><p><strong>EÜR erstellen:</strong> Gehe zu <em>Auswertung</em> → Jahr wählen → <em>EÜR erstellen</em>. Die Seite öffnet sich in einem neuen Tab mit der vollständigen Einnahmen-Überschuss-Rechnung gem. §4 Abs. 3 EStG.</p></div>
+            <div class="hb-step"><p><strong>GoBD-Checkliste:</strong> Oben auf der EÜR-Seite prüft die <strong>GoBD-Prüfung</strong> automatisch sechs Punkte: Zahlungseingänge vollständig, Belege vollständig, Fahrtenbuch lückenlos, offene Rechnungen, Datensicherung und Aufbewahrungspflicht. Fehler werden rot markiert, Links führen direkt zur Fehlerquelle.</p></div>
+            <div class="hb-step"><p><strong>Drucken / PDF:</strong> Nach bestandener GoBD-Prüfung auf <em>Drucken / Als PDF</em> klicken. Im Browser-Dialog „Als PDF speichern" wählen. Das Dokument enthält Firmendaten, Steuernummer, EÜR mit allen Einnahmen und Ausgaben nach Kategorien, Fahrtkosten (0,30 €/km) und die gesetzlichen Hinweise.</p></div>
+            <div class="hb-step"><p><strong>Anlage EÜR beim Finanzamt:</strong> Die Werte aus dem Dokument in die Anlage EÜR (ELSTER) übertragen. Betriebseinnahmen = Summe A, Betriebsausgaben = Summe B, Gewinn = A − B. Für den Steuerberater alternativ den CSV-Export aus der Auswertung verwenden.</p></div>
+            <div class="hb-step"><p><strong>ELSTER-Konto:</strong> Registriere dich auf <a href="https://www.elster.de/eportal/" target="_blank" style="color:var(--accent)">elster.de</a> und speichere deine Zugangsdaten unter <em>Einstellungen → Portale → Mein ELSTER</em>. Das Zertifikat (PFX-Datei) sicher aufbewahren.</p></div>
+            <div class="hb-step"><p><strong>Umsatzsteuer-Voranmeldung (UVA):</strong> Als Kleinunternehmer (§19 UStG) entfällt die UVA, solange der Umsatz unter der Grenze (25.000 € ab 2025) bleibt. Die Auswertung zeigt deinen aktuellen Stand im Ring-Diagramm.</p></div>
+            <div class="hb-step"><p><strong>Aufbewahrungspflicht §147 AO:</strong> Rechnungen, Belege und Fahrtenbuch müssen 10 Jahre aufbewahrt werden. Das Backup aus max4work (Einstellungen → Daten &amp; Sync) ergänzend auf iCloud, Google Drive oder USB sichern.</p></div>
+          </div>
+          <div class="hb-tip"><b>🔒 GoBD:</b> Die GoBD (BMF-Schreiben) verlangen Unveränderlichkeit, Vollständigkeit und Nachvollziehbarkeit aller elektronischen Aufzeichnungen. max4work speichert alle Daten im Browser-localStorage – die GoBD-Prüfung zeigt dir vor dem Abschluss, ob alle Anforderungen erfüllt sind.<br><br><b>⚠️ Hinweis:</b> max4work ist ein Organisations-Tool, kein Steuerberatungsprogramm. Bei steuerlichen Fragen wende dich an einen Steuerberater.</div>
+        </div>
+      </div>
+
+    </div><!-- /hb-list -->
+    </div><!-- /section-handbuch -->
+
+    <!-- ══ RECHNUNG ══════════════════════════════════════════════════════ -->
+    <div class="settings-section" id="section-rechnung" style="display:none">
+
+    <!-- ── Linke Spalte: Steuerung ── -->
+    <div class="inv-controls-col">
+
+      <!-- Meine Blattvorlagen -->
+      <div class="panel">
+        <div class="panel-head">Meine Blattvorlagen</div>
+        <div class="panel-body">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Aktuelle Einstellungen als eigene Vorlage speichern und jederzeit abrufen.</div>
+          <button type="button" class="btn btn-ghost" onclick="saveAsBlattvorlage()" style="width:100%;margin-bottom:10px;">+ Als Vorlage speichern</button>
+          <div id="blattvorlagenList"></div>
+        </div>
+      </div>
+
+      <!-- Dokument-Typ -->
+      <div class="panel">
+        <div class="panel-head">Dokument-Typ</div>
+        <div class="panel-body">
+          <div class="field">
+            <label>Dokumentart</label>
+            <select class="doctype-sel" id="invDocType" onchange="selectDocType(this.value)">
+              <option value="rechnung">Rechnungen</option>
+              <option value="mahnung">Mahnung</option>
+              <option value="auftragsbestaetigung">Auftragsbestätigung</option>
+              <option value="angebot">Angebot</option>
+              <option value="lieferschein">Lieferschein</option>
+              <option value="brief">Brief</option>
+              <option value="gutschrift">Gutschrift</option>
+            </select>
+          </div>
+          <div style="font-size:11.5px;color:var(--muted);margin-top:2px;">Vorschau und PDF-Export passen Titel und Pflichtangaben automatisch an.</div>
+        </div>
+      </div>
+
+      <!-- Design-Layout -->
+      <div class="panel">
+        <div class="panel-head">Design-Vorlage</div>
+        <div class="panel-body">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Wähle einen visuellen Stil – die Vorschau aktualisiert sich sofort.</div>
+          <div class="inv-layout-grid" id="invLayoutGrid"></div>
+        </div>
+      </div>
+
+      <!-- Schrift & Farbe -->
+      <div class="panel">
+        <div class="panel-head">Schrift &amp; Farbe</div>
+        <div class="panel-body" style="gap:13px;">
+          <div>
+            <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:7px;">Schriftart</div>
+            <div class="fdd-wrap" id="invFontWrap">
+              <div class="fdd-trigger" id="invFontTrigger" onclick="toggleFontDd()">
+                <span id="invFontLabel" style="flex:1;overflow:hidden;text-overflow:ellipsis;">Outfit</span>
+                <svg class="fdd-arrow" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+              <div class="fdd-list" id="invFontList"></div>
+            </div>
+          </div>
+          <div style="display:flex;gap:22px;align-items:flex-start;">
+            <div>
+              <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:7px;">Größe</div>
+              <div class="inv-chip-row" id="invSizeGrid"></div>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:7px;">Akzentfarbe</div>
+              <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;" id="invColorSwatches"></div>
+            </div>
+          </div>
+          <div style="font-size:11.5px;color:var(--muted);">Schrift und Farbe wirken sofort in der Live-Vorschau rechts.</div>
+        </div>
+      </div>
+
+      <!-- Rechnungsvorlage -->
+      <div class="panel">
+        <div class="panel-head">Inhalt-Vorlage</div>
+        <div class="panel-body">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Wähle eine Vorlage – sie befüllt alle Felder und die Vorschau rechts aktualisiert sich sofort.</div>
+          <div class="inv-tpl-grid" id="invTplGrid"></div>
+        </div>
+      </div>
+
+      <!-- Logo -->
+      <div class="panel">
+        <div class="panel-head">Logo</div>
+        <div class="panel-body">
+          <div style="position:relative;">
+            <div class="logo-upload" id="logoArea">
+              <input type="file" accept="image/*" id="logoFileInput" onchange="handleLogoUpload(event)">
+              <div id="logoNone">
+                <div style="font-size:22px;margin-bottom:4px;pointer-events:none">🖼️</div>
+                <div class="logo-upload-text">Logo hochladen oder <span>ändern</span><br><small>PNG, JPG, SVG</small></div>
+              </div>
+              <div id="logoPreviewBox" style="display:none; position:relative; z-index:2; pointer-events:none;">
+                <img id="logoPreviewImg" style="max-height:52px;max-width:140px;object-fit:contain;border-radius:4px;" src="" alt="Logo">
+              </div>
+            </div>
+            <button type="button" id="logoRemoveBtn" onclick="removeLogo()" style="display:none; position:absolute; top:-8px; right:-8px; width:22px; height:22px; border-radius:50%; background:var(--red); color:white; font-size:13px; border:none; cursor:pointer; z-index:10; font-weight:700; line-height:1; align-items:center; justify-content:center;">×</button>
+          </div>
+          <div style="margin-top:14px;">
+            <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">Größe</div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <input type="range" id="logoSizeSlider" min="20" max="120" step="2" value="50"
+                style="flex:1;accent-color:var(--accent);cursor:pointer;" oninput="setLogoSizePx(+this.value)">
+              <span id="logoSizeLabel" style="font-size:12px;color:var(--muted);min-width:34px;text-align:right;">50 px</span>
+            </div>
+          </div>
+          <div style="font-size:11.5px;color:var(--muted);margin-top:8px;">Das Logo wird dauerhaft gespeichert und erscheint auf der Rechnung sowie in der Live-Vorschau.</div>
+        </div>
+      </div>
+
+      <!-- Zahlungsbedingungen -->
+      <div class="panel">
+        <div class="panel-head">Zahlungsbedingungen</div>
+        <div class="panel-body" style="gap:13px;">
+          <div>
+            <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:7px;">Zahlungsfrist (Tage)</div>
+            <div class="inv-chip-row" id="invZahlungstageGrid"></div>
+          </div>
+          <div style="font-size:11.5px;color:var(--muted);line-height:1.6;">Zahlungsbedingungen, Fälligkeitsdatum und Grußformel werden automatisch auf der Rechnung angezeigt.</div>
+        </div>
+      </div>
+
+      <!-- Logo-Position -->
+      <div class="panel">
+        <div class="panel-head">Logo-Position &amp; Größe</div>
+        <div class="panel-body" style="gap:14px;">
+          <div class="logo-pos-group">
+            <div class="logo-pos-group-label">Horizontale Position</div>
+            <div class="logo-pos-btns" id="logoPosHBtns"></div>
+          </div>
+          <div class="logo-pos-group">
+            <div class="logo-pos-group-label">Größe</div>
+            <div class="size-toggle" style="display:flex;">
+              <button class="size-btn" id="logoSzKlein"  onclick="selectLogoGroesse('klein')">Klein</button>
+              <button class="size-btn" id="logoSzMittel" onclick="selectLogoGroesse('mittel')">Mittel</button>
+              <button class="size-btn" id="logoSzGross"  onclick="selectLogoGroesse('gross')">Groß</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sichtbare Felder -->
+      <div class="panel">
+        <div class="panel-head">Sichtbare Felder</div>
+        <div class="panel-body">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Klicke ein Feld an, um es ein- oder auszublenden.</div>
+          <div class="inv-fields-grid" id="invFieldsGrid"></div>
+        </div>
+      </div>
+
+      <!-- Individuelle Texte -->
+      <div class="panel">
+        <div class="panel-head">Individuelle Texte</div>
+        <div class="panel-body">
+
+          <div class="field">
+            <label>Einleitungstext <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10.5px;">(über den Positionen)</span></label>
+            <select id="invEinleitungFont" onchange="setTextFont('einleitung', this.value)" style="width:100%;padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;color:var(--text);background:var(--surface);outline:none;cursor:pointer;transition:border-color .12s;margin-bottom:5px;"></select>
+            <textarea id="invEinleitung" rows="3" placeholder="z.B. Sehr geehrte Damen und Herren, ..." oninput="renderInvPreview(); _autoSaveInvConfig()"></textarea>
+            <div style="font-size:11px;color:var(--muted);margin-top:6px;margin-bottom:2px;">Beispiele:</div>
+            <div class="inv-example-chips" id="invEinleitungChips"></div>
+          </div>
+
+          <div class="field">
+            <label>Schlusstext <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10.5px;">(nach den Positionen)</span></label>
+            <select id="invSchlussFont" onchange="setTextFont('schluss', this.value)" style="width:100%;padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;color:var(--text);background:var(--surface);outline:none;cursor:pointer;transition:border-color .12s;margin-bottom:5px;"></select>
+            <textarea id="invSchluss" rows="3" placeholder="z.B. Vielen Dank für Ihren Auftrag." oninput="renderInvPreview(); _autoSaveInvConfig()"></textarea>
+            <div style="font-size:11px;color:var(--muted);margin-top:6px;margin-bottom:2px;">Beispiele:</div>
+            <div class="inv-example-chips" id="invSchlussChips"></div>
+          </div>
+
+          <div class="field">
+            <label>Rechtliche Hinweise &amp; Fußzeile <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10.5px;">(ganz unten)</span></label>
+            <select id="invHinweiseFont" onchange="setTextFont('hinweise', this.value)" style="width:100%;padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;color:var(--text);background:var(--surface);outline:none;cursor:pointer;transition:border-color .12s;margin-bottom:5px;"></select>
+            <textarea id="invHinweise" rows="3" placeholder="z.B. Gemäß § 19 Abs. 1 UStG wird keine Umsatzsteuer berechnet." oninput="renderInvPreview(); _autoSaveInvConfig()"></textarea>
+            <div style="font-size:11px;color:var(--muted);margin-top:6px;margin-bottom:2px;">Beispiele:</div>
+            <div class="inv-example-chips" id="invHinweiseChips"></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Speichern -->
+      <div class="save-bar">
+        <span class="save-hint" id="invSaveHint">Konfiguration wird lokal gespeichert.</span>
+        <div style="display:flex;gap:8px;">
+          <button type="button" class="btn btn-ghost" onclick="resetInvConfig()">Zurücksetzen</button>
+          <button type="button" class="btn btn-blue" onclick="saveInvConfig()">Speichern</button>
+        </div>
+      </div>
+
+    </div><!-- /inv-controls-col -->
+
+    <!-- ── Rechte Spalte: Live-Vorschau ── -->
+    <div class="inv-preview-col">
+      <div class="inv-preview-sticky">
+        <div class="inv-preview-label">Live-Vorschau</div>
+        <div class="inv-a4-outer">
+          <div class="inv-a4-scroll">
+            <div class="inv-a4-paper" id="invA4Paper"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    </div><!-- /section-rechnung -->
+
+    <!-- ══ E-MAIL ══════════════════════════════════════════════════════ -->
+    <div class="settings-section" id="section-email" style="display:none">
+
+      <!-- Absender -->
+      <div class="panel">
+        <div class="panel-head">Absender-Einstellungen</div>
+        <div class="panel-body">
+          <div class="field-row">
+            <div class="field">
+              <label>Absender-Name</label>
+              <input type="text" id="emailAbsenderName">
+            </div>
+            <div class="field">
+              <label>E-Mail-Adresse</label>
+              <input type="email" id="emailAbsenderAdresse" placeholder="info@meinefirma.de">
+            </div>
+          </div>
+          <div class="field">
+            <label>Standard-Betreff (Rechnung)</label>
+            <input type="text" id="emailBetreff" placeholder="Rechnung [Nr] – [Firma]">
+            <div style="font-size:11px;color:var(--muted);margin-top:4px;">Platzhalter: [Nr] · [Firma] · [Betrag] · [Datum] · [Fälligkeit]</div>
+          </div>
+          <div class="save-bar">
+            <span class="save-hint" id="emailKontoHint"></span>
+            <button class="btn btn-blue" onclick="saveEmailKonto()">Speichern</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Textvorlagen -->
+      <div class="panel">
+        <div class="panel-head">E-Mail-Textvorlagen</div>
+        <div class="panel-body">
+          <div class="vtab-row" style="margin-bottom:14px;">
+            <button class="vtab on" data-vorlage="rechnung" onclick="switchEmailVorlage('rechnung',this)">Rechnung</button>
+            <button class="vtab" data-vorlage="mahnung" onclick="switchEmailVorlage('mahnung',this)">Mahnung</button>
+            <button class="vtab" data-vorlage="angebot" onclick="switchEmailVorlage('angebot',this)">Angebot</button>
+            <button class="vtab" data-vorlage="allgemein" onclick="switchEmailVorlage('allgemein',this)">Allgemein</button>
+          </div>
+          <div style="font-size:11.5px;color:var(--muted);margin-bottom:7px;">Beispieltexte – klicken zum Einfügen:</div>
+          <div class="email-chip-row" id="emailExampleChips"></div>
+          <div style="margin-top:14px;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+            <div class="email-toolbar" id="emailVorlageToolbar"></div>
+            <div class="email-editor" id="emailVorlageEditor" contenteditable="true"
+                 data-placeholder="E-Mail-Text für Rechnungen eingeben …"></div>
+          </div>
+          <div class="save-bar" style="margin-top:12px;">
+            <span class="save-hint" id="emailVorlageHint"></span>
+            <button class="btn btn-blue" onclick="saveEmailVorlage()">Vorlage speichern</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Signatur -->
+      <div class="panel">
+        <div class="panel-head">E-Mail-Signatur</div>
+        <div class="panel-body">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Wird automatisch als Abschluss unter jeden E-Mail-Text gesetzt.</div>
+          <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+            <div class="email-toolbar" id="emailSignaturToolbar"></div>
+            <div class="email-editor" id="emailSignaturEditor" contenteditable="true"
+                 style="min-height:100px;" data-placeholder=""></div>
+          </div>
+          <div class="save-bar" style="margin-top:12px;">
+            <span class="save-hint" id="emailSignaturHint"></span>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-ghost" onclick="document.getElementById('emailSignaturEditor').innerHTML='';_hint('emailSignaturHint','')">Leeren</button>
+              <button class="btn btn-blue" onclick="saveEmailSignatur()">Signatur speichern</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Meine Signaturen -->
+      <div class="panel">
+        <div class="panel-head">Meine Signaturen</div>
+        <div class="panel-body">
+          <div id="emailSignaturList" style="display:flex;flex-direction:column;gap:6px;"></div>
+          <div id="emailSignaturListEmpty" style="font-size:12px;color:var(--muted);">Noch keine Signaturen gespeichert.</div>
+        </div>
+      </div>
+
+    </div><!-- /section-email -->
+
+    <!-- ══ DATENTRANSFER ════════════════════════════════════════════════ -->
+    <div class="settings-section" id="section-datentransfer" style="display:none;flex-direction:column;gap:24px;">
+
+      <!-- IMPORT -->
+      <div class="panel">
+        <div class="panel-head" style="display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div class="panel-head-title">📥 Import – Daten aus anderer App übernehmen</div>
+            <div class="panel-head-sub">CSV-Dateien aus SevDesk, Lexoffice, Mein Büro, FastBill u.a.</div>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="section-label">Was möchtest du importieren?</div>
+          <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+            <button class="btn btn-ghost" id="tabKunden" onclick="switchTab('kunden')">👥 Kunden</button>
+            <button class="btn btn-dark" id="tabRechnungen" onclick="switchTab('rechnungen')">◱ Rechnungen</button>
+            <button class="btn btn-ghost" id="tabBelege" onclick="switchTab('belege')">◳ Belege</button>
+          </div>
+          <div class="section-label">App auswählen (optional – für automatische Spaltenerkennung)</div>
+          <div class="app-grid" id="appGrid">
+            <div class="app-chip on" data-app="auto" onclick="selectApp(this)">🔍 Automatisch</div>
+            <div class="app-chip" data-app="sevdesk" onclick="selectApp(this)">SevDesk</div>
+            <div class="app-chip" data-app="lexoffice" onclick="selectApp(this)">Lexoffice</div>
+            <div class="app-chip" data-app="meinbuero" onclick="selectApp(this)">Mein Büro</div>
+            <div class="app-chip" data-app="fastbill" onclick="selectApp(this)">FastBill</div>
+            <div class="app-chip" data-app="billomat" onclick="selectApp(this)">Billomat</div>
+            <div class="app-chip" data-app="custom" onclick="selectApp(this)">Eigene CSV</div>
+          </div>
+          <div class="format-hint" id="formatHint">
+            <strong>Tipp:</strong> Exportiere aus deiner bisherigen App als <strong>CSV</strong> (Semikolon-getrennt). Die Spaltenreihenfolge spielt keine Rolle — max4work erkennt die Felder automatisch.
+          </div>
+          <div class="upload-zone" id="uploadZone">
+            <input type="file" accept=".csv,.txt" id="csvInput" onchange="loadCSV(event)">
+            <div class="upload-icon">📂</div>
+            <div class="upload-label">CSV-Datei hierher ziehen oder klicken</div>
+            <div class="upload-sub">Unterstützt: CSV mit Semikolon (;) oder Komma (,) als Trennzeichen</div>
+          </div>
+          <div id="mappingSection" style="display:none;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin:16px 0 10px;">
+              <div class="section-label" style="margin:0;">Spalten zuordnen</div>
+              <span id="matchBadge" style="font-size:12px;color:var(--green);font-weight:500;"></span>
+            </div>
+            <div class="mapping-grid" id="mappingGrid"></div>
+            <div class="section-label" style="margin-top:16px;">Vorschau (erste 5 Zeilen)</div>
+            <div class="preview-wrap"><table class="preview-table" id="previewTable"></table></div>
+            <div style="display:flex;gap:10px;align-items:center;margin-top:14px;">
+              <button class="btn btn-blue" onclick="doImport()">✓ Import starten</button>
+              <button class="btn btn-ghost" onclick="resetImport()">Abbrechen</button>
+              <span id="importCount" style="font-size:12px;color:var(--muted);"></span>
+            </div>
+            <div class="import-result" id="importResult"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EXPORT -->
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-head-title">📤 Export – Daten sichern oder übertragen</div>
+        </div>
+        <div class="panel-body">
+          <div class="export-grid">
+            <div class="export-card">
+              <div class="export-card-icon">👥</div>
+              <div class="export-card-title">Kunden</div>
+              <div class="export-card-count" id="exportKundenCount">– Einträge</div>
+              <button class="btn btn-ghost btn-sm" onclick="exportCSV('kunden')">⬇ CSV exportieren</button>
+            </div>
+            <div class="export-card">
+              <div class="export-card-icon">◱</div>
+              <div class="export-card-title">Rechnungen</div>
+              <div class="export-card-count" id="exportRechCount">– Einträge</div>
+              <button class="btn btn-ghost btn-sm" onclick="exportCSV('rechnungen')">⬇ CSV exportieren</button>
+            </div>
+            <div class="export-card">
+              <div class="export-card-icon">◳</div>
+              <div class="export-card-title">Belege</div>
+              <div class="export-card-count" id="exportBelegeCount">– Einträge</div>
+              <button class="btn btn-ghost btn-sm" onclick="exportCSV('belege')">⬇ CSV exportieren</button>
+            </div>
+          </div>
+          <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:center;">
+            <button class="btn btn-dark" onclick="exportAll()">📦 Alles als ZIP sichern (JSON)</button>
+            <span style="font-size:12px;color:var(--muted);">Vollständige Datensicherung aller max4work-Daten</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /section-datentransfer -->
+
+  </div>
+</main>
+
+<!-- Ungespeicherte-Änderungen-Leiste -->
+<div id="unsavedBar" style="display:none;position:fixed;bottom:0;left:var(--sidebar);right:0;background:var(--dark);color:#fff;padding:13px 32px;align-items:center;justify-content:space-between;z-index:100;box-shadow:0 -2px 16px rgba(0,0,0,.2);gap:16px;">
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span style="font-size:13px;font-weight:600;">Ungespeicherte Änderungen</span>
+    <span style="font-size:12px;color:rgba(255,255,255,.6);">Möchtest du die Einstellungen speichern?</span>
+  </div>
+  <div style="display:flex;gap:10px;flex-shrink:0;">
+    <button onclick="discardChanges()" style="padding:7px 16px;border-radius:7px;font-size:12.5px;font-weight:500;cursor:pointer;border:1px solid rgba(255,255,255,.3);background:transparent;color:#fff;font-family:inherit;">Verwerfen</button>
+    <button onclick="saveAllChanges()" style="padding:7px 18px;border-radius:7px;font-size:12.5px;font-weight:600;cursor:pointer;border:none;background:var(--accent);color:var(--dark);font-family:inherit;">Speichern</button>
+  </div>
+</div>
+
+<script src="js/datentransfer.js"></script>
+<script src="js/einstellungen.js"></script>
+</body>
+</html>

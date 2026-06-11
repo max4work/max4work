@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<link rel="icon" href="logo.png" type="image/png">
+<link rel="manifest" href="manifest.json">
+<link rel="canonical" href="https://max4work.com/fahrtenbuch.html">
+<meta property="og:site_name" content="max4work">
+<title>max4work – Fahrtenbuch</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/shared.css">
+<script src="shared.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+.topbar-right { display: flex; gap: 8px; align-items: center; }
+.content { padding: 20px 24px; display: grid; grid-template-columns: 360px 1fr; gap: 20px; align-items: start; }
+.btn { padding: 7px 14px; border-radius: 8px; font-size: 12.5px; font-weight: 500; font-family: inherit; cursor: pointer; border: none; transition: all .12s; display: inline-flex; align-items: center; gap: 5px; }
+.btn-blue { background: var(--accent); color: var(--text); font-weight: 600; }
+.btn-blue:hover { background: #b8c930; }
+.btn-ghost { background: var(--soft); color: var(--text); }
+.btn-ghost:hover { background: #dddede; }
+.btn-dark { background: var(--dark); color: #fff; }
+.btn-dark:hover { background: #1a2418; }
+.btn-full { width: 100%; justify-content: center; padding: 10px; font-size: 13px; margin-top: 6px; }
+
+/* Form */
+.form-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; position: sticky; top: 64px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+.panel-head { padding: 14px 18px; border-bottom: 1px solid var(--border); font-size: 13.5px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; }
+.panel-.field { margin-bottom: 10px; }
+.field label { display: block; font-size: 11px; font-weight: 700; color: var(--text); margin-bottom: 4px; text-transform: uppercase; letter-spacing: .5px; }
+.field input, .field select, .field textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 13px; color: var(--text); background: var(--surface); outline: none; transition: border-color .12s; }
+.field input:focus, .field select:focus { border-color: var(--accent); }
+.field input.detected { border-color: var(--green); background: #f0fdf4; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.section-sep { font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; margin: 12px 0 8px; padding-bottom: 6px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 6px; }
+
+/* OCR km Scanner */
+.km-scanner { border: 1.5px dashed var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 10px; }
+.km-scanner-head { padding: 8px 12px; background: var(--soft); font-size: 11.5px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; }
+.km-scanner-.km-scan-btn { position: relative; flex: 1; border: 1.5px dashed var(--border); border-radius: 8px; padding: 8px 4px; text-align: center; cursor: pointer; transition: all .12s; font-size: 11px; color: var(--accent); font-weight: 500; }
+.km-scan-btn:hover { border-color: var(--accent); background: var(--accent-pale); }
+.km-scan-btn input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.km-scan-btn svg { display: block; margin: 0 auto 3px; color: var(--muted); }
+.km-preview { width: 60px; height: 44px; border-radius: 6px; object-fit: cover; border: 1px solid var(--border); cursor: zoom-in; flex-shrink: 0; display: none; }
+.ocr-status { background: var(--dark); color: #fff; border-radius: 6px; padding: 6px 10px; font-size: 11.5px; margin-bottom: 8px; display: none; }
+.ocr-bar { height: 2px; background: rgba(255,255,255,.2); border-radius: 2px; margin-top: 5px; }
+.ocr-bar-fill { height: 100%; background: var(--accent); border-radius: 2px; width: 0%; transition: width .3s; }
+
+/* Distanz Anzeige */
+.distanz-badge { background: var(--accent-pale); border: 1px solid #d4e86e; border-radius: 8px; padding: 8px 14px; display: none; font-size: 13px; font-weight: 600; color: var(--dark); margin-bottom: 10px; text-align: center; }
+
+/* Zweck Toggle */
+.zweck-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; }
+.zweck-btn { border: 1.5px solid var(--border); border-radius: 8px; padding: 8px 4px; text-align: center; cursor: pointer; transition: all .12s; font-size: 12px; font-weight: 500; color: var(--muted); background: var(--surface); }
+.zweck-btn:hover { border-color: var(--accent); }
+.zweck-btn.on { border-color: var(--accent); background: var(--accent-pale); color: var(--text); font-weight: 600; }
+
+/* Routen-Visualisierung */
+.route-vis { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: var(--soft); border-radius: 8px; margin-bottom: 10px; font-size: 12.5px; }
+.route-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.route-line { flex: 1; height: 1px; background: repeating-linear-gradient(90deg,var(--muted) 0,var(--muted) 4px,transparent 4px,transparent 8px); }
+
+/* Liste */
+.list-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+.list-filters { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.filter-sel { padding: 6px 10px; border: 1px solid var(--border); border-radius: 7px; font-family: inherit; font-size: 12px; outline: none; background: var(--surface); }
+.filter-sel:focus { border-color: var(--accent); }
+.kpi-strip { display: grid; grid-template-columns: repeat(4,1fr); border-bottom: 1px solid var(--border); }
+.kpi-cell { padding: 12px 16px; border-right: 1px solid var(--border); }
+.kpi-cell:last-child { border-right: none; }
+.kpi-label { font-size: 10.5px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 4px; }
+.kpi-value { font-size: 17px; font-weight: 700; letter-spacing: -.3px; }
+.kpi-value.green { color: var(--green); }
+.fahrt-row { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border); gap: 12px; transition: background .1s; }
+.fahrt-row:last-child { border-bottom: none; }
+.fahrt-row:hover { background: var(--soft); }
+.fahrt-icon { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.fahrt-icon.dienstlich { background: var(--accent-pale); color: var(--dark); }
+.fahrt-icon.privat { background: var(--soft); color: var(--muted); }
+.fahrt-info { flex: 1; min-width: 0; }
+.fahrt-route { font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+.fahrt-arrow { color: var(--muted); font-size: 11px; }
+.fahrt-meta { font-size: 11.5px; color: var(--muted); margin-top: 2px; display: flex; gap: 8px; flex-wrap: wrap; }
+.fahrt-km { font-size: 14px; font-weight: 700; min-width: 56px; text-align: right; color: var(--dark); flex-shrink: 0; }
+.fahrt-del { background: none; border: none; cursor: pointer; color: var(--muted); display: flex; align-items: center; padding: 3px; transition: color .12s; flex-shrink: 0; }
+.fahrt-del:hover { color: var(--red); }
+.fahrt-edit { background: none; border: none; cursor: pointer; color: var(--muted); display: flex; align-items: center; padding: 3px; transition: color .12s; flex-shrink: 0; }
+.fahrt-edit:hover { color: var(--accent); }
+.badge-dienst { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 20px; background: var(--accent-pale); color: var(--dark); }
+.badge-privat { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 20px; background: var(--soft); color: var(--muted); }
+.empty { padding: 48px 20px; text-align: center; color: var(--muted); font-size: 13px; }
+
+/* Fuhrpark Modal */
+.fp-overlay { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:300; display:none; align-items:center; justify-content:center; }
+.fp-overlay.open { display:flex; }
+.fp-modal { background:var(--surface); border-radius:var(--r); width:100%; max-width:640px; max-height:88vh; display:flex; flex-direction:column; box-shadow:0 24px 64px rgba(0,0,0,.2); animation:fpPop .18s ease; }
+@keyframes fpPop { from{transform:scale(.95);opacity:0;}to{transform:scale(1);opacity:1;} }
+.fp-head { padding:18px 22px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.fp-title { font-size:15px; font-weight:600; }
+.fp-.fp-foot { padding:14px 22px; border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end; }
+.fz-card { border:1px solid var(--border); border-radius:10px; padding:14px 16px; margin-bottom:12px; display:flex; align-items:flex-start; gap:14px; transition:box-shadow .12s; }
+.fz-card:hover { box-shadow:0 2px 12px rgba(0,0,0,.08); }
+.fz-icon { width:40px; height:40px; border-radius:9px; background:var(--soft); display:flex; align-items:center; justify-content:center; flex-shrink:0; color:var(--dark); }
+.fz-info { flex:1; min-width:0; }
+.fz-kz { font-size:14px; font-weight:700; letter-spacing:.5px; margin-bottom:2px; }
+.fz-typ { font-size:12.5px; color:var(--muted); margin-bottom:6px; }
+.fz-dates { display:flex; gap:8px; flex-wrap:wrap; }
+.fz-badge { font-size:10.5px; font-weight:600; padding:3px 9px; border-radius:20px; display:inline-flex; align-items:center; gap:4px; }
+.fz-ok   { background:#D1FAE5; color:#065F46; }
+.fz-warn { background:#FEF3C7; color:#92600A; }
+.fz-over { background:#FEE2E2; color:#991B1B; }
+.fz-none { background:var(--soft); color:var(--muted); }
+.fz-actions { display:flex; flex-direction:column; gap:6px; flex-shrink:0; }
+.fz-del { background:none; border:none; cursor:pointer; color:var(--muted); font-size:12px; padding:3px; transition:color .12s; }
+.fz-del:hover { color:var(--red); }
+.fz-edit { background:none; border:none; cursor:pointer; color:var(--muted); font-size:14px; padding:3px; transition:color .12s; }
+.fz-edit:hover { color:var(--accent); }
+.fp-form { background:var(--soft); border-radius:10px; padding:16px; margin-top:4px; }
+.fp-form-title { font-size:12px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:12px; }
+.fp-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.fp-field { display:flex; flex-direction:column; gap:4px; }
+.fp-foto-area { margin-top:10px; }
+.fp-foto-drop { border:2px dashed var(--border); border-radius:10px; padding:14px 10px; text-align:center; cursor:pointer; transition:border-color .15s,background .15s; position:relative; }
+.fp-foto-drop:hover,.fp-foto-drop.drag { border-color:var(--accent); background:var(--accent-pale); }
+.fp-foto-drop input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+.fp-foto-drop-label { font-size:12px; color:var(--muted); pointer-events:none; }
+.fp-foto-preview { display:none; margin-top:10px; position:relative; }
+.fp-foto-preview img { width:100%; max-height:320px; object-fit:contain; border-radius:8px; display:block; background:var(--soft); }
+.fp-foto-remove { position:absolute; top:6px; right:6px; background:rgba(0,0,0,.55); color:#fff; border:none; border-radius:50%; width:24px; height:24px; font-size:14px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.fp-field label { font-size:10.5px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+.fp-field input, .fp-field select { padding:7px 10px; border:1px solid var(--border); border-radius:7px; font-family:inherit; font-size:13px; color:var(--text); background:var(--surface); outline:none; transition:border-color .12s; }
+.fp-field input:focus, .fp-field select:focus { border-color:var(--accent); }
+
+.fp-body { padding: 16px 22px; overflow-y: auto; flex: 1; }
+
+/* Lightbox */
+#lightbox { display:none; position:fixed; inset:0; background:rgba(0,0,0,.88); z-index:999; align-items:center; justify-content:center; cursor:zoom-out; }
+#lightbox img { max-width:94vw; max-height:92vh; border-radius:8px; object-fit:contain; }
+
+/* Fahrzeugschein ZBI */
+.fp-sep-label { font-size:10.5px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; padding:12px 0 7px; margin-top:6px; border-top:1px solid var(--border); display:flex; align-items:center; gap:6px; }
+.fp-field input.detected, .fp-field select.detected { border-color:var(--green) !important; background:#f0fdf4 !important; }
+.fp-ki-bar { background:var(--soft); border:1px solid var(--border); border-radius:8px; padding:10px 12px; margin-top:8px; }
+.fp-ki-bar label { font-size:10.5px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; display:block; margin-bottom:5px; }
+.fp-ki-bar-row { display:flex; gap:6px; }
+.fp-ki-bar-row input { flex:1; padding:7px 10px; border:1px solid var(--border); border-radius:7px; font-family:monospace; font-size:12px; color:var(--text); background:var(--surface); outline:none; transition:border-color .12s; }
+.fp-ki-bar-row input:focus { border-color:var(--accent); }
+.fp-zbi-scan-wrap { margin:8px 0 4px; }
+.fp-zbi-drop { border:2px dashed var(--border); border-radius:10px; padding:12px 10px; text-align:center; cursor:pointer; transition:border-color .15s,background .15s; position:relative; }
+.fp-zbi-drop:hover,.fp-zbi-drop.drag { border-color:var(--accent); background:var(--accent-pale); }
+.fp-zbi-drop input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+.fp-zbi-drop-label { font-size:11.5px; color:var(--muted); pointer-events:none; }
+.fp-zbi-preview { display:none; margin-top:8px; position:relative; text-align:center; }
+.fp-zbi-preview img { max-height:100px; max-width:100%; object-fit:contain; border-radius:6px; border:1px solid var(--border); }
+.fp-zbi-remove { position:absolute; top:4px; right:4px; background:rgba(0,0,0,.55); color:#fff; border:none; border-radius:50%; width:22px; height:22px; font-size:13px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.fp-scan-btn { width:100%; margin-top:8px; justify-content:center; padding:9px; font-size:12.5px; }
+.fp-scan-btn:disabled { opacity:.45; cursor:not-allowed; }
+
+/* ─── Kompakter Scan-Balken ─── */
+.zbi-scan-bar { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.zbi-scan-drop { flex:1; border:1.5px dashed var(--border); border-radius:8px; padding:7px 10px; display:flex; align-items:center; gap:7px; cursor:pointer; position:relative; transition:border-color .14s,background .14s; min-width:0; }
+.zbi-scan-drop:hover,.zbi-scan-drop.drag { border-color:var(--accent); background:var(--accent-pale); }
+.zbi-scan-drop input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; }
+.zbi-scan-drop-lbl { font-size:11.5px; color:var(--muted); pointer-events:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.zbi-scan-prev-box { display:none; flex:1; background:var(--soft); border:1px solid var(--border); border-radius:8px; padding:4px 8px; align-items:center; gap:6px; min-width:0; }
+.zbi-scan-thumb { height:30px; width:auto; max-width:48px; border-radius:4px; object-fit:contain; border:1px solid var(--border); flex-shrink:0; }
+.zbi-scan-btn { white-space:nowrap; padding:7px 12px; font-size:12px; }
+.zbi-scan-btn:disabled { opacity:.45; cursor:not-allowed; }
+
+/* ─── Realistisches Fahrzeugschein-Dokument (ZB I) ─── */
+.zbi-doc { background:#dce8cb; border:1.5px solid #3c5828; border-radius:2px; overflow:hidden; box-shadow:0 4px 18px rgba(0,0,0,.18); margin-bottom:12px; font-family:Arial,sans-serif; }
+.zbi-cols { display:flex; align-items:stretch; min-height:280px; }
+/* Linke Spalte */
+.zbi-col-left { width:196px; flex-shrink:0; border-right:2px solid #3c5828; display:flex; flex-direction:column; background:#dce8cb; }
+.zbi-doc-title { padding:7px 9px 5px; border-bottom:1px solid #5a7845; }
+.zbi-dt1 { font-size:11px; font-weight:700; color:#1a2d0e; line-height:1.3; }
+.zbi-dt2 { font-size:8.5px; color:#3a5020; margin-top:1px; }
+.zbi-nr-row { padding:3px 9px; font-size:8px; color:#3a5020; border-bottom:1px solid #5a7845; }
+.zbi-eude { display:flex; align-items:center; gap:5px; padding:5px 9px 4px; border-bottom:1px solid #5a7845; }
+.zbi-eude-txt { font-size:7px; color:#1a2d0e; line-height:1.4; text-align:center; flex:1; }
+.zbi-oval { border:1.5px solid #1a2d0e; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:900; color:#1a2d0e; flex-shrink:0; }
+.zbi-multitext { padding:4px 9px 4px; font-size:5.5px; color:#4a6038; line-height:1.55; border-bottom:1px solid #5a7845; }
+.zbi-field-a { padding:5px 9px 6px; border-bottom:1px solid #5a7845; }
+.zbi-a-lbl { font-size:7.5px; font-weight:600; color:#1a2d0e; margin-bottom:3px; }
+.zbi-a-box { border:1.5px solid #3c5828; border-radius:1px; padding:4px 6px; background:rgba(255,255,255,.35); min-height:24px; }
+.zbi-c-wrap { flex:1; padding:5px 9px 4px; border-bottom:1px solid #5a7845; display:flex; flex-direction:column; gap:5px; }
+.zbi-c-lbl { font-size:7px; color:#2a4018; margin-bottom:2px; }
+.zbi-c-line { height:11px; border-bottom:1px solid #8aaa72; }
+.zbi-doc-foot { padding:4px 9px 5px; }
+.zbi-doc-foot .zbi-c-lbl { margin-bottom:3px; display:block; }
+.zbi-doc-foot-note { font-size:5.5px; color:#4a6038; line-height:1.5; margin-top:4px; font-style:italic; }
+/* Rechte Spalte */
+.zbi-col-right { flex:1; display:flex; flex-direction:column; min-width:0; background:#dce8cb; }
+.zbi-row { display:flex; border-bottom:1px solid #5a7845; min-height:26px; }
+.zbi-row:last-child { border-bottom:none; }
+.zbi-cell { flex:1; padding:3px 5px 3px; border-right:1px solid #7a9860; min-width:0; display:flex; flex-direction:column; }
+.zbi-cell:last-child { border-right:none; }
+.zbi-cell.w15 { flex:1.5; }
+.zbi-cell.w2  { flex:2; }
+.zbi-cell.w3  { flex:3; }
+.zbi-lbl { font-size:6.5px; color:#3a5020; margin-bottom:1px; line-height:1.3; flex-shrink:0; }
+.zbi-lbl b { font-weight:700; color:#1a2d0e; }
+.zbi-inp { width:100%; background:transparent; border:none; outline:none; font-size:11.5px; color:#111; padding:0; font-family:Arial,sans-serif; flex:1; min-height:13px; }
+.zbi-inp:focus { background:rgba(255,255,255,.6); border-radius:1px; padding:0 2px; margin:0 -2px; }
+.zbi-inp.detected { color:#065f46; font-weight:700; }
+.zbi-inp option { background:#fff; color:#111; }
+.zbi-kz  { font-size:15px; font-weight:900; letter-spacing:3px; }
+.zbi-fin { font-family:monospace; font-size:11px; letter-spacing:1.5px; }
+
+/* ─── Wartung & Prüfung ─── */
+.zbi-wartung { background:var(--soft); border:1px solid var(--border); border-radius:8px; padding:10px 12px 8px; margin-bottom:10px; }
+.zbi-wartung-title { font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px; }
+.zbi-wartung-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.zbi-wf label { font-size:10px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; display:block; margin-bottom:3px; }
+.zbi-wf input { width:100%; padding:6px 8px; border:1px solid var(--border); border-radius:6px; font-family:inherit; font-size:12px; color:var(--text); background:var(--surface); outline:none; transition:border-color .12s; }
+.zbi-wf input:focus { border-color:var(--accent); }
+</style>
+
+<!-- mob-only-injected -->
+<style>
+@media (max-width: 768px) {
+  .content { grid-template-columns: 1fr !important; }
+  .kpi-strip { grid-template-columns: repeat(2, 1fr) !important; }
+  .fp-grid { grid-template-columns: 1fr !important; }
+  .zweck-row { grid-template-columns: 1fr !important; }
+  .zbi-wartung-grid { grid-template-columns: 1fr !important; }
+  .topbar-right .btn { display: none !important; }
+}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="brand"><img class="brand-logo" src="" alt="max4work" style="height:28px;width:28px;object-fit:contain;border-radius:4px;"><div class="brand-name">max4work</div></div>
+  <nav>
+    <div class="nav-group">
+      <div class="nav-group-label">Übersicht</div>
+      <a class="nav-link" href="index.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg></span> Dashboard</a>
+      <a class="nav-link" href="auswertung.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span> Auswertung</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Buchhaltung</div>
+      <a class="nav-link" href="rechnungen.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span> Rechnungen <span class="pill" id="offenPill">0</span></a>
+      <a class="nav-link" href="belege.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg></span> Belege</a>
+      <a class="nav-link" href="kassenbuch.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg></span> Kassenbuch</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Stammdaten</div>
+      <a class="nav-link" href="termine.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span> Termine</a>
+      <a class="nav-link" href="kunden.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Kunden</a>
+      <a class="nav-link" href="produkte.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span> Produkte</a>
+      <a class="nav-link" href="einstellungen.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span> Einstellungen</a>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-label">Werkzeuge</div>
+      <a class="nav-link" href="werkzeuge.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span> Werkzeuge</a>
+      <a class="nav-link on" href="fahrtenbuch.html" aria-current="page"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M5 17H3a2 2 0 0 1-2-2V9l3-5h10l3 5h2a2 2 0 0 1 2 2v1"/><path d="M17 17H9"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg></span> Fahrtenbuch</a>
+    </div>
+  </nav>
+  <div class="sidebar-user">
+    <div class="av" aria-hidden="true"></div>
+    <div><div class="av-name">Jürgen Stupar</div><div class="av-sub">Einzelunternehmer</div></div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="page-name">Fahrtenbuch</div>
+      <span style="font-size:12px;color:var(--muted)" id="topMeta"></span>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-ghost" onclick="openFuhrpark()">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 17H3a2 2 0 0 1-2-2V9l3-5h10l3 5h2a2 2 0 0 1 2 2v1"/><path d="M17 17H9"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+        Fuhrpark <span id="fuhrparkWarnBadge" style="display:none;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:10px;margin-left:2px;"></span>
+      </button>
+      <button class="btn btn-ghost" onclick="exportCSV()">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Excel
+      </button>
+      <button class="btn btn-dark" onclick="exportPDF()">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Steuerberater PDF
+      </button>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- Formular -->
+    <div class="form-panel">
+      <div class="panel-head">
+        <span id="fahrtFormTitle">Fahrt erfassen</span>
+        <span id="ocrBadge" style="display:none;font-size:11px;background:var(--green);color:#fff;padding:2px 8px;border-radius:20px;font-weight:600;">✓ OCR</span>
+      </div>
+      <div class="panel-body">
+
+        <div id="fahrtPendingBanner" style="display:none;background:var(--accent-pale);border:1px solid var(--accent);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:var(--dark);display:none;align-items:center;gap:8px;">
+          <span style="font-size:16px;">🚗</span>
+          <div><strong id="fahrtPendingTitel"></strong><br><span style="font-size:11.5px;opacity:.75;">Termin-Daten vorbefüllt – bitte km-Stand ergänzen und Fahrt speichern.</span></div>
+          <button onclick="document.getElementById('fahrtPendingBanner').style.display='none'" style="margin-left:auto;background:none;border:none;font-size:16px;cursor:pointer;opacity:.5;">✕</button>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label>Datum</label>
+            <input type="date" id="fDatum">
+          </div>
+          <div class="field">
+            <label>Fahrzeug</label>
+            <select id="fFahrzeug">
+              <option value="">– auswählen –</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Start km mit Foto -->
+        <div class="section-sep">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Kilometerstand
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label>Start-km</label>
+            <input type="number" id="fStartKm" min="0" placeholder="z.B. 87430" oninput="calcDistanz()">
+          </div>
+          <div class="field">
+            <label>End-km</label>
+            <input type="number" id="fEndKm" min="0" placeholder="z.B. 87542" oninput="calcDistanz()">
+          </div>
+        </div>
+
+        <div class="distanz-badge" id="distanzBadge"></div>
+
+        <!-- Route -->
+        <div class="section-sep">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="10" r="3"/><path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z"/></svg>
+          Route
+        </div>
+
+        <div class="route-vis" id="routeVis" style="display:none;">
+          <div class="route-dot" style="background:var(--green)"></div>
+          <span id="routeStart" style="font-size:12px;font-weight:500;"></span>
+          <div class="route-line"></div>
+          <span id="routeEnd" style="font-size:12px;font-weight:500;"></span>
+          <div class="route-dot" style="background:var(--red)"></div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label>Startort</label>
+            <input type="text" id="fStartOrt" placeholder="Ort" oninput="updateRouteVis()">
+          </div>
+          <div class="field">
+            <label>Zielort</label>
+            <input type="text" id="fZielOrt" placeholder="Ort" oninput="updateRouteVis()">
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label>Abfahrt</label>
+            <input type="time" id="fAbfahrt">
+          </div>
+          <div class="field">
+            <label>Ankunft</label>
+            <input type="time" id="fAnkunft">
+          </div>
+        </div>
+
+        <!-- Zweck & Kunde -->
+        <div class="section-sep">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          Zweck
+        </div>
+
+        <div class="zweck-row">
+          <div class="zweck-btn on" data-z="dienstlich" onclick="selectZweck(this)">
+            <div style="font-size:14px;margin-bottom:2px;">💼</div>
+            Dienstlich
+          </div>
+          <div class="zweck-btn" data-z="privat" onclick="selectZweck(this)">
+            <div style="font-size:14px;margin-bottom:2px;">🏠</div>
+            Privat
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Kunde / Anlass</label>
+          <input type="text" id="fKunde" placeholder="z.B. Familie Hoffmann, Kundentermin" list="kundenList">
+          <datalist id="kundenList"></datalist>
+        </div>
+
+        <div class="field">
+          <label>Notiz</label>
+          <input type="text" id="fNotiz" placeholder="z.B. Aufmaß, Wartung, Einkauf Material">
+        </div>
+
+        <button class="btn btn-blue btn-full btn-save-fahrt" onclick="addFahrt()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Fahrt speichern
+        </button>
+        <button class="btn btn-ghost btn-full" id="fahrtCancelEdit" style="display:none;" onclick="resetForm()">Bearbeiten abbrechen</button>
+      </div>
+    </div>
+
+    <!-- Liste -->
+    <div class="list-panel">
+      <div class="list-filters">
+        <select class="filter-sel" id="filterMonat" onchange="render()">
+          <option value="">Alle Monate</option>
+        </select>
+        <select class="filter-sel" id="filterZweck" onchange="render()">
+          <option value="">Alle Fahrten</option>
+          <option value="dienstlich">Nur Dienstlich</option>
+          <option value="privat">Nur Privat</option>
+        </select>
+        <span style="font-size:12px;color:var(--muted);margin-left:auto;" id="listCount"></span>
+      </div>
+      <div class="kpi-strip">
+        <div class="kpi-cell"><div class="kpi-label">Fahrten</div><div class="kpi-value" id="kpiFahrten">–</div></div>
+        <div class="kpi-cell"><div class="kpi-label">Gesamt km</div><div class="kpi-value" id="kpiGesamt">–</div></div>
+        <div class="kpi-cell"><div class="kpi-label">Dienstlich</div><div class="kpi-value green" id="kpiDienst">–</div></div>
+        <div class="kpi-cell"><div class="kpi-label">Ø pro Fahrt</div><div class="kpi-value" id="kpiAvg">–</div></div>
+      </div>
+      <div id="fahrtListe"></div>
+    </div>
+  </div>
+</main>
+
+<!-- Fuhrpark Modal -->
+<div class="fp-overlay" id="fpOverlay" onclick="if(event.target===this)closeFuhrpark()">
+  <div class="fp-modal">
+    <div class="fp-head">
+      <div class="fp-title">Fuhrpark verwalten</div>
+      <button class="btn btn-ghost" style="padding:5px 10px;font-size:12px;" onclick="closeFuhrpark()">✕</button>
+    </div>
+    <div class="fp-body" id="fpBody">
+      <div id="fpFahrzeugListe"></div>
+      <!-- Neues Fahrzeug Form -->
+      <div class="fp-form">
+        <div class="fp-form-title" id="fpFormTitle">+ Neues Fahrzeug hinzufügen</div>
+        <!-- Scan-Balken -->
+        <div style="margin-bottom:8px;">
+          <div class="zbi-scan-bar">
+            <div class="zbi-scan-drop" id="fpZBIDrop">
+              <input type="file" id="fpZBIInput" accept="image/*" onchange="fpZBISelected(event)">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="flex-shrink:0;opacity:.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              <span class="zbi-scan-drop-lbl">Fahrzeugschein-Foto / Scan hochladen</span>
+            </div>
+            <div class="zbi-scan-prev-box" id="fpZBIPreview">
+              <img id="fpZBIImg" class="zbi-scan-thumb" src="" alt="">
+              <span style="font-size:11px;color:var(--muted);flex:1;">Scan geladen</span>
+              <button style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:15px;padding:0;line-height:1;" onclick="fpZBIRemove()" title="Entfernen">✕</button>
+            </div>
+            <button id="fpZBIScanBtn" class="btn btn-blue zbi-scan-btn" onclick="scanFahrzeugschein()" disabled>
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+              OCR auslesen
+            </button>
+          </div>
+          <div id="fpZBIStatus" class="ocr-status" style="display:none;margin-top:6px;">
+            <span id="fpZBIMsg">Erkenne Text…</span>
+            <div class="ocr-bar"><div class="ocr-bar-fill" id="fpZBIBar"></div></div>
+          </div>
+        </div>
+
+        <!-- Realistisches Fahrzeugschein-Dokument (ZB I) -->
+        <div class="zbi-doc">
+          <div class="zbi-cols">
+
+            <!-- LINKE SPALTE -->
+            <div class="zbi-col-left">
+              <div class="zbi-doc-title">
+                <div class="zbi-dt1">Zulassungsbescheinigung Teil I</div>
+                <div class="zbi-dt2">(Fahrzeugschein)</div>
+              </div>
+              <div class="zbi-nr-row">Nr. <span style="border-bottom:1px solid #5a7845;display:inline-block;width:90px;">&nbsp;</span></div>
+              <div class="zbi-eude">
+                <div class="zbi-eude-txt">Europäische<br>Gemeinschaft</div>
+                <div class="zbi-oval">D</div>
+                <div class="zbi-eude-txt">Bundesrepublik<br>Deutschland</div>
+              </div>
+              <div class="zbi-multitext">Permiso de circulación. Parte I / Osvědčení o registraci. Část I / Registreringsbevis. Del I / Αδεια κυκλοφορίας. Μέρος I / Registration certificate. Part I / Certificat d'immatriculation. Partie I / Carta di circolazione. Parte I / Rejestracyjny. Część I / Registrācijas apliecība. I daļa / Forgalmi engedély. I. Rész / Bewijs van inschrijving. Deel I</div>
+              <div class="zbi-field-a">
+                <div class="zbi-a-lbl">A &nbsp;Amtliches Kennzeichen</div>
+                <div class="zbi-a-box">
+                  <input type="text" id="fpKz" class="zbi-inp zbi-kz" placeholder="" style="text-transform:uppercase">
+                </div>
+              </div>
+              <div class="zbi-c-wrap">
+                <div class="zbi-c-field">
+                  <div class="zbi-c-lbl">C.1.1 &nbsp;Name oder Firmenname</div>
+                  <div class="zbi-c-line"></div>
+                  <div class="zbi-c-line"></div>
+                </div>
+                <div class="zbi-c-field">
+                  <div class="zbi-c-lbl">C.1.2 &nbsp;Vorname(n)</div>
+                  <div class="zbi-c-line"></div>
+                </div>
+                <div class="zbi-c-field">
+                  <div class="zbi-c-lbl">C.1.3 &nbsp;Anschrift</div>
+                  <div class="zbi-c-line"></div>
+                  <div class="zbi-c-line"></div>
+                  <div class="zbi-c-line"></div>
+                </div>
+              </div>
+              <div class="zbi-doc-foot">
+                <span class="zbi-c-lbl">Nächste HU (Monat / Jahr): ______</span>
+                <span class="zbi-c-lbl" style="margin-top:4px;display:block;">I &nbsp;Datum: ______</span>
+                <div class="zbi-doc-foot-note">C.4c Der Inhaber der Zulassungsbescheinigung wird nicht als Eigentümer des Fahrzeugs ausgewiesen.</div>
+              </div>
+            </div><!-- /zbi-col-left -->
+
+            <!-- RECHTE SPALTE: Technische Daten -->
+            <div class="zbi-col-right">
+
+              <!-- B Erstzulassung + T Vmax + J Fahrzeugklasse -->
+              <div class="zbi-row">
+                <div class="zbi-cell w2">
+                  <div class="zbi-lbl"><b>B</b> Datum der Erstzulassung</div>
+                  <input type="date" id="fpBaujahr" class="zbi-inp" placeholder="">
+                </div>
+                <div class="zbi-cell">
+                  <div class="zbi-lbl"><b>T</b> Höchstgeschwindigkeit (km/h)</div>
+                  <input type="number" id="fpVmax" class="zbi-inp" placeholder="200" min="0">
+                </div>
+                <div class="zbi-cell">
+                  <div class="zbi-lbl"><b>J</b> Fahrzeugklasse / Aufbauart</div>
+                  <input type="text" id="fpFahrzeugklasse" class="zbi-inp" placeholder="M1">
+                </div>
+              </div>
+
+              <!-- E FIN + G Leergewicht -->
+              <div class="zbi-row">
+                <div class="zbi-cell w3">
+                  <div class="zbi-lbl"><b>E</b> Fahrzeug-Ident-Nr. (FIN / VIN)</div>
+                  <input type="text" id="fpFin" class="zbi-inp zbi-fin" placeholder="WV2ZZZ70ZD123456" maxlength="17">
+                </div>
+                <div class="zbi-cell">
+                  <div class="zbi-lbl"><b>G</b> Masse des Fahrzeugs (kg)</div>
+                  <input type="number" id="fpLeergewicht" class="zbi-inp" placeholder="1650" min="0">
+                </div>
+              </div>
+
+              <!-- D.1 Marke + D.2 Typ -->
+              <div class="zbi-row">
+                <div class="zbi-cell">
+                  <div class="zbi-lbl"><b>D.1</b> Marke / Hersteller</div>
+                  <input type="text" id="fpMarke" class="zbi-inp" placeholder="Volkswagen">
+                </div>
+                <div class="zbi-cell w2">
+                  <div class="zbi-lbl"><b>D.2</b> Typ / Variante</div>
+                  <input type="text" id="fpTyp" class="zbi-inp" placeholder="T6.1 Kombi">
+                </div>
+              </div>
+
+              <!-- D.3 Handelsbezeichnung (volle Breite) -->
+              <div class="zbi-row">
+                <div class="zbi-cell">
+                  <div class="zbi-lbl"><b>D.3</b> Handelsbezeichnung</div>
+                  <input type="text" id="fpHandelsbezeichnung" class="zbi-inp" placeholder="Transporter 2.0 TDI Kombi">
+                </div>
+              </div>
+
+              <!-- F.1 Gesamtmasse + R Farbe -->
+              <div class="zbi-row">
+                <div class="zbi-cell">
+                  <div class="zbi-lbl"><b>F.1</b> Techn. zul. Gesamtmasse (kg)</div>
+                  <input type="number" id="fpGesamtmasse" class="zbi-inp" placeholder="3000" min="0">
+                </div>
+                <div class="zbi-cell">
+                  <div class="zbi-lbl"><b>R</b> Farbe des Fahrzeugs</div>
+                  <input type="text" id="fpFarbe" class="zbi-inp" placeholder="Weiß">
+                </div>
+              </div>
+
+              <!-- P.1 + P.2 + P.3 -->
+              <div class="zbi-row">
+                <div class="zbi-cell">
+                  <div class="zbi-lbl"><b>P.1</b> Hubraum (cm³)</div>
+                  <input type="number" id="fpHubraum" class="zbi-inp" placeholder="1984" min="0">
+                </div>
+                <div class="zbi-cell">
+                  <div class="zbi-lbl"><b>P.2</b> Nennleistung (kW)</div>
+                  <input type="number" id="fpLeistung" class="zbi-inp" placeholder="110" min="0">
+                </div>
+                <div class="zbi-cell w15">
+                  <div class="zbi-lbl"><b>P.3</b> Kraftstoffart / Energiequelle</div>
+                  <select id="fpKraftstoff" class="zbi-inp">
+                    <option value="">–</option>
+                    <option value="Benzin">Benzin</option>
+                    <option value="Diesel">Diesel</option>
+                    <option value="Elektro">Elektro (BEV)</option>
+                    <option value="Hybrid Benzin">Hybrid Benzin</option>
+                    <option value="Hybrid Diesel">Hybrid Diesel</option>
+                    <option value="Plug-in Hybrid">Plug-in Hybrid</option>
+                    <option value="Erdgas">Erdgas (CNG)</option>
+                    <option value="Autogas">Autogas (LPG)</option>
+                    <option value="Wasserstoff">Wasserstoff</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- V.7 CO₂ + V.9 Abgasnorm + S.1 Sitzplätze -->
+              <div class="zbi-row">
+                <div class="zbi-cell">
+                  <div class="zbi-lbl"><b>V.7</b> CO₂-Emissionen (g/km)</div>
+                  <input type="number" id="fpCo2" class="zbi-inp" placeholder="154" min="0">
+                </div>
+                <div class="zbi-cell w15">
+                  <div class="zbi-lbl"><b>V.9</b> Schadstoffklasse / Abgasnorm</div>
+                  <select id="fpUmwelt" class="zbi-inp">
+                    <option value="">–</option>
+                    <option>Euro 1</option><option>Euro 2</option><option>Euro 3</option>
+                    <option>Euro 4</option><option>Euro 5</option><option>Euro 6</option>
+                    <option>Euro 6b</option><option>Euro 6c</option><option>Euro 6d</option>
+                    <option>Euro 6d-TEMP</option>
+                  </select>
+                </div>
+                <div class="zbi-cell">
+                  <div class="zbi-lbl"><b>S.1</b> Sitzplätze</div>
+                  <input type="number" id="fpSitzplaetze" class="zbi-inp" placeholder="5" min="1" max="99">
+                </div>
+              </div>
+
+              <!-- O.1 Anhängelast gebremst + O.2 ungebremst -->
+              <div class="zbi-row">
+                <div class="zbi-cell">
+                  <div class="zbi-lbl"><b>O.1</b> Anhängelast gebremst (kg)</div>
+                  <input type="number" id="fpO1" class="zbi-inp" placeholder="2000" min="0">
+                </div>
+                <div class="zbi-cell">
+                  <div class="zbi-lbl"><b>O.2</b> Anhängelast ungebremst (kg)</div>
+                  <input type="number" id="fpO2" class="zbi-inp" placeholder="750" min="0">
+                </div>
+              </div>
+
+            </div><!-- /zbi-col-right -->
+          </div><!-- /zbi-cols -->
+        </div><!-- /zbi-doc -->
+
+        <!-- Wartung & Prüfung (nicht im Fahrzeugschein) -->
+        <div class="zbi-wartung">
+          <div class="zbi-wartung-title">Wartung &amp; Prüfung</div>
+          <div class="zbi-wartung-grid">
+            <div class="zbi-wf">
+              <label>TÜV fällig</label>
+              <input type="date" id="fpTuev">
+            </div>
+            <div class="zbi-wf">
+              <label>HU (Hauptuntersuchung) fällig</label>
+              <input type="date" id="fpHu">
+            </div>
+            <div class="zbi-wf">
+              <label>Ölwechsel fällig (km)</label>
+              <input type="number" id="fpOel" placeholder="z.B. 90000" min="0">
+            </div>
+            <div class="zbi-wf">
+              <label>Notiz</label>
+              <input type="text" id="fpNotiz" placeholder="z.B. Firmenwagen, AHK">
+            </div>
+          </div>
+        </div>
+        <div class="fp-foto-area">
+          <label style="font-size:10.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:6px;">Fahrzeugfoto</label>
+          <div class="fp-foto-drop" id="fpFotoDrop">
+            <input type="file" id="fpFotoInput" accept="image/*" onchange="fpFotoSelected(event)">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" style="margin:0 auto 6px;display:block;opacity:.4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <div class="fp-foto-drop-label">Foto auswählen oder hierher ziehen<br><span style="font-size:10.5px;opacity:.6;">JPG, PNG, HEIC, WebP, alle Bildformate</span></div>
+          </div>
+          <div class="fp-foto-preview" id="fpFotoPreview">
+            <img id="fpFotoImg" src="" alt="Fahrzeugfoto">
+            <button class="fp-foto-remove" onclick="fpFotoRemove()" title="Foto entfernen">✕</button>
+          </div>
+        </div>
+        <button class="btn btn-blue fp-save-btn" style="margin-top:12px;width:100%;justify-content:center;" onclick="addFahrzeug()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Fahrzeug speichern
+        </button>
+        <button id="fpCancelEdit" class="btn btn-ghost" style="display:none;margin-top:6px;width:100%;justify-content:center;" onclick="_fpClearForm()">Bearbeiten abbrechen</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="lightbox" onclick="this.style.display='none'">
+  <img id="lightboxImg" alt="">
+</div>
+
+<script src="js/fahrtenbuch.js"></script>
+<script>
+  (function() {
+    function initFpDrop() {
+      const drop = document.getElementById('fpFotoDrop');
+      if (!drop) return;
+      drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('drag'); });
+      drop.addEventListener('dragleave', () => drop.classList.remove('drag'));
+      drop.addEventListener('drop', e => {
+        e.preventDefault(); drop.classList.remove('drag');
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = ev => {
+            window._fpFotoBase64 = ev.target.result;
+            document.getElementById('fpFotoImg').src = ev.target.result;
+            document.getElementById('fpFotoPreview').style.display = 'block';
+            drop.style.display = 'none';
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+    document.addEventListener('DOMContentLoaded', initFpDrop);
+
+    function initFpZBIDrop() {
+      const drop = document.getElementById('fpZBIDrop');
+      if (!drop) return;
+      drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('drag'); });
+      drop.addEventListener('dragleave', () => drop.classList.remove('drag'));
+      drop.addEventListener('drop', e => {
+        e.preventDefault(); drop.classList.remove('drag');
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) fpZBISelected({ target: { files: [file] } });
+      });
+    }
+    document.addEventListener('DOMContentLoaded', initFpZBIDrop);
+  })();
+</script>
+</body>
+</html>

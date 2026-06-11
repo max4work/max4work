@@ -1,0 +1,45 @@
+{
+  "name": "max4work",
+  "short_name": "max4work",
+  "description": "Digitale Bürolösung für Einzelunternehmer – Rechnungen, Kunden, Belege und mehr.",
+  "start_url": "index.html",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#C8D93A",
+  "background_color": "#F2F3F0",
+  "lang": "de",
+  "categories": ["business", "finance", "productivity"],
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Neue Rechnung",
+      "short_name": "Rechnung",
+      "url": "rechnungen.html",
+      "description": "Rechnung erstellen"
+    },
+    {
+      "name": "Kunden",
+      "short_name": "Kunden",
+      "url": "kunden.html"
+    },
+    {
+      "name": "Termine",
+      "short_name": "Termine",
+      "url": "termine.html"
+    }
+  ]
+}

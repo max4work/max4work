@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<link rel="icon" href="logo.png" type="image/png">
+<link rel="manifest" href="manifest.json">
+<title>max4work – Werkzeuge</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/shared.css">
+<script src="shared.js"></script>
+<style>
+  .sidebar { overflow-y: auto; }
+    .content { padding: 28px 32px; display: flex; flex-direction: column; gap: 18px; max-width: 860px; }
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+  .panel-head { padding: 14px 20px; border-bottom: 1px solid var(--border); font-size: 13.5px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; }
+  .panel-body { padding: 16px 20px; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 11px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
+  .field input, .field select, .field textarea { width: 100%; padding: 8px 11px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 13px; color: var(--text); background: var(--surface); outline: none; transition: border-color 0.12s; }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+  .field textarea { resize: vertical; min-height: 70px; }
+  .field-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .field-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .btn { padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; border: none; transition: all 0.12s; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-blue { background: var(--accent); color: var(--text); font-weight: 600; }
+  .btn-blue:hover { background: #b8c930; }
+  .btn-ghost { background: var(--soft); color: var(--text); }
+  .btn-ghost:hover { background: var(--border); }
+  .save-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .save-hint { font-size: 12px; color: var(--muted); }
+  .save-hint.ok { color: var(--green); font-weight: 500; }
+
+  /* Tool-Tab-Navigation */
+  .tool-tab-nav { display: flex; gap: 3px; background: var(--soft); border-radius: 11px; padding: 4px; margin-bottom: 16px; }
+  .ttab { flex: 1; padding: 8px 6px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; color: var(--muted); transition: all .15s; display: flex; align-items: center; justify-content: center; gap: 4px; border: none; background: transparent; font-family: inherit; white-space: nowrap; }
+  .ttab.on { background: var(--surface); color: var(--text); font-weight: 600; box-shadow: 0 1px 5px rgba(0,0,0,.1); }
+  .ttab:hover:not(.on) { color: var(--text); background: rgba(255,255,255,.5); }
+  .tool-section { display: flex; flex-direction: column; gap: 16px; }
+
+  /* ── Angebot ── */
+  .pos-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+  .pos-table th { font-size: 10.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; padding: 0 5px 8px; text-align: left; }
+  .pos-table th.r, .pos-table td.r { text-align: right; }
+  .pos-table td { padding: 3px 4px; vertical-align: top; }
+  .pos-table td input, .pos-table td select { padding: 7px 8px; border: 1px solid var(--border); border-radius: 7px; font-family: inherit; font-size: 12.5px; width: 100%; outline: none; background: var(--bg); color: var(--text); }
+  .pos-table td input:focus, .pos-table td select:focus { border-color: var(--accent); background: var(--surface); }
+  .col-nr { width: 28px; text-align: center; color: var(--muted); font-size: 11px; padding-top: 14px !important; }
+  .col-menge { width: 72px; }
+  .col-einheit { width: 95px; }
+  .col-preis { width: 100px; }
+  .col-gesamt { width: 95px; background: transparent; border: none !important; font-weight: 600; font-size: 13px; padding-top: 14px !important; color: var(--text); }
+  .col-del { width: 30px; }
+  .pos-del-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; padding: 4px 6px; border-radius: 5px; line-height: 1; }
+  .pos-del-btn:hover { color: var(--red); background: #FEE2E2; }
+  .ang-totals { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .ang-tr { display: flex; gap: 24px; }
+  .ang-tl { font-size: 13px; color: var(--muted); min-width: 90px; text-align: right; }
+  .ang-tv { font-size: 13.5px; font-weight: 600; min-width: 100px; text-align: right; }
+  .ang-tr.grand .ang-tl { color: var(--text); font-weight: 600; font-size: 14px; }
+  .ang-tr.grand .ang-tv { font-size: 20px; }
+
+  /* ── m² Rechner ── */
+  .raum-card { background: var(--soft); border-radius: 10px; padding: 14px 16px 12px; position: relative; }
+  .raum-title-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .raum-name-in { flex: 1; background: transparent; border: none; border-bottom: 1.5px solid var(--border); border-radius: 0; padding: 3px 2px; font-size: 13.5px; font-weight: 600; color: var(--text); font-family: inherit; outline: none; }
+  .raum-name-in:focus { border-bottom-color: var(--accent); }
+  .raum-dims { display: grid; grid-template-columns: 1fr 1fr 1fr 1.2fr; gap: 8px; }
+  .rdim { display: flex; flex-direction: column; gap: 3px; }
+  .rdim label { font-size: 10px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
+  .rdim input { padding: 7px 9px; border: 1px solid var(--border); border-radius: 7px; font-family: inherit; font-size: 13px; background: var(--surface); outline: none; }
+  .rdim input:focus { border-color: var(--accent); }
+  .raum-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+  .rbadge { font-size: 11.5px; padding: 3px 10px; border-radius: 20px; background: var(--surface); border: 1px solid var(--border); color: var(--muted); }
+  .rbadge.val { background: var(--accent-pale); color: var(--dark); border-color: transparent; font-weight: 500; }
+  .raum-del { position: absolute; top: 8px; right: 8px; background: none; border: none; cursor: pointer; color: var(--muted); font-size: 14px; padding: 4px 7px; border-radius: 5px; }
+  .raum-del:hover { color: var(--red); background: #FEE2E2; }
+  .m2-total { background: var(--dark); color: #fff; border-radius: var(--r); padding: 18px 22px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .m2ti label { font-size: 10px; opacity: .5; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; display: block; }
+  .m2ti .v { font-size: 26px; font-weight: 700; letter-spacing: -.5px; }
+  .m2ti .v em { font-size: 13px; font-weight: 400; opacity: .6; font-style: normal; }
+
+  /* ── Kamera ── */
+  .cam-wrap { background: #111; border-radius: var(--r); overflow: hidden; aspect-ratio: 4/3; max-height: 340px; display: flex; align-items: center; justify-content: center; }
+  #camVideo { width: 100%; height: 100%; object-fit: cover; display: none; }
+  .cam-hint { color: rgba(255,255,255,.35); text-align: center; padding: 30px; }
+  .cam-hint svg { opacity: .25; }
+  .cam-hint p { font-size: 13px; margin-top: 10px; }
+  .cam-btns { display: flex; gap: 10px; align-items: center; justify-content: center; }
+  .cam-shutter { width: 58px; height: 58px; border-radius: 50%; background: #fff; border: 5px solid rgba(255,255,255,.25); cursor: pointer; transition: transform .1s; box-shadow: 0 2px 14px rgba(0,0,0,.25); }
+  .cam-shutter:active { transform: scale(.9); }
+  .cam-shutter:disabled { opacity: .35; cursor: not-allowed; }
+  #camCanvas { display: none; }
+  .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
+  .photo-item { border-radius: 8px; overflow: hidden; aspect-ratio: 4/3; background: var(--soft); position: relative; }
+  .photo-item img { width: 100%; height: 100%; object-fit: cover; }
+  .photo-item-bar { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,.6)); display: flex; justify-content: center; gap: 4px; padding: 14px 5px 5px; opacity: 0; transition: opacity .15s; }
+  .photo-item:hover .photo-item-bar { opacity: 1; }
+  .phi-btn { background: rgba(255,255,255,.85); border: none; border-radius: 5px; width: 26px; height: 26px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+  .cam-empty { font-size: 13px; color: var(--muted); text-align: center; padding: 20px; }
+
+  /* ── MwSt Rechner ── */
+  .mwst-amt { font-size: 36px; font-weight: 700; text-align: center; padding: 14px 20px; letter-spacing: -1px; border: 2px solid var(--border); border-radius: 10px; outline: none; width: 100%; font-family: inherit; color: var(--text); background: var(--surface); }
+  .mwst-amt:focus { border-color: var(--accent); }
+  .type-toggle { display: flex; background: var(--soft); border-radius: 9px; padding: 3px; gap: 2px; }
+  .type-btn { flex: 1; padding: 9px; border-radius: 7px; border: none; background: transparent; font-family: inherit; font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; transition: all .12s; }
+  .type-btn.on { background: var(--surface); color: var(--text); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+  .rate-toggle { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+  .rate-btn { padding: 12px; border-radius: 10px; border: 1.5px solid var(--border); background: var(--surface); font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all .12s; }
+  .rate-btn.on { background: var(--accent-pale); border-color: var(--accent); color: var(--dark); }
+  .mwst-results { display: flex; flex-direction: column; }
+  .mwst-row { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .mwst-row:last-child { border-bottom: none; }
+  .mwst-row-lbl { flex: 1; font-size: 13.5px; color: var(--muted); }
+  .mwst-row-val { font-size: 20px; font-weight: 600; min-width: 130px; text-align: right; }
+  .mwst-row-val.hl { font-size: 28px; color: var(--text); }
+  .cpybtn { margin-left: 10px; padding: 4px 10px; border: 1px solid var(--border); background: var(--soft); border-radius: 6px; font-size: 11px; cursor: pointer; color: var(--muted); font-family: inherit; white-space: nowrap; }
+  .cpybtn:hover { background: var(--border); color: var(--text); }
+
+  /* Print */
+  @media print {
+    .sidebar, .topbar, .tool-tab-nav, .save-bar, .pos-del-btn, #angAddBtn,
+    #tool-m2, #tool-mwst { display: none !important; }
+        .content { padding: 20px !important; gap: 12px !important; max-width: none !important; }
+    .panel { box-shadow: none !important; }
+    #tool-angebot { display: flex !important; }
+  }
+</style>
+
+<!-- mob-only-injected -->
+<style>
+.mini-cal { position:fixed; background:var(--card); border:1px solid var(--border); border-radius:10px; box-shadow:0 4px 24px rgba(0,0,0,.14); padding:8px 10px 10px; z-index:9999; width:214px; }
+.mini-cal-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+.mini-cal-head span { font-size:13px; font-weight:600; }
+.mini-cal-nav { background:none; border:none; cursor:pointer; padding:3px 9px; border-radius:6px; color:var(--text); font-size:17px; line-height:1; }
+.mini-cal-nav:hover { background:var(--soft); }
+.mini-cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
+.mini-cal-dow { font-size:10px; color:var(--muted); text-align:center; padding:3px 0 4px; font-weight:500; }
+.mini-cal-day { font-size:12px; text-align:center; padding:5px 2px; border-radius:5px; cursor:pointer; }
+.mini-cal-day:hover { background:var(--accent); color:var(--dark); }
+.cal-today { font-weight:700; color:var(--accent); }
+@media (max-width: 768px) {
+  .field-row2 { grid-template-columns: 1fr !important; }
+  .field-row3 { grid-template-columns: 1fr !important; }
+  .raum-dims { grid-template-columns: 1fr 1fr !important; }
+  .m2-total { grid-template-columns: 1fr !important; }
+  .save-bar { flex-wrap: wrap; }
+  /* Positionen-Tabelle → 2-Zeilen-Karten */
+  .pos-table thead { display: none; }
+  .pos-table, .pos-table tbody { display: block; }
+  .pos-table tr { display: flex; flex-wrap: wrap; gap: 5px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .pos-table tr:last-child { border-bottom: none; }
+  .pos-table td { padding: 0 !important; display: block; }
+  .col-nr { display: none; }
+  .pos-table td:nth-child(2) { flex: 1 1 100%; }
+  .col-menge  { flex: 0 0 70px; }
+  .col-einheit { flex: 0 0 90px; }
+  .col-preis  { flex: 0 0 96px; }
+  .col-gesamt { flex: 1; padding-top: 0 !important; display: flex; align-items: center; justify-content: flex-end; font-size: 13px; }
+  .col-del    { flex: 0 0 34px; display: flex; align-items: center; justify-content: center; }
+  .pos-table { min-width: 0 !important; }
+}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand"><img class="brand-logo" src="" alt="max4work" style="height:28px;width:28px;object-fit:contain;border-radius:4px;"><div class="brand-name">max4work</div></div>
+  <nav>
+    <div class="nav-group">
+      <div class="nav-group-label">Übersicht</div>
+      <a class="nav-link" href="index.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg></span> Dashboard</a>
+      <a class="nav-link" href="auswertung.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span> Auswertung</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Buchhaltung</div>
+      <a class="nav-link" href="rechnungen.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span> Rechnungen <span class="pill" id="offenPill">0</span></a>
+      <a class="nav-link" href="belege.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg></span> Belege</a>
+      <a class="nav-link" href="kassenbuch.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg></span> Kassenbuch</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Stammdaten</div>
+      <a class="nav-link" href="termine.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span> Termine</a>
+      <a class="nav-link" href="kunden.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg></span> Kunden</a>
+      <a class="nav-link" href="produkte.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></span> Produkte</a>
+      <a class="nav-link" href="einstellungen.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span> Einstellungen</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Werkzeuge</div>
+      <a class="nav-link on" href="werkzeuge.html" aria-current="page"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span> Werkzeuge</a>
+      <a class="nav-link" href="fahrtenbuch.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M5 17H3a2 2 0 0 1-2-2V9l3-5h10l3 5h2a2 2 0 0 1 2 2v1"/><path d="M17 17H9"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg></span> Fahrtenbuch</a>
+    </div>
+  </nav>
+  <div class="sidebar-user" aria-label="Benutzerprofil">
+    <div class="av" aria-hidden="true"></div>
+    <div><div class="av-name">Jürgen Stupar</div><div class="av-sub">Einzelunternehmer</div></div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="page-name" id="toolTitle">Werkzeuge – Angebot</div>
+  </div>
+  <div class="content">
+
+    <!-- Tab-Navigation -->
+    <div class="tool-tab-nav" role="tablist">
+      <button class="ttab on" data-tool="angebot" onclick="showTool('angebot')" role="tab">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>
+        Angebot
+      </button>
+      <button class="ttab" data-tool="m2" onclick="showTool('m2')" role="tab">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+        m² &amp; Photo
+      </button>
+      <button class="ttab" data-tool="mwst" onclick="showTool('mwst')" role="tab">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+        MwSt
+      </button>
+    </div>
+
+    <!-- ══ ANGEBOT ══ -->
+    <div class="tool-section" id="tool-angebot">
+      <div class="panel">
+        <div class="panel-head">Kopfdaten</div>
+        <div class="panel-body">
+          <div class="field-row3">
+            <div class="field"><label>Angebots-Nr.</label><input id="a-nr" placeholder="A-2024-001"></div>
+            <div class="field"><label>Datum</label><input type="text" id="a-datum" placeholder="tt.mm.jjjj"></div>
+            <div class="field"><label>Gültig bis</label><input type="text" id="a-gueltig" placeholder="tt.mm.jjjj"></div>
+          </div>
+          <div class="field-row2">
+            <div class="field"><label>Empfänger / Firma</label><input id="a-empf" list="angKundenList" placeholder="Kundenname …" oninput="fillAngAdresse(this.value)"></div>
+            <div class="field"><label>Betreff</label><input id="a-betreff" placeholder="z.B. Angebot Reinigung Büro"></div>
+          </div>
+          <datalist id="angKundenList"></datalist>
+          <div class="field"><label>Anschrift Empfänger</label><textarea id="a-adresse" rows="3" placeholder="Straße, PLZ Ort"></textarea></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          Positionen
+          <button id="angAddBtn" class="btn btn-ghost" style="font-size:12px;padding:5px 12px" onclick="addAPos()">+ Position</button>
+        </div>
+        <div class="panel-body">
+          <div style="overflow-x:auto">
+            <table class="pos-table">
+              <thead>
+                <tr>
+                  <th class="col-nr">#</th>
+                  <th>Beschreibung</th>
+                  <th class="col-menge">Menge</th>
+                  <th class="col-einheit">Einheit</th>
+                  <th class="col-preis r">Einzelpreis</th>
+                  <th class="col-gesamt r">Gesamt</th>
+                  <th class="col-del"></th>
+                </tr>
+              </thead>
+              <tbody id="angPosTbody"></tbody>
+            </table>
+          </div>
+          <div class="ang-totals" id="angTotals"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">Konditionen &amp; Hinweise</div>
+        <div class="panel-body">
+          <div class="field"><label>Freitext (erscheint am Ende des Angebots)</label>
+            <textarea id="a-hinweis" rows="3" placeholder="z.B. Zahlungsziel, Materialien inklusive, Anfahrt inklusive …">Dieses Angebot ist freibleibend und gilt bis zum angegebenen Datum. Zahlung innerhalb von 14 Tagen nach Auftragserteilung.</textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="save-bar">
+        <span class="save-hint" id="angHint">Bereit zum Drucken oder Speichern als PDF.</span>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost" onclick="resetAngebot()">Neu</button>
+          <button class="btn btn-blue" onclick="printAngebot()">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            Drucken / PDF
+          </button>
+        </div>
+      </div>
+    </div><!-- /angebot -->
+
+    <!-- ══ m² RECHNER & KAMERA ══ -->
+    <div class="tool-section" id="tool-m2" style="display:none">
+      <div class="panel">
+        <div class="panel-head">
+          Räume
+          <div style="display:flex;align-items:center;gap:8px">
+            <select id="m2ModeSelect" onchange="setM2Mode(this.value)" style="padding:5px 8px;border:1px solid var(--border);border-radius:7px;font-family:inherit;font-size:12px;color:var(--text);background:var(--surface);outline:none;cursor:pointer">
+              <option value="boden">Bodenfläche m²</option>
+              <option value="wand">Wandfläche m²</option>
+              <option value="decke">Deckenfläche m²</option>
+              <option value="fenster">Fensterfläche m²</option>
+              <option value="alle">Alle Flächen</option>
+            </select>
+            <button class="btn btn-ghost" style="font-size:12px;padding:5px 12px" onclick="addRaum()">+ Raum</button>
+          </div>
+        </div>
+        <div class="panel-body" id="raeumeBody">
+          <div style="font-size:13px;color:var(--muted);text-align:center;padding:16px 0">Noch keine Räume. Füge einen Raum hinzu.</div>
+        </div>
+      </div>
+      <div class="m2-total" id="m2Total">
+        <div class="m2ti"><label>Bodenfläche gesamt</label><div class="v">0 <em>m²</em></div></div>
+        <div class="m2ti"><label>Wandfläche gesamt</label><div class="v">0 <em>m²</em></div></div>
+        <div class="m2ti"><label>Deckenfläche gesamt</label><div class="v">0 <em>m²</em></div></div>
+      </div>
+      <div class="save-bar">
+        <span class="save-hint" id="m2SaveHint">Länge × Breite – Bodenfläche</span>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost" onclick="copyM2Result()">Kopieren</button>
+          <button class="btn btn-blue" onclick="showM2Ergebnis()">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Ergebnis & Fotos
+          </button>
+        </div>
+      </div>
+
+      <div id="m2ErgebnisPanel" class="panel" style="display:none">
+        <div class="panel-head">
+          Ergebnis
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-blue" onclick="printM2Ergebnis()">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              Drucken / PDF
+            </button>
+            <button class="btn btn-ghost" onclick="document.getElementById('m2ErgebnisPanel').style.display='none'">Schließen</button>
+          </div>
+        </div>
+        <div class="panel-body" id="m2ErgebnisBody"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">Kamera</div>
+        <div class="panel-body">
+          <div class="cam-wrap" id="camWrap">
+            <video id="camVideo" autoplay playsinline muted></video>
+            <div class="cam-hint" id="camHint">
+              <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.4" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              <p>Kamera starten um Fotos aufzunehmen</p>
+            </div>
+          </div>
+          <canvas id="camCanvas"></canvas>
+          <div class="cam-btns">
+            <button class="btn btn-ghost" id="camStartBtn" onclick="startCam()">Kamera starten</button>
+            <button class="cam-shutter" id="camShutter" onclick="capturePhoto()" disabled title="Foto aufnehmen"></button>
+            <button class="btn btn-ghost" id="camStopBtn" onclick="stopCam()" style="display:none">Kamera stoppen</button>
+          </div>
+        </div>
+      </div>
+      <div class="panel" id="photoPanel">
+        <div class="panel-head">Fotos <span id="photoCount" style="font-size:12px;color:var(--muted);font-weight:400"></span></div>
+        <div class="panel-body">
+          <div class="photo-grid" id="photoGrid">
+            <div class="cam-empty">Noch keine Fotos aufgenommen.</div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /m2-kamera -->
+
+    <!-- ══ MwSt RECHNER ══ -->
+    <div class="tool-section" id="tool-mwst" style="display:none">
+      <div class="panel">
+        <div class="panel-head">Betrag eingeben</div>
+        <div class="panel-body">
+          <input class="mwst-amt" id="mwstAmt" type="number" min="0" step="0.01" placeholder="0,00" oninput="calcMwst()">
+          <div class="field-row2">
+            <div>
+              <div class="field" style="margin-bottom:6px"><label>Eingabe-Typ</label></div>
+              <div class="type-toggle">
+                <button class="type-btn on" id="typeNetto" onclick="setMwstType('netto')">Nettobetrag</button>
+                <button class="type-btn" id="typeBrutto" onclick="setMwstType('brutto')">Bruttobetrag</button>
+              </div>
+            </div>
+            <div>
+              <div class="field" style="margin-bottom:6px"><label>Steuersatz</label></div>
+              <div class="rate-toggle">
+                <button class="rate-btn on" id="rate19" onclick="setMwstRate(19)">19 %</button>
+                <button class="rate-btn" id="rate7" onclick="setMwstRate(7)">7 %</button>
+                <button class="rate-btn" id="rate0" onclick="setMwstRate(0)">0 %</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">Ergebnis</div>
+        <div class="panel-body">
+          <div class="mwst-results">
+            <div class="mwst-row">
+              <span class="mwst-row-lbl">Nettobetrag</span>
+              <span class="mwst-row-val" id="mwstNetto">–</span>
+              <button class="cpybtn" onclick="copyMwst('netto')">Kopieren</button>
+            </div>
+            <div class="mwst-row">
+              <span class="mwst-row-lbl" id="mwstRateLbl">MwSt (19 %)</span>
+              <span class="mwst-row-val" id="mwstBetrag">–</span>
+              <button class="cpybtn" onclick="copyMwst('betrag')">Kopieren</button>
+            </div>
+            <div class="mwst-row">
+              <span class="mwst-row-lbl"><strong>Bruttobetrag</strong></span>
+              <span class="mwst-row-val hl" id="mwstBrutto">–</span>
+              <button class="cpybtn" onclick="copyMwst('brutto')">Kopieren</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /mwst -->
+
+  </div>
+</main>
+
+<script src="js/werkzeuge.js"></script>
+</body>
+</html>

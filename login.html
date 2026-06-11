@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>max4work – Anmelden</title>
+  <link rel="icon" href="logo.png" type="image/png">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Outfit', system-ui, sans-serif;
+      background: #F2F3F0;
+      color: #1A1C18;
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid #E4E6E2;
+      border-radius: 18px;
+      padding: 40px 36px 36px;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: 0 4px 32px rgba(0,0,0,.07);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 28px;
+      justify-content: center;
+    }
+    .brand img {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      object-fit: contain;
+    }
+    .brand-name {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -.3px;
+    }
+    h1 {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 22px;
+      color: #1A1C18;
+      text-align: center;
+    }
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #7B8278;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      margin-bottom: 5px;
+    }
+    .field { margin-bottom: 14px; }
+    input[type=text], input[type=password] {
+      width: 100%;
+      padding: 10px 13px;
+      border: 1.5px solid #E4E6E2;
+      border-radius: 10px;
+      font-size: 15px;
+      font-family: inherit;
+      background: #F2F3F0;
+      color: #1A1C18;
+      outline: none;
+      transition: border-color .12s;
+    }
+    input[type=text]:focus, input[type=password]:focus {
+      border-color: #C8D93A;
+      background: #fff;
+    }
+    .remember {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      color: #7B8278;
+      cursor: pointer;
+    }
+    .remember input { width: 16px; height: 16px; cursor: pointer; accent-color: #C8D93A; }
+    .btn-login {
+      width: 100%;
+      padding: 12px;
+      background: #C8D93A;
+      color: #1A1C18;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: inherit;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background .12s;
+    }
+    .btn-login:hover { background: #b8c930; }
+    .btn-login:disabled { opacity: .6; cursor: default; }
+    .error {
+      margin-top: 12px;
+      padding: 9px 13px;
+      background: #FEF2F2;
+      border: 1px solid #FECACA;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #DC2626;
+      display: none;
+    }
+    .error.show { display: block; }
+    @media (max-width: 400px) {
+      .card { padding: 28px 20px 24px; }
+    }
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="card">
+    <div class="brand">
+      <img src="logo.png" alt="max4work Logo">
+      <span class="brand-name">max4work</span>
+    </div>
+    <h1>Anmelden</h1>
+    <div class="field">
+      <label for="loginUser">Benutzername</label>
+      <input type="text" id="loginUser" autocomplete="username" autocapitalize="none" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="loginPass">Passwort</label>
+      <input type="password" id="loginPass" autocomplete="current-password">
+    </div>
+    <label class="remember">
+      <input type="checkbox" id="rememberMe"> Angemeldet bleiben
+    </label>
+    <button class="btn-login" id="loginBtn" onclick="doLogin()">Anmelden</button>
+    <div class="error" id="loginError">Benutzername oder Passwort falsch.</div>
+  </div>
+
+  <script>
+    const _H = 'b22ef2de2ea994cbe15b7d63acc6c2dcacea108737704f4015952e9ecacb362a';
+
+    async function _sha256(str) {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function doLogin() {
+      const btn = document.getElementById('loginBtn');
+      const err = document.getElementById('loginError');
+      const user = document.getElementById('loginUser').value.trim();
+      const pass = document.getElementById('loginPass').value;
+      const remember = document.getElementById('rememberMe').checked;
+
+      btn.disabled = true;
+      err.classList.remove('show');
+
+      const hash = await _sha256(user + ':' + pass);
+      if (hash === _H) {
+        if (remember) localStorage.setItem('m4w_sess', '1');
+        else sessionStorage.setItem('m4w_sess', '1');
+        location.replace('index.html');
+      } else {
+        err.classList.add('show');
+        btn.disabled = false;
+        document.getElementById('loginPass').value = '';
+        document.getElementById('loginPass').focus();
+      }
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') doLogin();
+    });
+
+    // Bereits eingeloggt?
+    if (sessionStorage.getItem('m4w_sess') === '1' || localStorage.getItem('m4w_sess') === '1') {
+      location.replace('index.html');
+    }
+  </script>
+</body>
+</html>
