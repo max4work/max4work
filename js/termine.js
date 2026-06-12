@@ -42,7 +42,10 @@ function renderCalendar() {
   const rest = (startDow+last.getDate())%7===0?0:7-((startDow+last.getDate())%7);
   for(let i=1;i<=rest;i++) days.push({d: new Date(viewYear,viewMonth+1,i), other:true});
   days.forEach(({d,other},i) => {
-    if(i%7===0) { const kw=document.createElement('div'); kw.className='kw-cell'; kw.textContent=isoWeek(d); grid.appendChild(kw); }
+    if(i%7===0) {
+      if (i > 0) { const sep=document.createElement('div'); sep.className='cal-week-sep'; grid.appendChild(sep); }
+      const kw=document.createElement('div'); kw.className='kw-cell'; kw.textContent=isoWeek(d); grid.appendChild(kw);
+    }
     addDayCell(grid, d, other);
   });
   renderMiniList(); renderDayView();
