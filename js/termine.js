@@ -174,10 +174,8 @@ function deleteTermin(id){
   termine=termine.filter(t=>t.id!==id);saveStorage();closeModal();renderCalendar();
 }
 
-/* ══════════════ ICS Export für iOS Kalender ══════════════ */
-function exportICS() {
-  if (!termine.length) { alert('Keine Termine vorhanden.'); return; }
-
+/* ══════════════ ICS Generierung (shared) ══════════════ */
+function _buildICS() {
   function icsDate(datum, zeit) {
     if (!datum) return null;
     const [y,m,d] = datum.split('-');
@@ -185,70 +183,53 @@ function exportICS() {
     const [h,min] = zeit.split(':');
     return `${y}${m}${d}T${h}${min}00`;
   }
-
   function icsEscape(s) {
     return String(s||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');
   }
-
-  function makeUID(id) {
-    return `max4work-${id}@max4work.com`;
-  }
-
+  const colorCat = {
+    '#C8D93A':'Lime','#2B3829':'Dunkelgrün','#34C759':'Grün',
+    '#3B82F6':'Blau','#8B5CF6':'Lila','#F97316':'Orange',
+    '#EF4444':'Rot','#EC4899':'Pink',
+  };
   let lines = [
-    'BEGIN:VCALENDAR',
-    'VERSION:2.0',
+    'BEGIN:VCALENDAR','VERSION:2.0',
     'PRODID:-//max4work//Terminplaner//DE',
-    'CALSCALE:GREGORIAN',
-    'METHOD:PUBLISH',
+    'CALSCALE:GREGORIAN','METHOD:PUBLISH',
     'X-WR-CALNAME:max4work Termine',
     'X-WR-TIMEZONE:Europe/Berlin',
   ];
-
   termine.forEach(t => {
     lines.push('BEGIN:VEVENT');
-    lines.push(`UID:${makeUID(t.id)}`);
-
-    const now = new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
-    lines.push(`DTSTAMP:${now}Z`);
-
+    lines.push(`UID:max4work-${t.id}@max4work.com`);
+    lines.push(`DTSTAMP:${new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'')}Z`);
     if (t.ganztag === 'ja') {
       lines.push(`DTSTART;VALUE=DATE:${icsDate(t.datum)}`);
-      // Ganztag: Endtag = nächster Tag
       const end = new Date(t.datum + 'T00:00:00');
       end.setDate(end.getDate() + 1);
       const [ey,em,ed] = end.toISOString().split('T')[0].split('-');
       lines.push(`DTEND;VALUE=DATE:${ey}${em}${ed}`);
     } else {
-      const von = icsDate(t.datum, t.von || '00:00');
-      const bis = icsDate(t.datum, t.bis || t.von || '01:00');
-      lines.push(`DTSTART;TZID=Europe/Berlin:${von}`);
-      lines.push(`DTEND;TZID=Europe/Berlin:${bis}`);
+      lines.push(`DTSTART;TZID=Europe/Berlin:${icsDate(t.datum, t.von || '00:00')}`);
+      lines.push(`DTEND;TZID=Europe/Berlin:${icsDate(t.datum, t.bis || t.von || '01:00')}`);
     }
-
     lines.push(`SUMMARY:${icsEscape(t.titel)}`);
     if (t.kunde) lines.push(`LOCATION:${icsEscape(t.kunde)}`);
     if (t.notiz) lines.push(`DESCRIPTION:${icsEscape(t.notiz)}`);
-
-    // Farbe als Kategorie
-    const colorCat = {
-      '#C8D93A':'Lime','#2B3829':'Dunkelgrün','#34C759':'Grün',
-      '#3B82F6':'Blau','#8B5CF6':'Lila','#F97316':'Orange',
-      '#EF4444':'Rot','#EC4899':'Pink',
-    };
     if (t.farbe && colorCat[t.farbe]) lines.push(`CATEGORIES:${colorCat[t.farbe]}`);
-
     lines.push('END:VEVENT');
   });
-
   lines.push('END:VCALENDAR');
+  return lines.join('\r\n');
+}
 
-  const ics = lines.join('\r\n');
+/* ══════════════ ICS Export für iOS Kalender ══════════════ */
+function exportICS() {
+  if (!termine.length) { alert('Keine Termine vorhanden.'); return; }
+  const ics = _buildICS();
   const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-
   if (isIOS) {
-    // iOS Safari: neuer Tab → Calendar-Import-Dialog, App bleibt offen
     window.open(url, '_blank');
     setTimeout(() => URL.revokeObjectURL(url), 5000);
   } else {
@@ -261,6 +242,52 @@ function exportICS() {
     setTimeout(() => URL.revokeObjectURL(url), 2000);
     showICSHint();
   }
+}
+
+/* ══════════════ Kalender auf GitHub veröffentlichen ══════════════ */
+async function publishCalendar() {
+  if (!termine.length) { alert('Keine Termine vorhanden.'); return; }
+  const token = localStorage.getItem('max4work_gh_token') || '';
+  if (!token) {
+    if (confirm('Kein GitHub-Token gespeichert.\nJetzt in Einstellungen → Daten & Sync eintragen?')) {
+      location.href = 'einstellungen.html';
+    }
+    return;
+  }
+  const ics = _buildICS();
+  const encoded = btoa(unescape(encodeURIComponent(ics)));
+  const api = 'https://api.github.com/repos/max4work/max4work/contents/calendar.ics';
+  const hdr = { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' };
+  _showPubToast('Wird veröffentlicht…', 'info');
+  let sha = null;
+  try {
+    const chk = await fetch(api, { headers: hdr });
+    if (chk.ok) sha = (await chk.json()).sha;
+  } catch(e) {}
+  const body = { message: `Update calendar.ics (${termine.length} Termine)`, content: encoded };
+  if (sha) body.sha = sha;
+  try {
+    const res = await fetch(api, { method: 'PUT', headers: hdr, body: JSON.stringify(body) });
+    if (res.ok) {
+      _showPubToast(`✓ ${termine.length} Termin${termine.length!==1?'e':''} veröffentlicht – iPhone aktualisiert automatisch`, 'ok');
+    } else {
+      const err = await res.json().catch(() => ({}));
+      _showPubToast('Fehler: ' + (err.message || 'Token prüfen'), 'err');
+    }
+  } catch(e) {
+    _showPubToast('Netzwerkfehler', 'err');
+  }
+}
+
+function _showPubToast(msg, type) {
+  document.getElementById('_pubToast')?.remove();
+  const bg = type === 'ok' ? '#34C759' : type === 'err' ? '#FF3B30' : 'var(--surface,#2c2c2e)';
+  const d = document.createElement('div');
+  d.id = '_pubToast';
+  d.style.cssText = `position:fixed;bottom:calc(110px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:${bg};color:#fff;border-radius:12px;padding:11px 20px;font-size:13px;font-weight:500;z-index:600;box-shadow:0 6px 24px rgba(0,0,0,.3);white-space:nowrap;max-width:88vw;text-align:center;border:1px solid rgba(255,255,255,.1);`;
+  d.textContent = msg;
+  document.body.appendChild(d);
+  if (type !== 'info') setTimeout(() => d.remove(), 4500);
 }
 
 function showICSHint() {
@@ -314,12 +341,22 @@ function openSyncSheet() {
             </div>
             <div class="mob-mehr-chevron"><svg width="8" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 8 13"><path d="M1.5 1.5 6.5 6.5 1.5 11.5"/></svg></div>
           </button>
+          <button class="mob-mehr-row" style="width:100%;border:none;background:none;cursor:pointer;text-align:left;font-family:inherit;" onclick="closeSyncSheet();publishCalendar()">
+            <div class="mob-mehr-row-icon" style="background:rgba(255,149,0,.15);border-radius:8px;width:34px;height:34px;flex-shrink:0;color:#FF9500;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            </div>
+            <div style="flex:1">
+              <div class="mob-mehr-row-label">Kalender-Abo aktualisieren</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:2px;">Termine live auf max4work.com veröffentlichen</div>
+            </div>
+            <div class="mob-mehr-chevron"><svg width="8" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 8 13"><path d="M1.5 1.5 6.5 6.5 1.5 11.5"/></svg></div>
+          </button>
         </div>
       </div>
       <div class="mob-mehr-section" style="margin-top:10px;">
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:13px 15px;font-size:12.5px;color:var(--muted);line-height:1.65;">
-          <span style="color:var(--text);font-weight:600;">Export:</span> iOS öffnet „Zum Kalender hinzufügen"<br>
-          <span style="color:var(--text);font-weight:600;">Import:</span> ICS-Datei aus Dateien oder AirDrop wählen
+          <span style="color:var(--text);font-weight:600;">Export:</span> iOS öffnet „Zum Kalender hinzufügen" (einmalig)<br>
+          <span style="color:var(--text);font-weight:600;">Abo aktualisieren:</span> Termine live auf max4work.com → iPhone synct automatisch
         </div>
       </div>
       <div style="height:20px;"></div>

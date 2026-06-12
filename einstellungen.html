@@ -984,6 +984,33 @@ Bitte überweisen Sie den Rechnungsbetrag unter Angabe der Rechnungsnummer auf d
           <div style="font-size:11.5px;color:var(--muted);margin-top:4px;">Wenn du einen eigenen Domainnamen verwendest, trage ihn hier ein.</div>
         </div>
 
+        <!-- GitHub Token für automatische Veröffentlichung -->
+        <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:4px;">
+          <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:10px;">Automatische Veröffentlichung</div>
+          <div style="font-size:12.5px;color:var(--muted);margin-bottom:12px;line-height:1.6;">
+            Damit das Kalender-Abo auf dem iPhone automatisch mit neuen Terminen aktualisiert wird, trage einmalig deinen GitHub-Token ein.
+            Der Token wird nur lokal gespeichert.
+          </div>
+          <div class="field">
+            <label>GitHub Personal Access Token</label>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input type="password" id="ghTokenInput" placeholder="ghp_…" autocomplete="off" style="font-family:monospace;font-size:12px;">
+              <button type="button" class="btn btn-ghost" style="flex-shrink:0;" onclick="toggleGhTokenVis()" title="Anzeigen">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <div style="font-size:11px;color:var(--muted);margin-top:5px;line-height:1.6;">
+              GitHub → Settings → Developer settings → Personal access tokens → Fine-grained token<br>
+              Berechtigung: Repository <code style="background:var(--soft);padding:1px 4px;border-radius:3px;">max4work/max4work</code> → <code style="background:var(--soft);padding:1px 4px;border-radius:3px;">Contents: Read and write</code>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;">
+            <button type="button" class="btn btn-dark" onclick="saveGhToken()">Token speichern</button>
+            <button type="button" class="btn btn-ghost" onclick="publishCalendarFromSettings()" id="pubCalSettBtn">Kalender jetzt veröffentlichen</button>
+          </div>
+          <div id="ghTokenStatus" style="font-size:12px;margin-top:8px;"></div>
+        </div>
+
       </div>
     </div>
 

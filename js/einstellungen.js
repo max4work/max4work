@@ -261,6 +261,97 @@
     e.target.value = '';
   }
 
+  /* ── GitHub Token ── */
+  function saveGhToken() {
+    const val = document.getElementById('ghTokenInput').value.trim();
+    const status = document.getElementById('ghTokenStatus');
+    if (val) {
+      localStorage.setItem('max4work_gh_token', val);
+      status.style.color = '#34C759';
+      status.textContent = '✓ Token gespeichert';
+      setTimeout(() => status.textContent = '', 3000);
+    } else {
+      localStorage.removeItem('max4work_gh_token');
+      status.style.color = 'var(--muted)';
+      status.textContent = 'Token entfernt';
+      setTimeout(() => status.textContent = '', 2000);
+    }
+  }
+
+  function toggleGhTokenVis() {
+    const inp = document.getElementById('ghTokenInput');
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+  }
+
+  async function publishCalendarFromSettings() {
+    const token = localStorage.getItem('max4work_gh_token') || '';
+    const status = document.getElementById('ghTokenStatus');
+    if (!token) { status.style.color='var(--red)'; status.textContent = 'Kein Token gespeichert.'; return; }
+    const termine = JSON.parse(localStorage.getItem('max4work_termine') || '[]');
+    if (!termine.length) { status.style.color='var(--muted)'; status.textContent = 'Keine Termine vorhanden.'; return; }
+    status.style.color = 'var(--muted)'; status.textContent = 'Wird veröffentlicht…';
+    const btn = document.getElementById('pubCalSettBtn');
+    if (btn) btn.disabled = true;
+    function icsDate(datum, zeit) {
+      if (!datum) return null;
+      const [y,m,d] = datum.split('-');
+      if (!zeit) return `${y}${m}${d}`;
+      const [h,min] = zeit.split(':');
+      return `${y}${m}${d}T${h}${min}00`;
+    }
+    function icsEscape(s) {
+      return String(s||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');
+    }
+    const colorCat = {'#C8D93A':'Lime','#34C759':'Grün','#3B82F6':'Blau','#8B5CF6':'Lila','#F97316':'Orange','#EF4444':'Rot','#EC4899':'Pink'};
+    let lines = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//max4work//Terminplaner//DE','CALSCALE:GREGORIAN','METHOD:PUBLISH','X-WR-CALNAME:max4work Termine','X-WR-TIMEZONE:Europe/Berlin'];
+    termine.forEach(t => {
+      lines.push('BEGIN:VEVENT', `UID:max4work-${t.id}@max4work.com`);
+      lines.push(`DTSTAMP:${new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'')}Z`);
+      if (t.ganztag === 'ja') {
+        lines.push(`DTSTART;VALUE=DATE:${icsDate(t.datum)}`);
+        const end = new Date(t.datum + 'T00:00:00'); end.setDate(end.getDate()+1);
+        const [ey,em,ed] = end.toISOString().split('T')[0].split('-');
+        lines.push(`DTEND;VALUE=DATE:${ey}${em}${ed}`);
+      } else {
+        lines.push(`DTSTART;TZID=Europe/Berlin:${icsDate(t.datum, t.von||'00:00')}`);
+        lines.push(`DTEND;TZID=Europe/Berlin:${icsDate(t.datum, t.bis||t.von||'01:00')}`);
+      }
+      lines.push(`SUMMARY:${icsEscape(t.titel)}`);
+      if (t.kunde) lines.push(`LOCATION:${icsEscape(t.kunde)}`);
+      if (t.notiz) lines.push(`DESCRIPTION:${icsEscape(t.notiz)}`);
+      if (t.farbe && colorCat[t.farbe]) lines.push(`CATEGORIES:${colorCat[t.farbe]}`);
+      lines.push('END:VEVENT');
+    });
+    lines.push('END:VCALENDAR');
+    const ics = lines.join('\r\n');
+    const encoded = btoa(unescape(encodeURIComponent(ics)));
+    const api = 'https://api.github.com/repos/max4work/max4work/contents/calendar.ics';
+    const hdr = { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' };
+    let sha = null;
+    try { const c = await fetch(api, {headers:hdr}); if (c.ok) sha = (await c.json()).sha; } catch(e) {}
+    const body = { message: `Update calendar.ics (${termine.length} Termine)`, content: encoded };
+    if (sha) body.sha = sha;
+    try {
+      const res = await fetch(api, {method:'PUT', headers:hdr, body:JSON.stringify(body)});
+      if (res.ok) {
+        status.style.color = '#34C759';
+        status.textContent = `✓ ${termine.length} Termin${termine.length!==1?'e':''} veröffentlicht – iPhone aktualisiert automatisch`;
+      } else {
+        const err = await res.json().catch(()=>({}));
+        status.style.color = 'var(--red)';
+        status.textContent = 'Fehler: ' + (err.message || 'Token prüfen');
+      }
+    } catch(e) { status.style.color='var(--red)'; status.textContent='Netzwerkfehler'; }
+    if (btn) btn.disabled = false;
+  }
+
+  /* Token beim Laden eintragen */
+  function _loadGhToken() {
+    const t = localStorage.getItem('max4work_gh_token') || '';
+    const inp = document.getElementById('ghTokenInput');
+    if (inp && t) inp.value = t;
+  }
+
   /* ── WebCal ── */
   function updateWebcalUrl() {
     const custom = document.getElementById('customDomain').value.trim();
@@ -409,6 +500,7 @@
     buildMapProviderGrid();
     initInvSection();
     initEmailSettings();
+    _loadGhToken();
     const existingLogo = loadLogo();
     if (existingLogo) showLogoPreview(existingLogo);
 
