@@ -247,12 +247,15 @@ function exportICS() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `max4work_Termine_${new Date().toISOString().slice(0,10)}.ics`;
+  // iOS Safari: kein .download-Attribut → öffnet Kalender-Import-Dialog
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  if (!isIOS) a.download = `max4work_Termine_${new Date().toISOString().slice(0,10)}.ics`;
+  document.body.appendChild(a);
   a.click();
-  URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
 
-  // Anleitung anzeigen
-  showICSHint();
+  if (!isIOS) showICSHint();
 }
 
 function showICSHint() {
@@ -260,20 +263,71 @@ function showICSHint() {
   if (existing) { existing.remove(); return; }
   const div = document.createElement('div');
   div.id = 'icsHint';
-  div.style.cssText = `position:fixed;bottom:24px;right:24px;background:var(--dark);color:#fff;border-radius:14px;padding:18px 22px;max-width:320px;z-index:500;box-shadow:0 8px 32px rgba(0,0,0,.3);font-size:13px;line-height:1.6;`;
+  div.style.cssText = `position:fixed;bottom:32px;right:24px;background:var(--dark,#1c1c1e);color:#fff;border-radius:14px;padding:18px 22px;max-width:320px;z-index:500;box-shadow:0 8px 32px rgba(0,0,0,.3);font-size:13px;line-height:1.6;`;
   div.innerHTML = `
-    <div style="font-weight:600;font-size:14px;margin-bottom:8px;">📱 iOS Kalender importieren</div>
+    <div style="font-weight:600;font-size:14px;margin-bottom:8px;">Kalender-Export</div>
     <ol style="padding-left:16px;color:rgba(255,255,255,.85);">
-      <li>Datei per <strong>AirDrop</strong> oder <strong>iCloud Drive</strong> aufs iPhone</li>
+      <li>.ics-Datei speichern</li>
+      <li>Auf iPhone übertragen (AirDrop / iCloud)</li>
       <li>Datei antippen → <strong>„Zum Kalender hinzufügen"</strong></li>
-      <li>Kalender wählen → <strong>Alle hinzufügen</strong></li>
     </ol>
-    <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.15);font-size:11.5px;color:rgba(255,255,255,.6);">
-      Tipp: Wenn die App auf max4work.com läuft, kann iOS den Kalender automatisch per <strong>WebCal</strong> abonnieren.
-    </div>
     <button onclick="document.getElementById('icsHint').remove()" style="position:absolute;top:12px;right:14px;background:none;border:none;color:rgba(255,255,255,.6);cursor:pointer;font-size:18px;">×</button>`;
   document.body.appendChild(div);
-  setTimeout(() => { if (document.getElementById('icsHint')) document.getElementById('icsHint').remove(); }, 12000);
+  setTimeout(() => { if (document.getElementById('icsHint')) document.getElementById('icsHint').remove(); }, 10000);
+}
+
+/* ══════════════ Kalender Sync Sheet (Mobile) ══════════════ */
+function openSyncSheet() {
+  if (document.getElementById('kalSyncSheet')) { closeSyncSheet(); return; }
+  const sheet = document.createElement('div');
+  sheet.id = 'kalSyncSheet';
+  sheet.className = 'mob-mehr-sheet';
+  sheet.innerHTML = `
+    <div class="mob-mehr-backdrop" onclick="closeSyncSheet()"></div>
+    <div class="mob-mehr-panel">
+      <div class="mob-mehr-handle"></div>
+      <div class="mob-mehr-header">Kalender Sync</div>
+      <div class="mob-mehr-section">
+        <div class="mob-mehr-list">
+          <button class="mob-mehr-row" style="width:100%;border:none;background:none;cursor:pointer;text-align:left;font-family:inherit;" onclick="closeSyncSheet();exportICS()">
+            <div class="mob-mehr-row-icon" style="background:rgba(52,199,89,.15);border-radius:8px;width:34px;height:34px;flex-shrink:0;color:#34C759;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <div style="flex:1">
+              <div class="mob-mehr-row-label">Exportieren</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:2px;">Termine → iOS Kalender</div>
+            </div>
+            <div class="mob-mehr-chevron"><svg width="8" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 8 13"><path d="M1.5 1.5 6.5 6.5 1.5 11.5"/></svg></div>
+          </button>
+          <button class="mob-mehr-row" style="width:100%;border:none;background:none;cursor:pointer;text-align:left;font-family:inherit;" onclick="closeSyncSheet();importICS()">
+            <div class="mob-mehr-row-icon" style="background:rgba(0,122,255,.15);border-radius:8px;width:34px;height:34px;flex-shrink:0;color:#007AFF;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </div>
+            <div style="flex:1">
+              <div class="mob-mehr-row-label">Importieren</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:2px;">ICS-Datei → Termine</div>
+            </div>
+            <div class="mob-mehr-chevron"><svg width="8" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 8 13"><path d="M1.5 1.5 6.5 6.5 1.5 11.5"/></svg></div>
+          </button>
+        </div>
+      </div>
+      <div class="mob-mehr-section" style="margin-top:10px;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:13px 15px;font-size:12.5px;color:var(--muted);line-height:1.65;">
+          <span style="color:var(--text);font-weight:600;">Export:</span> iOS öffnet „Zum Kalender hinzufügen"<br>
+          <span style="color:var(--text);font-weight:600;">Import:</span> ICS-Datei aus Dateien oder AirDrop wählen
+        </div>
+      </div>
+      <div style="height:20px;"></div>
+    </div>`;
+  document.body.appendChild(sheet);
+  requestAnimationFrame(() => sheet.classList.add('open'));
+}
+
+function closeSyncSheet() {
+  const sheet = document.getElementById('kalSyncSheet');
+  if (!sheet) return;
+  sheet.classList.remove('open');
+  setTimeout(() => sheet.remove(), 340);
 }
 
 function titelTerminInput(val){
