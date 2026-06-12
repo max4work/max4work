@@ -245,17 +245,22 @@ function exportICS() {
   const ics = lines.join('\r\n');
   const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  // iOS Safari: kein .download-Attribut → öffnet Kalender-Import-Dialog
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  if (!isIOS) a.download = `max4work_Termine_${new Date().toISOString().slice(0,10)}.ics`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 2000);
 
-  if (!isIOS) showICSHint();
+  if (isIOS) {
+    // iOS Safari: neuer Tab → Calendar-Import-Dialog, App bleibt offen
+    window.open(url, '_blank');
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  } else {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `max4work_Termine_${new Date().toISOString().slice(0,10)}.ics`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    showICSHint();
+  }
 }
 
 function showICSHint() {
