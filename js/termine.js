@@ -41,12 +41,13 @@ function renderCalendar() {
   for(let day=1;day<=last.getDate();day++) days.push({d: new Date(viewYear,viewMonth,day), other:false});
   const rest = (startDow+last.getDate())%7===0?0:7-((startDow+last.getDate())%7);
   for(let i=1;i<=rest;i++) days.push({d: new Date(viewYear,viewMonth+1,i), other:true});
+  const totalWeeks = Math.ceil(days.length / 7);
   days.forEach(({d,other},i) => {
+    const notLastWeek = Math.floor(i/7) < totalWeeks - 1;
     if(i%7===0) {
-      if (i > 0) { const sep=document.createElement('div'); sep.className='cal-week-sep'; grid.appendChild(sep); }
-      const kw=document.createElement('div'); kw.className='kw-cell'; kw.textContent=isoWeek(d); grid.appendChild(kw);
+      const kw=document.createElement('div'); kw.className=notLastWeek?'kw-cell week-end':'kw-cell'; kw.textContent=isoWeek(d); grid.appendChild(kw);
     }
-    addDayCell(grid, d, other);
+    addDayCell(grid, d, other, notLastWeek);
   });
   renderMiniList(); renderDayView();
 }
