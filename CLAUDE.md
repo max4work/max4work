@@ -267,7 +267,18 @@ python3 -m http.server 8080
 Dashboard → Rechnungen (Rechnungen | Zahlungen) → Kunden (Liste | Karte) → Belege → Termine →
 Produkte → Auswertung → Einstellungen (Design | Firma | Funktionen | Daten & Sync | Portale | Handbuch | Blatt-Design | E-Mail | Datentransfer) → Werkzeuge (Angebot | m² | Kamera | MwSt | Stundensatz) → **Fahrtenbuch** (ganz unten)
 
-## Letzter Stand (2026-06-12 Abend)
+## Letzter Stand (2026-06-13)
+
+- Sessions 1–27 abgeschlossen
+- **13.06.2026 Session 28 – Kalender Wochentrenner + Auto-Push:**
+  - **Claude Code Auto-Push Hook:** `~/.claude/settings.json` – PostToolUse Hook auf `Write|Edit`; prüft ob Datei im max4work-Verzeichnis liegt; führt automatisch `git add → commit → push` aus nach jeder Dateiänderung
+  - **termine.html – Kalender Wochentrenner:**
+    - `.cal-week-sep` Div: `grid-column: 1 / -1`, `height: 1.5px`, `background: rgba(0,0,0,0.20)`, `margin: 3px 0`
+    - `.days-grid` umgestellt auf `row-gap: 0; column-gap: 2px` (war `gap: 2px`) → Sep sitzt direkt zwischen den Wochenzeilen ohne Grid-Abstand
+    - Sep-Div als eigene Grid-Zeile (nicht als `border-bottom` auf Zellen, da `border-radius: 50%` auf `.day-cell` Linien als Bogen darstellen würde)
+  - **Backup:** `Backups/backup_2026-06-13/` (termine.html, termine.js)
+- **12.06.2026 Session 27 – iOS Kalender-Sync + Instagram Tab Bar:**
+  - Siehe unten
 
 - Sessions 1–26 abgeschlossen
 - **12.06.2026 Session 26 – Floating Pill Tab Bar:**
