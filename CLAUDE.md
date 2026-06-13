@@ -10,14 +10,26 @@ Alle Daten im `localStorage` des Browsers. Läuft lokal via `file://` und wird �
 ## Projektpfad
 
 ```
-/Users/jurgenstupar/Library/Mobile Documents/com~apple~CloudDocs/Desktop/max4work/
+/Users/Juergen/Library/Mobile Documents/com~apple~CloudDocs/Desktop/max4work/
 ```
+
+## GitHub & Hosting
+
+- **Repository:** https://github.com/max4work/max4work (Account: max4work)
+- **GitHub Pages:** https://max4work.github.io/max4work/ (aktiv ✓)
+- **Custom Domain:** https://max4work.com (DNS bei IONOS → GitHub Pages IPs)
+  - 4× A-Record `@` → 185.199.108.153 / .109.153 / .110.153 / .111.153
+  - CNAME `www` → max4work.github.io
+  - CNAME-Datei im Repo: `max4work.com`
+- **Git Push:** `git -C "/Users/Juergen/Library/Mobile Documents/com~apple~CloudDocs/Desktop/max4work" push`
+- **Xcode CLT:** Pfad gesetzt via `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`
 
 ## Dateistruktur
 
 ```
 max4work/
 ├── CLAUDE.md                        # Diese Datei
+├── CNAME                            # GitHub Pages Custom Domain (Inhalt: max4work.com)
 ├── shared.js                        # Zentrale Logik (Design, Navigation, Utilities)
 ├── css/
 │   └── shared.css                   # Globales CSS + Mobile-Breakpoints
@@ -255,9 +267,22 @@ python3 -m http.server 8080
 Dashboard → Rechnungen (Rechnungen | Zahlungen) → Kunden (Liste | Karte) → Belege → Termine →
 Produkte → Auswertung → Einstellungen (Design | Firma | Funktionen | Daten & Sync | Portale | Handbuch | Blatt-Design | E-Mail | Datentransfer) → Werkzeuge (Angebot | m² | Kamera | MwSt | Stundensatz) → **Fahrtenbuch** (ganz unten)
 
-## Letzter Stand (2026-06-11)
+## Letzter Stand (2026-06-12 Abend)
 
-- Sessions 1–24 abgeschlossen
+- Sessions 1–26 abgeschlossen
+- **12.06.2026 Session 26 – Floating Pill Tab Bar:**
+  - `css/shared.css`: Tab Bar komplett neu — schwebendes Pill-Design (dunkel, Blur, kein Border-Top)
+  - Positionierung ohne `transform` (`left:0; right:0; margin:0 auto; width:fit-content`) → iOS `position:fixed` stabil
+  - `will-change: transform` + `-webkit-transform: translateZ(0)` → GPU-Layer, scrollt nicht mit
+  - Icons 27×27px, Tab-Item 58×48px, Labels ausgeblendet
+  - Position: `bottom: calc(76px + ...)`, `.main` padding-bottom: `calc(88px + ...)`
+  - Backup: `Backups/backup_2026-06-12/shared.css`
+- **12.06.2026 Session 25 – GitHub Hosting:**
+  - Git-Repository initialisiert und auf github.com/max4work/max4work gepusht (39 Dateien)
+  - GitHub Pages aktiviert: https://max4work.github.io/max4work/ (getestet ✓)
+  - Custom Domain max4work.com: CNAME-Datei erstellt, DNS bei IONOS eingerichtet
+  - Xcode CLT auf MacBook repariert (`sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`)
+  - .gitignore erstellt (backups/, .DS_Store, *.icloud ausgeschlossen)
 - **11.06.2026 Session 24 – Login-System:**
   - `login.html` (neu): Standalone-Login mit SHA-256-Hash-Prüfung, „Angemeldet bleiben"-Checkbox, kein shared.js (kein Redirect-Loop)
   - `shared.js`: Auth-Guard-IIFE ganz oben (synchron), `m4wLogout()`, `_injectLogoutBtn()` → Logout-Icon in Sidebar; Ausnahmen: login.html, reset.html
