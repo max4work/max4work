@@ -51,10 +51,10 @@ function renderCalendar() {
   });
   renderMiniList(); renderDayView();
 }
-function addDayCell(grid,d,otherMonth) {
+function addDayCell(grid,d,otherMonth,weekEnd=false) {
   const ds=dateStr(d), isToday=ds===dateStr(today), isSelected=ds===selectedDate, isSun=d.getDay()===0, hasEvt=termine.some(t=>t.datum===ds);
   const cell=document.createElement('div');
-  cell.className=['day-cell',otherMonth?'other-month':'',isToday?'today':'',isSelected&&!isToday?'selected':'',isSun?'sunday':'',hasEvt?'has-events':''].filter(Boolean).join(' ');
+  cell.className=['day-cell',otherMonth?'other-month':'',isToday?'today':'',isSelected&&!isToday?'selected':'',isSun?'sunday':'',hasEvt?'has-events':'',weekEnd?'week-end':''].filter(Boolean).join(' ');
   const nr=document.createElement('div'); nr.className='day-nr'; nr.textContent=d.getDate();
   cell.appendChild(nr); cell.onclick=()=>selectDay(ds); grid.appendChild(cell);
 }
