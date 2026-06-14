@@ -407,13 +407,13 @@ nav::-webkit-scrollbar-thumb:hover { background: var(--muted); }
     right: 0;
     width: 100%;
     z-index: 100;
-    background: rgba(18,18,18,0.97);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    background: rgba(255,255,255,0.80);
+    backdrop-filter: blur(28px) saturate(200%);
+    -webkit-backdrop-filter: blur(28px) saturate(200%);
     border-radius: 22px 22px 0 0;
     padding: 10px 4px calc(12px + env(safe-area-inset-bottom, 0px));
-    border-top: 0.5px solid rgba(255,255,255,0.1);
-    box-shadow: 0 -6px 24px rgba(0,0,0,0.28);
+    border-top: 0.5px solid rgba(0,0,0,0.10);
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.07);
     -webkit-transform: translateZ(0);
     will-change: transform;
   }
@@ -425,7 +425,7 @@ nav::-webkit-scrollbar-thumb:hover { background: var(--muted); }
     justify-content: center;
     height: 44px;
     text-decoration: none;
-    color: rgba(255,255,255,0.42);
+    color: rgba(0,0,0,0.35);
     cursor: pointer;
     background: none;
     border: none;
@@ -438,10 +438,10 @@ nav::-webkit-scrollbar-thumb:hover { background: var(--muted); }
 
   .mob-tab-item:active { transform: scale(0.84); }
 
-  .mob-tab-item.active { color: #fff; }
+  .mob-tab-item.active { color: var(--dark); }
 
   .mob-tab-item.active .mob-tab-icon {
-    background: rgba(255,255,255,0.12);
+    background: var(--accent-pale);
     border-radius: 14px;
     width: 46px;
     height: 34px;
