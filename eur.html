@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>EÜR – Einnahmen-Überschuss-Rechnung</title>
-<script src="shared.js?v=202606141931"></script>
+<script src="shared.js?v=202606141932"></script>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -635,6 +635,12 @@ function renderDoc(zahlungen, belege, fahrten, einst, year) {
     <strong>Diese EÜR dient als Grundlage für die Anlage EÜR (Vordruck) beim Finanzamt.
     Bitte prüfen Sie die Angaben vor der Einreichung.</strong>
   `;
+
+  // D–G Steuerübersicht
+  renderUSt(zahlungen, year);
+  renderGewSt(gewinn, year);
+  renderESt(gewinn, year);
+  renderSteuerTermine(year);
 }
 
 // ── GoBD-Prüfung ─────────────────────────────────────────────────────────────
