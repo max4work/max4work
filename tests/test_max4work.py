@@ -352,7 +352,7 @@ class TestDashboard:
 
     def test_kpi_panels_sichtbar(self, page):
         go(page, "index.html", {"max4work_rechnungen": json.dumps(_RECHNUNGEN())})
-        expect(page.locator(".kpi-grid, .panel, [class*='kpi']")).first.to_be_visible(timeout=5000)
+        expect(page.locator(".kpi-grid, .panel, [class*='kpi']").first).to_be_visible(timeout=5000)
 
     def test_globale_suche_oeffnet(self, page):
         go(page, "index.html")
