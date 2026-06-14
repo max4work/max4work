@@ -201,9 +201,30 @@ function saveTermin(){
   else renderCalendar();
 }
 function deleteTermin(id){
-  if(!confirm('Termin wirklich löschen?'))return;
-  termine=termine.filter(t=>t.id!==id);saveStorage();closeModal();renderCalendar();
+  const t=termine.find(x=>x.id===id);if(!t)return;
+  if(t.gruppeId){
+    const detailVis=document.getElementById('detail-view')?.style.display!=='none';
+    const btn=detailVis?document.getElementById('btn-delete'):document.getElementById('btn-delete-edit');
+    if(btn&&btn.dataset.gruppePrompt!=='1'){
+      const total=termine.filter(x=>x.gruppeId===t.gruppeId).length;
+      btn.dataset.gruppePrompt='1';
+      btn.innerHTML=`<span onclick="event.stopPropagation();_delOne(${id})" style="margin-right:10px;">Nur diesen</span><span onclick="event.stopPropagation();_delGroup('${t.gruppeId}')" style="color:var(--red);">Alle ${total} löschen</span>`;
+      btn.onclick=null;
+      return;
+    }
+  }
+  if(_delTerminPending===id){
+    clearTimeout(_delTerminTimer);_delTerminPending=null;
+    termine=termine.filter(x=>x.id!==id);saveStorage();closeModal();renderCalendar();
+    showToast('Termin gelöscht');
+  }else{
+    _delTerminPending=id;
+    showToast('Nochmal tippen zum Löschen');
+    _delTerminTimer=setTimeout(()=>{_delTerminPending=null;},3000);
+  }
 }
+function _delOne(id){termine=termine.filter(x=>x.id!==id);saveStorage();closeModal();renderCalendar();showToast('Termin gelöscht');}
+function _delGroup(gruppeId){const n=termine.filter(x=>x.gruppeId===gruppeId).length;termine=termine.filter(x=>x.gruppeId!==gruppeId);saveStorage();closeModal();renderCalendar();showToast(`${n} Termine gelöscht`);}
 
 /* ══════════════ ICS Generierung (shared) ══════════════ */
 function _buildICS() {
