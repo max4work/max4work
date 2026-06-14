@@ -111,7 +111,7 @@ function buildColorPicker() {
      </div>`;
 }
 function selectColor(hex){selectedColor=hex;buildColorPicker();}
-function openModal(id=null){
+function openModal(id=null, prefillHour=null){
   editId=id;const t=id?termine.find(x=>x.id===id):null;
   document.getElementById('detail-view').style.display='none';
   document.getElementById('edit-view').style.display='block';
@@ -120,10 +120,18 @@ function openModal(id=null){
   document.getElementById('f-datum').value=t?.datum||selectedDate;
   document.getElementById('f-von').value=t?.von||'08:00';
   document.getElementById('f-bis').value=t?.bis||'09:00';
+  if(prefillHour!==null&&!id){
+    document.getElementById('f-von').value=String(prefillHour).padStart(2,'0')+':00';
+    document.getElementById('f-bis').value=String(Math.min(23,prefillHour+1)).padStart(2,'0')+':00';
+  }
   document.getElementById('f-kunde').value=t?.kunde||'';
   document.getElementById('f-notiz').value=t?.notiz||'';
   document.getElementById('f-ganztag').value=t?.ganztag||'nein';
   selectedColor=t?.farbe||COLORS[0].hex;
+  const ws=document.getElementById('wieder-section');
+  const fw=document.getElementById('f-wieder');
+  if(ws){ws.style.display=id?'none':'block';}
+  if(fw){fw.value='';document.getElementById('wieder-bis-field')?.classList.add('wieder-hide');}
   toggleTime(); buildColorPicker();
   const delBtn=document.getElementById('btn-delete-edit');
   if(id){delBtn.style.visibility='visible';delBtn.onclick=()=>deleteTermin(id);}
