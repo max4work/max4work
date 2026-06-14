@@ -269,7 +269,11 @@ Produkte → Auswertung → Einstellungen (Design | Firma | Funktionen | Daten &
 
 ## Letzter Stand (2026-06-14)
 
-- Sessions 1–31 abgeschlossen
+- Sessions 1–32 abgeschlossen
+- **14.06.2026 Session 32 – Abmelden-Button:**
+  - **einstellungen.html:** Abmelden-Button am Ende des `.content`-Bereichs (unterhalb aller Tabs, immer sichtbar) — roter Icon-Button im iOS-Stil, `onclick="m4wLogout()"`
+  - **shared.js – `_injectLogoutBtn()`:** Button wird jetzt an `aside.sidebar` angehängt (statt an `.sidebar-user`); zeigt Icon + Text „Abmelden"; grau (`var(--muted)`), Hover: `var(--soft)` + `var(--text)`; `width:calc(100% - 24px)`, `margin:0 12px`; kein Rot mehr
+  - **Backup:** `Backups/backup_2026-06-14d/` (shared.js, einstellungen.html)
 - **14.06.2026 Session 31 – SuperShift-inspirierte Kalender-Features:**
   - **termine.html + js/termine.js – 5 neue Features:**
   - **Wochenansicht** (`setCalView('woche')`):
