@@ -270,7 +270,7 @@ Produkte → Auswertung → Einstellungen (Design | Firma | Funktionen | Daten &
 ## Letzter Stand (2026-06-14)
 
 - Sessions 1–33 abgeschlossen
-- **14.06.2026 Session 33 – Steuerübersicht mit §-Angaben:**
+- **14.06.2026 Session 33 – Steuerübersicht + Freiberufler-Toggle:**
   - **eur.html – Neue Abschnitte D–G:**
     - **D. Umsatzsteuer §13, §18 UStG:** KU-Erkennung (§19), USt-Ausgangsteuer aus rechnungen_history-Positionen berechnet, UStVA-Fälligkeiten, Jahreserklärung §18 Abs. 3 UStG
     - **E. Gewerbesteuer §11 GewStG:** Freibetrag 24.500 € (§11 Abs. 1 S.3 Nr.1), Messzahl 3,5 % (§11 Abs. 2), Hebesatz Braunschweig 460 % (§16), Vorauszahlungen §19 GewStG, GewSt-Anrechnung §35 EStG erwähnt
