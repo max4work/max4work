@@ -770,8 +770,8 @@
         </div>
         <div class="st-kpi">
           <div class="st-kpi-lbl">Gewerbesteuer (Schätzung)</div>
-          <div class="st-kpi-val ${gewst>0?'red':'green'}">${gewst>0?fmtE(gewst):'0,00 €'}</div>
-          <div class="st-kpi-sub">§11 GewStG · Hebesatz BS 460 %</div>
+          <div class="st-kpi-val ${isFreiberufler?'green':gewst>0?'red':'green'}">${isFreiberufler?'–':gewst>0?fmtE(gewst):'0,00 €'}</div>
+          <div class="st-kpi-sub">${isFreiberufler?'§2 GewStG – Freiberufler befreit':'§11 GewStG · Hebesatz BS 460 %'}</div>
         </div>
         <div class="st-kpi">
           <div class="st-kpi-lbl">Einkommensteuer (Schätzung)</div>
