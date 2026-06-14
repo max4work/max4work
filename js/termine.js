@@ -85,12 +85,12 @@ function renderDayView() {
   for(let h=0;h<24;h++){
     const slotEvts=timed.filter(t=>{if(!t.von)return false;const[eh]=t.von.split(':').map(Number);return eh===h;});
     const showNow=isToday&&h===nowH, nowPct=Math.round(nowMin/60*56);
-    html+=`<div class="time-slot"><div class="time-label">${h===0?'':String(h).padStart(2,'0')+':00'}</div><div class="time-content" style="position:relative;">`;
+    html+=`<div class="time-slot"><div class="time-label">${h===0?'':String(h).padStart(2,'0')+':00'}</div><div class="time-content" onclick="openAtTime('${selectedDate}',${h})" style="position:relative;cursor:pointer;">`;
     if(showNow)html+=`<div class="time-now-dot" style="top:${nowPct}px;"></div><div class="time-now-line" style="top:${nowPct+4}px;left:0;right:0;position:absolute;"></div>`;
     slotEvts.forEach(t=>{
       const duration=t.bis?(()=>{const[bh,bm]=t.bis.split(':').map(Number),[vh,vm]=t.von.split(':').map(Number);return Math.max(30,(bh*60+bm)-(vh*60+vm));})():60;
       const ht=Math.round(duration/60*52);
-      html+=`<div class="event-block" onclick="openDetail(${t.id})" style="background:${t.farbe}18;border-left:3px solid ${t.farbe};min-height:${ht}px;"><div class="event-block-title" style="color:${t.farbe};">${esc(t.titel)}</div><div class="event-block-sub" style="color:${t.farbe};">${t.von}${t.bis?' – '+t.bis:''} · ${esc(t.kunde||'')}</div></div>`;
+      html+=`<div class="event-block" onclick="event.stopPropagation();openDetail(${t.id})" style="background:${t.farbe}18;border-left:3px solid ${t.farbe};min-height:${ht}px;"><div class="event-block-title" style="color:${t.farbe};">${esc(t.titel)}</div><div class="event-block-sub" style="color:${t.farbe};">${t.von}${t.bis?' – '+t.bis:''} · ${esc(t.kunde||'')}</div></div>`;
     });
     html+=`</div></div>`;
   }
