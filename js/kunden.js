@@ -118,12 +118,27 @@
     });
   }
 
+  let _tileOsm=null, _tileSat=null, _currentTile=null;
+
+  function setMapLayer(type){
+    if(!mapInst)return;
+    if(_currentTile)mapInst.removeLayer(_currentTile);
+    _currentTile = type==='sat' ? _tileSat : _tileOsm;
+    _currentTile.addTo(mapInst);
+    document.querySelectorAll('.mlb[data-layer]').forEach(b=>b.classList.toggle('on',b.dataset.layer===type));
+  }
+
   function initKarte(){
     if(!mapInst){
       mapInst=L.map('mapView').setView([52.27,10.52],12);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+      _tileOsm=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
         attribution:'© <a href="https://openstreetmap.org">OpenStreetMap</a>',maxZoom:19
-      }).addTo(mapInst);
+      });
+      _tileSat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
+        attribution:'© Esri',maxZoom:19
+      });
+      _tileOsm.addTo(mapInst);
+      _currentTile=_tileOsm;
     }else{
       mapInst.invalidateSize();
     }
