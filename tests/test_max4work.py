@@ -418,7 +418,7 @@ class TestEinstellungen:
         page.click("button.stab[data-section='firma']")
         page.wait_for_timeout(300)
         page.fill("#sName", "Neue Testfirma")
-        page.click("button[onclick*='saveEinstellungen'], button[onclick*='save']:not([data-section])")
+        page.click("button[onclick='speichern()']")
         page.wait_for_timeout(500)
         saved = page.evaluate("JSON.parse(localStorage.getItem('max4work_einstellungen') || '{}').sName")
         assert saved == "Neue Testfirma", f"Gespeicherter Name: {saved}"
