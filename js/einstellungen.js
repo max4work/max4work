@@ -187,11 +187,11 @@
 
   /* ── Feature-Toggles ── */
   const TOGGLE_DEFAULTS = {
-    autoSuggestInvoice: true, livePreview: true, highlightOverdue: true,
+    autoSuggestInvoice: false, livePreview: false, highlightOverdue: false,
     // Auswertungs-Panels – neue Panels hier ergänzen (Key + true/false)
-    panel_kpiGrid: true, panel_bank: true, panel_top5: true,
-    panel_kleinunternehmer: true, panel_ausstehend: true,
-    panel_chartMonat: true, panel_chartVergleich: true, panel_quartal: true,
+    panel_kpiGrid: false, panel_bank: false, panel_top5: false,
+    panel_kleinunternehmer: false, panel_ausstehend: false,
+    panel_chartMonat: false, panel_chartVergleich: false, panel_quartal: false,
   };
 
   function loadToggles() {
