@@ -269,7 +269,22 @@ Produkte → Auswertung → Einstellungen (Design | Firma | Funktionen | Daten &
 
 ## Letzter Stand (2026-06-14)
 
-- Sessions 1–32 abgeschlossen
+- Sessions 1–33 abgeschlossen
+- **14.06.2026 Session 33 – Steuerübersicht mit §-Angaben:**
+  - **eur.html – Neue Abschnitte D–G:**
+    - **D. Umsatzsteuer §13, §18 UStG:** KU-Erkennung (§19), USt-Ausgangsteuer aus rechnungen_history-Positionen berechnet, UStVA-Fälligkeiten, Jahreserklärung §18 Abs. 3 UStG
+    - **E. Gewerbesteuer §11 GewStG:** Freibetrag 24.500 € (§11 Abs. 1 S.3 Nr.1), Messzahl 3,5 % (§11 Abs. 2), Hebesatz Braunschweig 460 % (§16), Vorauszahlungen §19 GewStG, GewSt-Anrechnung §35 EStG erwähnt
+    - **F. Einkommensteuer §32a EStG:** Grundfreibetrag 2024/2025, alle 4 Progressionszonen mit §-Angaben, Soli §3 SolZG (Freigrenze 18.130 €), GewSt-Anrechnung §35 EStG (3,8 × Messbetrag)
+    - **G. Steuertermine:** UStVA/GewSt/ESt-Vorauszahlungen tabellarisch, Aufbewahrungspflicht §147 AO bis +10 Jahre
+    - `renderUSt()`, `renderGewSt()`, `renderESt()`, `renderSteuerTermine()` werden am Ende von `renderDoc()` aufgerufen
+  - **auswertung.html + auswertung.js – Neues Panel „Steuerübersicht":**
+    - `panel_steuern` in PANEL_CONFIG (`elId: steuerPanel`, `allowHalf: false`)
+    - 4-KPI-Zeile: Gewinn vor Steuern, GewSt-Schätzung, ESt+Soli-Schätzung, Gesamtsteuerlast
+    - Berechnungsdetail (Freibetrag, Messzahl, Grundfreibetrag, GewSt-Anrechnung)
+    - USt-Status-Badge (KU grün / nicht-KU gelb)
+    - Steuertermine-Grid (USt, GewSt, ESt) direkt im Panel
+  - **einstellungen.html:** Toggle „Steuerübersicht" in Panel-Sichtbarkeit ergänzt
+  - **Backup:** `Backups/backup_2026-06-14e/` (eur.html, auswertung.html, auswertung.js, einstellungen.html)
 - **14.06.2026 Session 32 – Abmelden-Button:**
   - **einstellungen.html:** Abmelden-Button am Ende des `.content`-Bereichs (unterhalb aller Tabs, immer sichtbar) — roter Icon-Button im iOS-Stil, `onclick="m4wLogout()"`
   - **shared.js – `_injectLogoutBtn()`:** Button wird jetzt an `aside.sidebar` angehängt (statt an `.sidebar-user`); zeigt Icon + Text „Abmelden"; grau (`var(--muted)`), Hover: `var(--soft)` + `var(--text)`; `width:calc(100% - 24px)`, `margin:0 12px`; kein Rot mehr
