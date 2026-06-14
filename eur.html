@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>EÜR – Einnahmen-Überschuss-Rechnung</title>
-<script src="shared.js?v=202606141930"></script>
+<script src="shared.js?v=202606141931"></script>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -739,6 +739,187 @@ function renderGodb(zahlungen, belege, fahrten, rechnungen, year) {
 
 function toggleGodb() {
   document.getElementById('godbPanel').classList.toggle('open');
+}
+
+// ── D. Umsatzsteuer §13, §18 UStG ────────────────────────────────────────────
+function renderUSt(zahlungen, year) {
+  const el = document.getElementById('ustSection');
+  if (!el) return;
+  const yStr = String(year);
+  const kuGrenze = year >= 2025 ? 25000 : 22000;
+  const sumEin = zahlungen.filter(z => z.datum?.startsWith(yStr)).reduce((s, z) => s + Number(z.betrag || 0), 0);
+
+  if (sumEin <= kuGrenze) {
+    el.innerHTML = `
+      <div class="section-title"><span class="section-badge">D</span> Umsatzsteuer §19 UStG – Kleinunternehmer</div>
+      <div class="steuer-badge ok">✓ §19 Abs. 1 UStG: Umsatz ${fmtE(sumEin)} liegt unter der Kleinunternehmergrenze (${fmtE(kuGrenze)}). Keine Umsatzsteuerausweisung, keine Umsatzsteuer-Voranmeldung erforderlich.</div>
+      <div class="steuer-badge info">ℹ Jahres-Umsatzsteuererklärung §18 Abs. 3 UStG trotzdem einreichen bis 31. Juli ${year + 1} (mit Steuerberater: 28. Februar ${year + 2}).</div>`;
+    return;
+  }
+
+  // USt aus rechnungen_history berechnen
+  let history = [];
+  try { history = JSON.parse(localStorage.getItem('max4work_rechnungen_history') || '[]'); } catch(e) {}
+  const histMap = {};
+  history.forEach(h => { if (h.nr) histMap[h.nr] = h; });
+
+  let ust19 = 0, ust7 = 0, ustSumme = 0;
+  zahlungen.filter(z => z.datum?.startsWith(yStr)).forEach(z => {
+    if (!z.rechNr || !histMap[z.rechNr]) return;
+    const pos = histMap[z.rechNr].positions || [];
+    let hNetto = 0;
+    const ustByRate = {};
+    pos.forEach(p => {
+      const n = Number(p.qty || 1) * Number(p.price || 0);
+      const r = Number(p.ust || 0);
+      hNetto += n;
+      ustByRate[r] = (ustByRate[r] || 0) + n * r / 100;
+    });
+    if (hNetto > 0) {
+      const ratio = Number(z.betrag || 0) / hNetto;
+      Object.entries(ustByRate).forEach(([rate, ust]) => {
+        const s = ust * ratio;
+        ustSumme += s;
+        if (Number(rate) === 19) ust19 += s;
+        else if (Number(rate) === 7) ust7 += s;
+      });
+    }
+  });
+
+  // UStVA-Modus: monatlich wenn Vorjahres-USt > 7.500 €, sonst quartalsweise (§18 Abs. 2 UStG)
+  const ustaModus = ustSumme > 7500 ? 'monatlich (§18 Abs. 1 UStG: Vorjahres-USt > 7.500 €)' : 'quartalsweise (§18 Abs. 2 UStG)';
+
+  el.innerHTML = `
+    <div class="section-title"><span class="section-badge">D</span> Umsatzsteuer §13, §18 UStG</div>
+    <div class="steuer-box">
+      <div class="steuer-row"><span class="steuer-row-lbl">Umsätze brutto (Zahlungseingänge)</span><span class="steuer-row-val">${fmtE(sumEin)}</span></div>
+      ${ust19 > 0 ? `<div class="steuer-row"><span class="steuer-row-lbl">Ausgangsteuer 19 % §13 Abs. 1 Nr. 1a UStG</span><span class="steuer-row-val red">${fmtE(ust19)}</span></div>` : ''}
+      ${ust7  > 0 ? `<div class="steuer-row"><span class="steuer-row-lbl">Ausgangsteuer 7 % §13 Abs. 1 Nr. 1a UStG</span><span class="steuer-row-val red">${fmtE(ust7)}</span></div>` : ''}
+      <div class="steuer-row"><span class="steuer-row-lbl">Ausgangsteuer gesamt (zu abführende USt)</span><span class="steuer-row-val red">${fmtE(ustSumme)}</span></div>
+      <div class="steuer-row"><span class="steuer-row-lbl">Vorsteuer aus Belegen §15 UStG</span><span class="steuer-row-val muted">Im Belegmodul keine USt-Rate erfasst – manuell prüfen</span></div>
+      <div class="steuer-total"><span>Voraussichtliche USt-Zahllast ${year}</span><span class="steuer-total-val">${fmtE(ustSumme)}</span></div>
+    </div>
+    <div class="steuer-badge warn">⚠ Voranmeldung §18 Abs. 2 UStG (${ustaModus}): Q1 bis 10. April · Q2 bis 10. Juli · Q3 bis 10. Oktober · Q4 bis 10. Januar ${year + 1}</div>
+    <div class="steuer-badge info">ℹ Jahreserklärung §18 Abs. 3 UStG bis 31. Juli ${year + 1} (mit Steuerberater: 28. Februar ${year + 2}). Dauerfristverlängerung §46 UStDV möglich.</div>`;
+}
+
+// ── E. Gewerbesteuer §11 GewStG ──────────────────────────────────────────────
+function renderGewSt(gewinn, year) {
+  const el = document.getElementById('gewstSection');
+  if (!el) return;
+  const freibetrag = 24500; // §11 Abs. 1 S. 3 Nr. 1 GewStG (Einzelunternehmer/Personengesellschaft)
+  const gewerbeertrag = Math.max(gewinn - freibetrag, 0);
+  const messbetrag = gewerbeertrag * 0.035; // §11 Abs. 2 GewStG: Messzahl 3,5 %
+  const hebesatz = 460; // Braunschweig §16 GewStG
+  const gewst = Math.round(messbetrag * hebesatz / 100);
+  const vorauss = Math.round(gewst / 4);
+
+  el.innerHTML = `
+    <div class="section-title"><span class="section-badge">E</span> Gewerbesteuer §§ 7–11, 16 GewStG</div>
+    <div class="steuer-box">
+      <div class="steuer-row"><span class="steuer-row-lbl">Gewinn nach §4 Abs. 3 EStG (= Ausgangsgröße §7 GewStG)</span><span class="steuer-row-val">${fmtE(gewinn)}</span></div>
+      <div class="steuer-row"><span class="steuer-row-lbl">Freibetrag §11 Abs. 1 S. 3 Nr. 1 GewStG (Einzelunternehmer)</span><span class="steuer-row-val">− ${fmtE(freibetrag)}</span></div>
+      <div class="steuer-row"><span class="steuer-row-lbl">Steuerpflichtiger Gewerbeertrag</span><span class="steuer-row-val ${gewerbeertrag > 0 ? 'red' : 'green'}">${fmtE(gewerbeertrag)}</span></div>
+      <div class="steuer-row"><span class="steuer-row-lbl">Steuermesszahl §11 Abs. 2 GewStG</span><span class="steuer-row-val">× 3,5 %</span></div>
+      <div class="steuer-row"><span class="steuer-row-lbl">Steuermessbetrag §14 GewStG</span><span class="steuer-row-val">${fmtE(messbetrag)}</span></div>
+      <div class="steuer-row"><span class="steuer-row-lbl">Hebesatz Braunschweig §16 GewStG</span><span class="steuer-row-val">× 460 %</span></div>
+      <div class="steuer-total"><span>Gewerbesteuer-Schätzung ${year}</span><span class="steuer-total-val">${gewst > 0 ? fmtE(gewst) : '0,00 € (Freibetrag nicht überschritten)'}</span></div>
+    </div>
+    ${gewerbeertrag <= 0
+      ? `<div class="steuer-badge ok">✓ Freibetrag von ${fmtE(freibetrag)} nicht überschritten – keine Gewerbesteuer.</div>`
+      : `<div class="steuer-badge warn">⚠ Vorauszahlungen §19 GewStG: je ca. ${fmtE(vorauss)} – fällig 15. Februar · 15. Mai · 15. August · 15. November</div>`
+    }
+    <div class="steuer-badge info">ℹ Gewerbesteuererklärung §14a GewStG bis 31. Juli ${year + 1}. Gewerbesteuer mindert als Betriebsausgabe nicht die eigene Bemessungsgrundlage (§4 Abs. 5b EStG). Anrechnung auf ESt: §35 EStG (3,8-facher Messbetrag).</div>`;
+}
+
+// ── F. Einkommensteuer §32a EStG ─────────────────────────────────────────────
+function renderESt(gewinn, year) {
+  const el = document.getElementById('estSection');
+  if (!el) return;
+  const gf = year >= 2025 ? 12096 : 11604; // Grundfreibetrag §32a Abs. 1 Nr. 1 EStG
+  const zvE = Math.max(gewinn, 0);
+  let est = 0, zone = '';
+
+  if (zvE <= gf) {
+    est = 0; zone = `Grundfreibetrag §32a Abs. 1 Nr. 1 EStG (${fmtE(gf)}) – keine ESt`;
+  } else if (zvE <= 17005) {
+    const y = (zvE - gf) / 10000;
+    est = (979.18 * y + 1400) * y;
+    zone = '1. Progressionszone §32a Abs. 1 Nr. 2 EStG';
+  } else if (zvE <= 66760) {
+    const z = (zvE - 17005) / 10000;
+    est = (192.59 * z + 2397) * z + 1025;
+    zone = '2. Progressionszone §32a Abs. 1 Nr. 3 EStG';
+  } else if (zvE <= 277825) {
+    est = 0.42 * zvE - 10602;
+    zone = 'Proportionalzone 42 % §32a Abs. 1 Nr. 4 EStG';
+  } else {
+    est = 0.45 * zvE - 18936;
+    zone = 'Spitzenzone 45 % §32a Abs. 1 Nr. 5 EStG';
+  }
+  est = Math.max(0, Math.round(est));
+
+  // Solidaritätszuschlag §3 SolZG 1995 i.d.F. 2021: 5,5 % der ESt; Freigrenze 18.130 €
+  const soli = est > 18130 ? Math.round(est * 0.055) : 0;
+
+  // GewSt-Anrechnung §35 EStG: 3,8 × GewSt-Messbetrag (vereinfacht)
+  const freibetrag = 24500;
+  const gewerbeertrag = Math.max(gewinn - freibetrag, 0);
+  const messbetrag = gewerbeertrag * 0.035;
+  const gewaAnrechnung = Math.min(Math.round(messbetrag * 3.8), est);
+
+  const estNachAnrechnung = Math.max(est - gewaAnrechnung, 0);
+  const steuerpfl = Math.max(zvE - gf, 0);
+
+  el.innerHTML = `
+    <div class="section-title"><span class="section-badge">F</span> Einkommensteuer §32a EStG (Schätzung)</div>
+    <div class="steuer-box">
+      <div class="steuer-row"><span class="steuer-row-lbl">Zu versteuerndes Einkommen (≈ Gewinn, vereinfacht)</span><span class="steuer-row-val">${fmtE(zvE)}</span></div>
+      <div class="steuer-row"><span class="steuer-row-lbl">Grundfreibetrag §32a Abs. 1 Nr. 1 EStG (${year})</span><span class="steuer-row-val">− ${fmtE(gf)}</span></div>
+      <div class="steuer-row"><span class="steuer-row-lbl">Steuerpflichtiges Einkommen</span><span class="steuer-row-val ${steuerpfl > 0 ? 'red' : 'green'}">${fmtE(steuerpfl)}</span></div>
+      <div class="steuer-row"><span class="steuer-row-lbl sub">${zone}</span><span class="steuer-row-val"></span></div>
+      <div class="steuer-row"><span class="steuer-row-lbl">Einkommensteuer ${year} (§32a EStG)</span><span class="steuer-row-val red">${fmtE(est)}</span></div>
+      <div class="steuer-row"><span class="steuer-row-lbl">Solidaritätszuschlag §3 SolZG (5,5 %${soli === 0 ? ', unter Freigrenze 18.130 €' : ''})</span><span class="steuer-row-val ${soli > 0 ? 'red' : 'green'}">${soli > 0 ? fmtE(soli) : '0,00 €'}</span></div>
+      ${gewaAnrechnung > 0 ? `<div class="steuer-row"><span class="steuer-row-lbl">GewSt-Anrechnung §35 EStG (3,8 × Messbetrag)</span><span class="steuer-row-val green">− ${fmtE(gewaAnrechnung)}</span></div>` : ''}
+      <div class="steuer-total"><span>ESt + Soli nach GewSt-Anrechnung (Schätzung)</span><span class="steuer-total-val">${fmtE(estNachAnrechnung + soli)}</span></div>
+    </div>
+    <div class="steuer-badge warn">⚠ Schätzung ohne persönliche Abzüge (Werbungskosten, Sonderausgaben §10 EStG, außergewöhnliche Belastungen §33 EStG, Altersentlastungsbetrag etc.). Vorauszahlungen §37 EStG: 10. März · 10. Juni · 10. September · 10. Dezember</div>
+    <div class="steuer-badge info">ℹ Einkommensteuererklärung (Anlage EÜR + Anlage G) bis 31. Juli ${year + 1} (mit Steuerberater: 28. Februar ${year + 2}). Kirchensteuer (9 % der ESt) ggf. zusätzlich.</div>`;
+}
+
+// ── G. Steuertermine ─────────────────────────────────────────────────────────
+function renderSteuerTermine(year) {
+  const el = document.getElementById('termineSection');
+  if (!el) return;
+  el.innerHTML = `
+    <div class="section-title"><span class="section-badge">G</span> Steuertermine ${year}</div>
+    <div class="termin-grid">
+      <div class="termin-card">
+        <div class="termin-card-title">Umsatzsteuer §18 UStG</div>
+        <div class="termin-card-row">UStVA Q1: <strong>10. April ${year}</strong></div>
+        <div class="termin-card-row">UStVA Q2: <strong>10. Juli ${year}</strong></div>
+        <div class="termin-card-row">UStVA Q3: <strong>10. Oktober ${year}</strong></div>
+        <div class="termin-card-row">UStVA Q4: <strong>10. Januar ${year + 1}</strong></div>
+        <div class="termin-card-hint">Jahreserklärung: 31. Juli ${year + 1}<br>Dauerfristverlängerung §46 UStDV möglich</div>
+      </div>
+      <div class="termin-card">
+        <div class="termin-card-title">Gewerbesteuer §19 GewStG</div>
+        <div class="termin-card-row">Vorauszahlung: <strong>15. Februar ${year}</strong></div>
+        <div class="termin-card-row">Vorauszahlung: <strong>15. Mai ${year}</strong></div>
+        <div class="termin-card-row">Vorauszahlung: <strong>15. August ${year}</strong></div>
+        <div class="termin-card-row">Vorauszahlung: <strong>15. November ${year}</strong></div>
+        <div class="termin-card-hint">Erklärung §14a GewStG: 31. Juli ${year + 1}</div>
+      </div>
+      <div class="termin-card">
+        <div class="termin-card-title">Einkommensteuer §37 EStG</div>
+        <div class="termin-card-row">Vorauszahlung: <strong>10. März ${year}</strong></div>
+        <div class="termin-card-row">Vorauszahlung: <strong>10. Juni ${year}</strong></div>
+        <div class="termin-card-row">Vorauszahlung: <strong>10. September ${year}</strong></div>
+        <div class="termin-card-row">Vorauszahlung: <strong>10. Dezember ${year}</strong></div>
+        <div class="termin-card-hint">Erklärung (Anlage EÜR + G): 31. Juli ${year + 1}<br>Mit Steuerberater: 28. Februar ${year + 2}</div>
+      </div>
+    </div>
+    <div class="steuer-badge info">ℹ Aufbewahrungspflicht §147 AO: Rechnungen, Belege, Fahrtenbuch und steuerliche Unterlagen 10 Jahre aufbewahren (bis ${year + 10}). Buchführungsunterlagen ggf. 6 Jahre.</div>`;
 }
 
 render();
