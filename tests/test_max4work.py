@@ -382,7 +382,7 @@ class TestAuswertung:
             "max4work_rechnungen": json.dumps(_RECHNUNGEN()),
         })
         page.wait_for_timeout(1000)
-        expect(page.locator("canvas, .chart, [id*='chart']")).first.to_be_visible(timeout=5000)
+        expect(page.locator("canvas, .chart, [id*='chart']").first).to_be_visible(timeout=5000)
 
     def test_jahresfilter(self, page):
         go(page, "auswertung.html", {
