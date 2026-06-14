@@ -188,7 +188,14 @@
       </div>
       <div id="tableBody"></div>
     </div>
-    <div id="mapView" style="display:none"></div>
+    <div id="mapWrap" style="display:none">
+      <div id="mapView"></div>
+      <div id="mapLayerBar">
+        <button class="mlb on" data-layer="osm" onclick="setMapLayer('osm')">Karte</button>
+        <button class="mlb" data-layer="sat" onclick="setMapLayer('sat')">Satellit</button>
+        <a class="mlb mlb-3d" id="btnAppleMaps" href="https://maps.apple.com/" target="_blank">3D ↗</a>
+      </div>
+    </div>
     <div id="mapProgress"></div>
   </div>
 </main>
