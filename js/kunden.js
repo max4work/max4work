@@ -101,12 +101,12 @@
     localStorage.setItem('max4work_kunden_view',v);
     if(typeof refreshSubNav==='function')refreshSubNav();
     document.querySelectorAll('.view-btn').forEach(b=>b.classList.toggle('on',b.dataset.view===v));
-    const tp=document.getElementById('tablePanel'), mv=document.getElementById('mapView');
+    const tp=document.getElementById('tablePanel'), mw=document.getElementById('mapWrap');
     if(v==='karte'){
-      tp.style.display='none'; mv.style.display='block';
+      tp.style.display='none'; mw.style.display='block';
       requestAnimationFrame(initKarte);
     }else{
-      mv.style.display='none'; tp.style.display='block';
+      mw.style.display='none'; tp.style.display='block';
     }
   }
 
