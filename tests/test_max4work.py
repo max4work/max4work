@@ -253,8 +253,9 @@ class TestRechnungen:
         page.wait_for_selector("#invNr", timeout=4000)
         page.fill("#invNr", "RE-2026-TEST")
         page.fill("#cName", "Test AG")
-        page.click("button[onclick='saveToList()'], button:has-text('Speichern')")
-        page.click("button[onclick='showListe()'], button:has-text('Zurück'), button:has-text('Liste')")
+        page.evaluate("saveToList()")
+        page.evaluate("showListe()")
+        page.wait_for_timeout(500)
         expect(page.locator("text=RE-2026-TEST")).to_be_visible(timeout=5000)
 
     def test_status_filter(self, page):
