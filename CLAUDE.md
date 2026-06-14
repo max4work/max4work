@@ -269,7 +269,16 @@ Produkte → Auswertung → Einstellungen (Design | Firma | Funktionen | Daten &
 
 ## Letzter Stand (2026-06-14)
 
-- Sessions 1–33 abgeschlossen
+- Sessions 1–34 abgeschlossen
+- **14.06.2026 Session 34 – Toggles grau + Erscheinungsbild-Standard Hell:**
+  - **einstellungen.html – Toggle-Farbe:**
+    - `.toggle input:checked + .toggle-track` → `background: #8E8E93` (war `var(--accent)`)
+    - Alle Toggles zeigen aktivierten Zustand in Standard-Grau bis Design-Neugestaltung
+  - **shared.js + js/einstellungen.js – Erscheinungsbild-Fallback:**
+    - Alle `|| 'system'`-Fallbacks für `max4work_color_scheme` auf `|| 'light'` geändert
+    - Betrifft: `_sysMQCb()`, `applyAppDesign()`, IIFE in shared.js, `buildSchemeGrid()` in einstellungen.js
+    - Neue Nutzer (kein localStorage-Eintrag) sehen jetzt automatisch Hell statt System
+  - **Backup:** `Backups/backup_2026-06-14f/` (einstellungen.html, shared.js, einstellungen.js)
 - **14.06.2026 Session 33 – Steuerübersicht + Freiberufler-Toggle:**
   - **eur.html – Neue Abschnitte D–G:**
     - **D. Umsatzsteuer §13, §18 UStG:** KU-Erkennung (§19), USt-Ausgangsteuer aus rechnungen_history-Positionen berechnet, UStVA-Fälligkeiten, Jahreserklärung §18 Abs. 3 UStG
