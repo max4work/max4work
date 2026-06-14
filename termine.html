@@ -278,6 +278,20 @@
       <div class="field"><label>Kunde / Ort</label><div class="kunde-wrap"><input type="text" id="f-kunde" placeholder="z. B. Familie Hoffmann, Kastanienweg 4" oninput="kundeTerminInput(this.value)" autocomplete="off"><div class="kunde-dd" id="kundeTerminDd"></div></div></div>
       <div class="field"><label>Notiz</label><textarea id="f-notiz" placeholder="Schlüssel, Parkplatz, Besonderheiten …"></textarea></div>
       <div class="field"><label>Farbe</label><div class="color-picker" id="colorPicker"></div></div>
+      <div class="wieder-section" id="wieder-section">
+        <div class="field-row">
+          <div class="field"><label>Wiederholung</label>
+            <select id="f-wieder" onchange="toggleWieder()">
+              <option value="">Keine</option>
+              <option value="daily">Täglich</option>
+              <option value="weekly">Wöchentlich</option>
+              <option value="monthly">Monatlich</option>
+              <option value="yearly">Jährlich</option>
+            </select>
+          </div>
+          <div class="field wieder-hide" id="wieder-bis-field"><label>Enddatum</label><input type="date" id="f-wieder-bis"></div>
+        </div>
+      </div>
       <div class="modal-actions">
         <button type="button" class="btn-danger" id="btn-delete-edit" style="visibility:hidden;">Löschen</button>
         <div style="display:flex;gap:8px;">
