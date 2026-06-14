@@ -126,7 +126,7 @@ function applyAppDesign(name) {
   }
   try { localStorage.setItem(APP_DESIGN_KEY, name); } catch(e) {}
   // Aktuelles Farbschema nach Design-Wechsel erneut anwenden
-  const _sm = localStorage.getItem(SCHEME_KEY)||'system';
+  const _sm = localStorage.getItem(SCHEME_KEY)||'light';
   if (_sm === 'split') {
     document.documentElement.dataset.scheme = 'split';
   } else {
