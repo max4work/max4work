@@ -87,7 +87,7 @@ const DARK_VARS = {
   android:  {'--bg':'#1C1B1F','--surface':'#28252C','--border':'#49454F','--text':'#E6E1E5','--muted':'#938F99','--soft':'#2D2B32','--accent-pale':'#21005D'}
 };
 let _schemeMQ = null;
-function _sysMQCb() { applyColorScheme(localStorage.getItem(SCHEME_KEY)||'system'); }
+function _sysMQCb() { applyColorScheme(localStorage.getItem(SCHEME_KEY)||'light'); }
 function applyColorScheme(mode) {
   try { localStorage.setItem(SCHEME_KEY, mode); } catch(e) {}
   const dn = localStorage.getItem(APP_DESIGN_KEY) || 'standard';
