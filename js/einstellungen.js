@@ -760,7 +760,7 @@
 
   /* ── Erscheinungsbild (Hell / Dunkel / System) ── */
   function buildSchemeGrid() {
-    const cur = _pendingScheme || localStorage.getItem('max4work_color_scheme') || 'system';
+    const cur = _pendingScheme || localStorage.getItem('max4work_color_scheme') || 'light';
     ['light','dark','system','split'].forEach(id => {
       const el = document.getElementById('sc-' + id);
       if (el) el.classList.toggle('on', id === cur);
