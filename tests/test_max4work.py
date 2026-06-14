@@ -277,8 +277,8 @@ class TestFahrtenbuch:
         go(page, "fahrtenbuch.html",
            {"max4work_fahrtenbuch": json.dumps(_FAHRTENBUCH()),
             "max4work_fahrzeuge":   json.dumps(_FAHRZEUGE())})
-        expect(page.locator("text=Braunschweig")).to_be_visible(timeout=4000)
-        expect(page.locator("text=Hannover")).to_be_visible(timeout=4000)
+        expect(page.locator("#fahrtListe")).to_be_visible(timeout=4000)
+        expect(page.locator("#fahrtListe").locator("text=Hannover")).to_be_visible(timeout=4000)
 
     def test_fahrt_eintragen(self, page):
         go(page, "fahrtenbuch.html",
@@ -289,7 +289,7 @@ class TestFahrtenbuch:
         page.fill("#fStartOrt", "Braunschweig Hbf")
         page.fill("#fZielOrt",  "Wolfsburg")
         page.click("button[onclick='addFahrt()']")
-        expect(page.locator("text=Wolfsburg")).to_be_visible(timeout=4000)
+        expect(page.locator("#fahrtListe").locator("text=Wolfsburg")).to_be_visible(timeout=4000)
 
 
 # ═══════════════════════════════════════════════════
