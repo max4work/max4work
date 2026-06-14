@@ -309,23 +309,27 @@
       localStorage.setItem(Z_KEY, JSON.stringify(zahlungen));
     } catch(e) {}
   }
+  let _delPending = null, _delTimer = null;
   function deleteRechnung(id) {
     const all = getRechnungen();
     const r = all.find(r => r.id === id);
-    if (r?.locked) {
-      const ok = confirm(`Rechnung ${r.nr} (${r.kunde}) ist archiviert.\n\nTrotzdem unwiderruflich löschen?`);
-      if (!ok) return;
-      _gobdLog('loesch-forciert', { nr: r.nr, kunde: r.kunde });
-    } else if (!confirm('Rechnung löschen?')) return;
-    if (r) {
+    if (!r) return;
+    if (_delPending === id) {
+      clearTimeout(_delTimer);
+      _delPending = null;
+      if (r.locked) _gobdLog('loesch-forciert', { nr: r.nr, kunde: r.kunde });
       try {
         const store = JSON.parse(localStorage.getItem('max4work_xrechnungen') || '{}');
-        delete store[r.nr];
-        localStorage.setItem('max4work_xrechnungen', JSON.stringify(store));
+        delete store[r.nr]; localStorage.setItem('max4work_xrechnungen', JSON.stringify(store));
       } catch(e) {}
+      saveRechnungen(all.filter(x => x.id !== id));
+      showToast('Rechnung gelöscht');
+      renderListe();
+    } else {
+      _delPending = id;
+      showToast('Nochmal tippen zum Löschen');
+      _delTimer = setTimeout(() => { _delPending = null; }, 3000);
     }
-    saveRechnungen(all.filter(r => r.id !== id));
-    renderListe();
   }
   function renderListe() {
     const all = getRechnungen();
