@@ -192,7 +192,7 @@ class TestProdukte:
 
     def test_seite_ladet(self, page):
         go(page, "produkte.html")
-        expect(page.locator("#emptyState, #tableBody")).to_be_visible(timeout=5000)
+        expect(page.locator("#tableBody")).to_be_visible(timeout=5000)
 
     def test_produkte_aus_localstorage_sichtbar(self, page):
         go(page, "produkte.html", {"max4work_produkte": json.dumps(_PRODUKTE())})
