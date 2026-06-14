@@ -308,10 +308,12 @@ class TestBelege:
 
     def test_filter_chips_belege(self, page):
         go(page, "belege.html", {"max4work_belege": json.dumps(_BELEGE())})
+        # Büro-Filter → Druckerpapier sichtbar (unser Beleg ist Büro)
         page.click(".fchip[data-f='Büro']")
         page.wait_for_timeout(300)
         expect(page.locator("#belegListe").locator("text=Druckerpapier")).to_be_visible(timeout=3000)
-        page.click(".fchip[data-f='steuer']")
+        # Material-Filter → Druckerpapier nicht sichtbar (unser Beleg ist Büro, nicht Material)
+        page.click(".fchip[data-f='Material']")
         page.wait_for_timeout(300)
         expect(page.locator("#belegListe").locator("text=Druckerpapier")).not_to_be_visible(timeout=3000)
 
