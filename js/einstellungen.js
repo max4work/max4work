@@ -2366,3 +2366,138 @@ function saveMahnSettings() {
 }
 
 _initMahnSettings();
+
+/* ══════════════ Externe Kalender ══════════════ */
+const EXT_KAL_KEY = 'max4work_ext_kalender';
+
+function _loadExtKal() { try { return JSON.parse(localStorage.getItem(EXT_KAL_KEY)) || []; } catch { return []; } }
+function _saveExtKal(l) { localStorage.setItem(EXT_KAL_KEY, JSON.stringify(l)); }
+
+function addExtKalender() {
+  const name  = document.getElementById('extKalName').value.trim();
+  const url   = document.getElementById('extKalUrl').value.trim();
+  const farbe = document.getElementById('extKalFarbe').value;
+  if (!name || !url) { alert('Name und URL sind erforderlich.'); return; }
+  const list = _loadExtKal();
+  const kal  = { id: Date.now().toString(), name, url, farbe };
+  list.push(kal);
+  _saveExtKal(list);
+  document.getElementById('extKalName').value = '';
+  document.getElementById('extKalUrl').value  = '';
+  renderExtKalListe();
+  syncExtKal(kal.id);
+}
+
+function delExtKalender(id) {
+  if (!confirm('Abonnement entfernen und alle importierten Termine löschen?')) return;
+  try {
+    const t = JSON.parse(localStorage.getItem('max4work_termine') || '[]');
+    localStorage.setItem('max4work_termine', JSON.stringify(t.filter(x => x.externSrc !== id)));
+  } catch {}
+  _saveExtKal(_loadExtKal().filter(k => k.id !== id));
+  renderExtKalListe();
+}
+
+async function syncExtKal(id) {
+  const list = _loadExtKal();
+  const kal  = list.find(k => k.id === id);
+  if (!kal) return;
+  const btn = document.getElementById('extKalSyncBtn_' + id);
+  const st  = document.getElementById('extKalStatus_' + id);
+  if (btn) btn.disabled = true;
+  if (st)  st.textContent = '⏳ Lädt…';
+  try {
+    const url = kal.url.replace(/^webcal:\/\//i, 'https://');
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text   = await res.text();
+    const events = _extParseICS(text);
+    const stored = JSON.parse(localStorage.getItem('max4work_termine') || '[]');
+    const base   = stored.filter(t => t.externSrc !== id);
+    const now    = Date.now();
+    const imported = events.map((e, i) => ({
+      id: now + i,
+      titel:   e.titel || '(kein Titel)',
+      datum:   e.datum,
+      von:     e.von   || '',
+      bis:     e.bis   || '',
+      ganztag: e.ganztag || 'nein',
+      kunde:   '',
+      notiz:   e.notiz  || '',
+      farbe:   kal.farbe,
+      extern:  true,
+      externSrc: id
+    })).filter(e => e.datum);
+    localStorage.setItem('max4work_termine', JSON.stringify([...base, ...imported]));
+    kal.lastSync = new Date().toLocaleString('de-DE', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+    kal.count    = imported.length;
+    _saveExtKal(list);
+    if (st) st.textContent = '✓ ' + imported.length + ' Termine · ' + kal.lastSync;
+  } catch(e) {
+    if (st) st.textContent = '❌ ' + e.message + ' – URL muss öffentlich zugänglich sein.';
+  }
+  if (btn) btn.disabled = false;
+}
+
+function syncAlleExtKal() {
+  _loadExtKal().forEach(k => syncExtKal(k.id));
+}
+
+function renderExtKalListe() {
+  const list = _loadExtKal();
+  const el   = document.getElementById('extKalListe');
+  if (!el) return;
+  if (!list.length) {
+    el.innerHTML = '<p style="font-size:13px;color:var(--muted);margin:0;">Noch keine externen Kalender abonniert.</p>';
+    return;
+  }
+  el.innerHTML = list.map(k => `
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+      <div style="width:12px;height:12px;border-radius:50%;background:${k.farbe};flex-shrink:0;"></div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13.5px;font-weight:500;">${k.name}</div>
+        <div id="extKalStatus_${k.id}" style="font-size:11.5px;color:var(--muted);">${k.count != null ? k.count + ' Termine · ' + (k.lastSync||'') : 'Noch nicht synchronisiert'}</div>
+      </div>
+      <button id="extKalSyncBtn_${k.id}" onclick="syncExtKal('${k.id}')" style="background:none;border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:13px;cursor:pointer;flex-shrink:0;" title="Aktualisieren">↻</button>
+      <button onclick="delExtKalender('${k.id}')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:20px;flex-shrink:0;line-height:1;" title="Entfernen">×</button>
+    </div>
+  `).join('');
+}
+
+function _extParseICS(text) {
+  const lines = text.replace(/\r\n[ \t]/g,'').replace(/\r/g,'').replace(/\n[ \t]/g,'').split('\n');
+  const events = [];
+  let cur = null;
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (line === 'BEGIN:VEVENT') { cur = {}; continue; }
+    if (line === 'END:VEVENT')   { if (cur) events.push(_extMapEvent(cur)); cur = null; continue; }
+    if (!cur) continue;
+    const col = line.indexOf(':');
+    if (col < 0) continue;
+    const key = line.slice(0, col).replace(/;.*/,'').toUpperCase();
+    const val = line.slice(col + 1);
+    if (key === 'DTSTART' || key.startsWith('DTSTART;')) cur.start = val;
+    else if (key === 'DTEND' || key.startsWith('DTEND;')) cur.end = val;
+    else if (key === 'SUMMARY')     cur.summary = val.replace(/\\n/g,' ').replace(/\\,/g,',').replace(/\\\\/g,'\\');
+    else if (key === 'DESCRIPTION') cur.desc    = val.replace(/\\n/g,' ').replace(/\\,/g,',').replace(/\\\\/g,'\\');
+  }
+  return events;
+}
+
+function _extMapEvent(e) {
+  const parseDT = v => {
+    if (!v) return {};
+    const s = v.replace(/[TZ\-:]/g,'');
+    if (s.length >= 8) {
+      const datum = s.slice(0,4) + '-' + s.slice(4,6) + '-' + s.slice(6,8);
+      if (s.length >= 14) return { datum, time: s.slice(8,10) + ':' + s.slice(10,12) };
+      return { datum, ganztag: 'ja' };
+    }
+    return {};
+  };
+  const st = parseDT(e.start), en = parseDT(e.end);
+  return { titel: e.summary || '', datum: st.datum || '', von: st.time || '', bis: en.time || '', ganztag: st.ganztag || 'nein', notiz: e.desc || '' };
+}
+
+renderExtKalListe();
