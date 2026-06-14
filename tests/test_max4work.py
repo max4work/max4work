@@ -130,10 +130,12 @@ def _TERMINE():
 # Hilfsfunktion: Seite laden + localStorage setzen
 # ─────────────────────────────────────────────
 def go(page: Page, path: str, extra: dict = {}):
-    page.goto(f"{BASE_URL}/{path}")
+    # login.html ist auth-exempt → localStorage dort setzen, dann zum Ziel navigieren
+    page.goto(f"{BASE_URL}/login.html")
+    page.wait_for_load_state("domcontentloaded")
     for k, v in {**_BASE, **extra}.items():
         page.evaluate(f"localStorage.setItem({json.dumps(k)}, {json.dumps(v)})")
-    page.reload()
+    page.goto(f"{BASE_URL}/{path}")
     page.wait_for_load_state("domcontentloaded")
 
 
