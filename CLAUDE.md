@@ -269,7 +269,12 @@ Produkte → Auswertung → Einstellungen (Design | Firma | Funktionen | Daten &
 
 ## Letzter Stand (2026-06-14)
 
-- Sessions 1–34 abgeschlossen
+- Sessions 1–35 abgeschlossen
+- **14.06.2026 Session 35 – Abmelden-Button entfernt + Toggle-Defaults aus:**
+  - **einstellungen.html:** Abmelden-Button (Div mit `border-top` + rotem `<button onclick="m4wLogout()">`) komplett entfernt – Sidebar-Button reicht
+  - **js/einstellungen.js – `TOGGLE_DEFAULTS`:** Alle 10 Werte auf `false` gesetzt (war `true`) – Toggles sind jetzt standardmäßig aus bis der Nutzer sie aktiviert und speichert
+  - **js/einstellungen.js – `isVisible()`:** Fallbacks für unbekannte Keys und Fehlerfall von `true` auf `false`
+  - **Backup:** `Backups/backup_2026-06-14g/` (einstellungen.html, einstellungen.js)
 - **14.06.2026 Session 34 – Toggles grau + Erscheinungsbild-Standard Hell:**
   - **einstellungen.html – Toggle-Farbe:**
     - `.toggle input:checked + .toggle-track` → `background: #8E8E93` (war `var(--accent)`)
