@@ -51,8 +51,12 @@ def page(browser_instance):
 # ─────────────────────────────────────────────
 # Basis-localStorage für alle Tests
 # ─────────────────────────────────────────────
+_NOW_MS = str(int(__import__("time").time() * 1000))
+
 _BASE = {
     "m4w_sess": "1",
+    # Backup-Banner unterdrücken (Banner blockiert sonst Klick-Events)
+    "max4work_last_backup": _NOW_MS,
     "max4work_features": json.dumps({
         "autoSuggestInvoice": True, "livePreview": True, "highlightOverdue": True,
         "panel_kpiGrid": True, "panel_bank": True, "panel_top5": True,
