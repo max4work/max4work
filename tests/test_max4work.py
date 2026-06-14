@@ -323,19 +323,22 @@ class TestTermine:
 
     def test_seite_ladet(self, page):
         go(page, "termine.html")
-        expect(page.locator("#monthTitle, .month-title")).to_be_visible(timeout=5000)
+        expect(page.locator("#monthTitle")).to_be_visible(timeout=5000)
 
     def test_termin_in_localstorage_sichtbar(self, page):
         go(page, "termine.html", {"max4work_termine": json.dumps(_TERMINE())})
-        expect(page.locator("text=Kundengespräch Müller")).to_be_visible(timeout=4000)
+        page.evaluate("selectDay('2026-06-20')")
+        page.wait_for_timeout(300)
+        expect(page.locator(".event-block-title").locator("text=Kundengespräch Müller")).to_be_visible(timeout=4000)
 
     def test_neuen_termin_anlegen(self, page):
         go(page, "termine.html")
         page.fill("#f-titel", "Testtermin Playwright")
         page.fill("#f-datum", "2026-06-25")
-        page.fill("#f-von",   "14:00") if page.locator("#f-von").count() else None
         page.click("button[onclick='saveTermin()']")
-        expect(page.locator("text=Testtermin Playwright")).to_be_visible(timeout=4000)
+        page.evaluate("selectDay('2026-06-25')")
+        page.wait_for_timeout(300)
+        expect(page.locator(".event-block-title").locator("text=Testtermin Playwright")).to_be_visible(timeout=4000)
 
 
 # ═══════════════════════════════════════════════════
