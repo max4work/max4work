@@ -333,9 +333,12 @@ class TestTermine:
 
     def test_neuen_termin_anlegen(self, page):
         go(page, "termine.html")
+        page.evaluate("openAtTime('2026-06-25', 10)")
+        page.wait_for_selector("#overlay.open", timeout=3000)
         page.fill("#f-titel", "Testtermin Playwright")
         page.fill("#f-datum", "2026-06-25")
         page.click("button[onclick='saveTermin()']")
+        page.wait_for_timeout(300)
         page.evaluate("selectDay('2026-06-25')")
         page.wait_for_timeout(300)
         expect(page.locator(".event-block-title").locator("text=Testtermin Playwright")).to_be_visible(timeout=4000)
