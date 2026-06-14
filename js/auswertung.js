@@ -687,6 +687,185 @@
       ${hinweis}`;
   }
 
+  function renderSteuern(zahlungen, belege, rechnungen, year) {
+    const el = document.getElementById('steuerContent');
+    if (!el) return;
+    const yStr = String(year);
+    const fmtE = n => parseFloat(n||0).toLocaleString('de-DE', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
+
+    const sumEin   = zahlungen.filter(z => z.datum?.startsWith(yStr)).reduce((s,z) => s + Number(z.betrag||0), 0);
+    const sumAus   = belege.filter(b => b.datum?.startsWith(yStr)).reduce((s,b) => s + Number(b.betrag||0), 0);
+    const gewinn   = sumEin - sumAus;
+    const kuGrenze = year >= 2025 ? 25000 : 22000;
+    const isKU     = sumEin <= kuGrenze;
+
+    // GewSt §11 GewStG
+    const freibetrag   = 24500;
+    const gewerbeertrag = Math.max(gewinn - freibetrag, 0);
+    const messbetrag    = gewerbeertrag * 0.035;
+    const gewst         = Math.round(messbetrag * 4.60); // Hebesatz BS 460 %
+
+    // ESt §32a EStG
+    const gf  = year >= 2025 ? 12096 : 11604;
+    const zvE = Math.max(gewinn, 0);
+    let est = 0;
+    if (zvE > gf) {
+      if (zvE <= 17005)      { const y=(zvE-gf)/10000; est=(979.18*y+1400)*y; }
+      else if (zvE <= 66760) { const z=(zvE-17005)/10000; est=(192.59*z+2397)*z+1025; }
+      else if (zvE <= 277825){ est=0.42*zvE-10602; }
+      else                   { est=0.45*zvE-18936; }
+    }
+    est = Math.max(0, Math.round(est));
+    const soli = est > 18130 ? Math.round(est * 0.055) : 0;
+    const gewaAnr = Math.min(Math.round(messbetrag * 3.8), est);
+    const steuerlast = Math.max(est - gewaAnr, 0) + soli + gewst;
+
+    const kuBadge = isKU
+      ? `<span class="st-badge st-badge-ok">✓ §19 UStG Kleinunternehmer – Grenze ${fmtE(kuGrenze)}, keine USt-Pflicht</span>`
+      : `<span class="st-badge st-badge-warn">⚠ §19 UStG Grenze überschritten – Umsatzsteuerpflicht beachten!</span>`;
+
+    el.innerHTML = `
+      <style>
+        .st-kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--border); flex-shrink:0; }
+        .st-kpi { background:var(--surface); padding:12px 14px; }
+        .st-kpi-lbl { font-size:9.5px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px; }
+        .st-kpi-val { font-size:18px; font-weight:700; letter-spacing:-.5px; }
+        .st-kpi-sub { font-size:10px; color:var(--muted); margin-top:2px; }
+        .st-kpi-val.green { color:var(--green); }
+        .st-kpi-val.red   { color:var(--red); }
+        .st-kpi-val.blue  { color:#1D4ED8; }
+        .st-rows { display:flex; flex-direction:column; }
+        .st-row { display:flex; justify-content:space-between; align-items:center; padding:7px 14px; border-bottom:1px solid var(--border); font-size:12px; gap:12px; }
+        .st-row:last-child { border-bottom:none; }
+        .st-row-lbl { color:var(--muted); flex:1; }
+        .st-row-lbl b { color:var(--text); }
+        .st-row-val { font-weight:600; white-space:nowrap; font-variant-numeric:tabular-nums; }
+        .st-row-val.red   { color:var(--red); }
+        .st-row-val.green { color:var(--green); }
+        .st-row-val.muted { font-weight:400; color:var(--muted); font-size:11px; }
+        .st-badge { display:inline-flex; align-items:center; gap:6px; padding:7px 14px; font-size:11px; font-weight:500; line-height:1.4; }
+        .st-badge-ok   { background:#D1F2E0; color:#1A7A3C; }
+        .st-badge-warn { background:#FEF3C7; color:#92600A; }
+        .st-badge-info { background:#DBEAFE; color:#1D4ED8; }
+        .st-termin-row { display:flex; gap:16px; padding:7px 14px; border-bottom:1px solid var(--border); font-size:11.5px; flex-wrap:wrap; }
+        .st-termin-row:last-child { border-bottom:none; }
+        .st-termin-type { font-weight:600; min-width:130px; color:var(--muted); }
+        .st-termin-dates { display:flex; gap:10px; flex-wrap:wrap; }
+        .st-termin-date { background:var(--soft); border-radius:5px; padding:2px 7px; font-size:11px; color:var(--text); white-space:nowrap; }
+        @media(max-width:768px) { .st-kpi-row { grid-template-columns:1fr 1fr; } }
+      </style>
+
+      <!-- KPI-Zeile -->
+      <div class="st-kpi-row">
+        <div class="st-kpi">
+          <div class="st-kpi-lbl">Gewinn vor Steuern</div>
+          <div class="st-kpi-val ${gewinn>=0?'green':'red'}">${fmtE(Math.abs(gewinn))}</div>
+          <div class="st-kpi-sub">§4 Abs. 3 EStG</div>
+        </div>
+        <div class="st-kpi">
+          <div class="st-kpi-lbl">Gewerbesteuer (Schätzung)</div>
+          <div class="st-kpi-val ${gewst>0?'red':'green'}">${gewst>0?fmtE(gewst):'0,00 €'}</div>
+          <div class="st-kpi-sub">§11 GewStG · Hebesatz BS 460 %</div>
+        </div>
+        <div class="st-kpi">
+          <div class="st-kpi-lbl">Einkommensteuer (Schätzung)</div>
+          <div class="st-kpi-val ${est>0?'red':'green'}">${fmtE(Math.max(est-gewaAnr,0)+soli)}</div>
+          <div class="st-kpi-sub">§32a EStG inkl. Soli · nach §35-Anrechnung</div>
+        </div>
+        <div class="st-kpi">
+          <div class="st-kpi-lbl">Gesamtsteuerlast (Schätzung)</div>
+          <div class="st-kpi-val ${steuerlast>0?'red':'green'}">${fmtE(steuerlast)}</div>
+          <div class="st-kpi-sub">GewSt + ESt + Soli kombiniert</div>
+        </div>
+      </div>
+
+      <!-- Berechnungs-Detail -->
+      <div class="st-rows">
+        <div class="st-row">
+          <span class="st-row-lbl"><b>Betriebseinnahmen</b> §4 Abs. 3 EStG</span>
+          <span class="st-row-val green">+ ${fmtE(sumEin)}</span>
+        </div>
+        <div class="st-row">
+          <span class="st-row-lbl"><b>Betriebsausgaben</b> §4 Abs. 4 EStG</span>
+          <span class="st-row-val red">− ${fmtE(sumAus)}</span>
+        </div>
+        <div class="st-row">
+          <span class="st-row-lbl"><b>Gewinn / Verlust</b> (Gewerbeertrag §7 GewStG)</span>
+          <span class="st-row-val ${gewinn>=0?'green':'red'}">${gewinn>=0?'+':''} ${fmtE(gewinn)}</span>
+        </div>
+        <div class="st-row">
+          <span class="st-row-lbl">Freibetrag §11 Abs. 1 S.3 Nr.1 GewStG</span>
+          <span class="st-row-val muted">− ${fmtE(freibetrag)}</span>
+        </div>
+        <div class="st-row">
+          <span class="st-row-lbl">Steuerpflichtiger Gewerbeertrag × 3,5 % × 460 %</span>
+          <span class="st-row-val ${gewst>0?'red':'muted'}">${gewst>0?fmtE(gewst):'0,00 € (Freibetrag)'}</span>
+        </div>
+        <div class="st-row">
+          <span class="st-row-lbl">Grundfreibetrag §32a EStG (${year})</span>
+          <span class="st-row-val muted">− ${fmtE(gf)}</span>
+        </div>
+        <div class="st-row">
+          <span class="st-row-lbl">Einkommensteuer §32a EStG</span>
+          <span class="st-row-val ${est>0?'red':'muted'}">${fmtE(est)}</span>
+        </div>
+        ${gewaAnr>0 ? `<div class="st-row"><span class="st-row-lbl">GewSt-Anrechnung §35 EStG (3,8 × Messbetrag)</span><span class="st-row-val green">− ${fmtE(gewaAnr)}</span></div>` : ''}
+        <div class="st-row">
+          <span class="st-row-lbl">Solidaritätszuschlag §3 SolZG (5,5 %${soli===0?' – unter Freigrenze':''})</span>
+          <span class="st-row-val ${soli>0?'red':'muted'}">${fmtE(soli)}</span>
+        </div>
+        <div class="st-row" style="background:var(--soft)">
+          <span class="st-row-lbl" style="font-weight:700;color:var(--text)">Gesamtsteuerlast (Schätzung ohne persönl. Abzüge)</span>
+          <span class="st-row-val red" style="font-size:14px">${fmtE(steuerlast)}</span>
+        </div>
+      </div>
+
+      <!-- Status & Hinweise -->
+      <div style="border-top:1px solid var(--border)">
+        <div class="st-badge ${isKU?'st-badge-ok':'st-badge-warn'}" style="width:100%">${isKU ? '✓ §19 UStG Kleinunternehmer – Grenze ' + fmtE(kuGrenze) + ', keine Umsatzsteuer-Voranmeldung erforderlich' : '⚠ §19 UStG Grenze überschritten – Umsatzsteuerpflicht beachten!'}</div>
+        <div class="st-badge st-badge-info" style="width:100%">ℹ Kirchensteuer (9 % der ESt) und persönliche Abzüge (§10, §33 EStG) nicht eingerechnet. Vorauszahlungen §37 EStG: 10. Mrz · 10. Jun · 10. Sep · 10. Dez</div>
+      </div>
+
+      <!-- Steuertermine -->
+      <div style="border-top:1px solid var(--border); flex-shrink:0">
+        <div style="padding:6px 14px 2px; font-size:9.5px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px;">Steuertermine ${year}</div>
+        <div class="st-termin-row">
+          <span class="st-termin-type">USt-VoA §18 UStG</span>
+          <div class="st-termin-dates">
+            <span class="st-termin-date">Q1 10. Apr</span>
+            <span class="st-termin-date">Q2 10. Jul</span>
+            <span class="st-termin-date">Q3 10. Okt</span>
+            <span class="st-termin-date">Q4 10. Jan ${year+1}</span>
+          </div>
+        </div>
+        <div class="st-termin-row">
+          <span class="st-termin-type">GewSt §19 GewStG</span>
+          <div class="st-termin-dates">
+            <span class="st-termin-date">15. Feb</span>
+            <span class="st-termin-date">15. Mai</span>
+            <span class="st-termin-date">15. Aug</span>
+            <span class="st-termin-date">15. Nov</span>
+          </div>
+        </div>
+        <div class="st-termin-row">
+          <span class="st-termin-type">ESt §37 EStG</span>
+          <div class="st-termin-dates">
+            <span class="st-termin-date">10. Mrz</span>
+            <span class="st-termin-date">10. Jun</span>
+            <span class="st-termin-date">10. Sep</span>
+            <span class="st-termin-date">10. Dez</span>
+          </div>
+        </div>
+        <div class="st-termin-row">
+          <span class="st-termin-type">Erklärungen §147 AO</span>
+          <div class="st-termin-dates">
+            <span class="st-termin-date">EÜR + G: 31. Jul ${year+1}</span>
+            <span class="st-termin-date">Aufbewahrung: bis ${year+10}</span>
+          </div>
+        </div>
+      </div>`;
+  }
+
   function exportCSV() {
     const data = loadData();
     const rows = [['Typ','Datum','Betrag','Beschreibung']];
