@@ -144,7 +144,7 @@ function applyAppDesign(name) {
   Object.entries(d.vars).forEach(([k, v]) => root.style.setProperty(k, v));
   root.setAttribute('data-design', dn);
   // Farbschema sofort anwenden (verhindert Flackern)
-  const sm = localStorage.getItem(SCHEME_KEY)||'system';
+  const sm = localStorage.getItem(SCHEME_KEY)||'light';
   if (sm === 'split') {
     root.dataset.scheme = 'split';
   } else {
