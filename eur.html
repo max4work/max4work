@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>EÜR – Einnahmen-Überschuss-Rechnung</title>
-<script src="shared.js?v=202606141942"></script>
+<script src="shared.js?v=202606141943"></script>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -813,6 +813,18 @@ function renderUSt(zahlungen, year) {
 function renderGewSt(gewinn, year) {
   const el = document.getElementById('gewstSection');
   if (!el) return;
+
+  // Freiberufler §18 EStG → keine Gewerbesteuer §2 GewStG
+  try {
+    const einst = JSON.parse(localStorage.getItem('max4work_einstellungen') || '{}');
+    if (einst.isFreiberufler) {
+      el.innerHTML = `
+        <div class="section-title"><span class="section-badge">E</span> Gewerbesteuer §2 GewStG – Freiberufler</div>
+        <div class="steuer-badge ok">✓ Freiberufler §18 EStG – keine Gewerbesteuer (§2 Abs. 1 GewStG: freie Berufe unterliegen nicht der Gewerbesteuerpflicht).</div>`;
+      return;
+    }
+  } catch(e) {}
+
   const freibetrag = 24500; // §11 Abs. 1 S. 3 Nr. 1 GewStG (Einzelunternehmer/Personengesellschaft)
   const gewerbeertrag = Math.max(gewinn - freibetrag, 0);
   const messbetrag = gewerbeertrag * 0.035; // §11 Abs. 2 GewStG: Messzahl 3,5 %
