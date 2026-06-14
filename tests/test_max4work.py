@@ -256,7 +256,7 @@ class TestRechnungen:
         page.evaluate("saveToList()")
         page.evaluate("showListe()")
         page.wait_for_timeout(500)
-        expect(page.locator("text=RE-2026-TEST")).to_be_visible(timeout=5000)
+        expect(page.locator("td:has-text('RE-2026-TEST')").first).to_be_visible(timeout=5000)
 
     def test_status_filter(self, page):
         go(page, "rechnungen.html", {"max4work_rechnungen": json.dumps(_RECHNUNGEN())})
