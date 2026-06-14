@@ -84,8 +84,8 @@
     try {
       const f = JSON.parse(localStorage.getItem(TOGGLE_KEY) || '{}');
       const def = TOGGLE_DEFAULTS[key];
-      return f[key] !== undefined ? f[key] : (def !== undefined ? def : true);
-    } catch(e) { return true; }
+      return f[key] !== undefined ? f[key] : (def !== undefined ? def : false);
+    } catch(e) { return false; }
   }
 
   let dragSrcIdx = null;
