@@ -19,6 +19,11 @@ const today = new Date(); today.setHours(0,0,0,0);
 let viewYear = today.getFullYear(), viewMonth = today.getMonth();
 let selectedDate = dateStr(today);
 let termine = loadTermine(), editId = null, selectedColor = COLORS[0].hex;
+let calView = localStorage.getItem('max4work_cal_view') || 'monat';
+let viewWeekStart = null;
+let _delTerminPending = null, _delTerminTimer = null;
+const WDAY_SHORT = ['Mo','Di','Mi','Do','Fr','Sa','So'];
+const MONATE_SHORT = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
 
 function loadTermine() {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
