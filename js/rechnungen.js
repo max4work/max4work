@@ -385,9 +385,7 @@
         ? `<button class="xr-dl-btn" onclick="event.stopPropagation();_downloadStoredXRechnung('${r.nr}')" title="XRechnung herunterladen">XML ↓</button>`
         : '';
       const lockIcon = r.locked ? `<span title="GoBD-archiviert – unveränderlich" style="margin-left:5px;font-size:10px;opacity:.6;">🔒</span>` : '';
-      const delCell = r.locked
-        ? `<td style="text-align:center;color:var(--muted);font-size:11px;" title="GoBD: archiviert">—</td>`
-        : `<td><button class="del-btn" onclick="deleteRechnung(${r.id})">×</button></td>`;
+      const delCell = `<td><button class="del-btn" onclick="deleteRechnung(${r.id})" title="${r.locked ? 'Archiviert – mit Bestätigung löschen' : 'Löschen'}" style="${r.locked ? 'opacity:.45;' : ''}">×</button></td>`;
       return `<tr>
         <td style="font-weight:500">${r.nr}${typChip}${lockIcon}</td>
         <td>${r.kunde}</td>
