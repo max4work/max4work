@@ -776,7 +776,8 @@ function _createMehrSheet() {
   const sheet = document.createElement('div');
   sheet.id = 'mob-mehr-sheet';
   sheet.className = 'mob-mehr-sheet';
-  sheet.innerHTML = `<div class="mob-mehr-backdrop" onclick="_closeMehrSheet()"></div><div class="mob-mehr-panel"><div class="mob-mehr-handle"></div><div class="mob-mehr-header">Weitere Module</div>${groupsHTML}<div style="height:20px"></div></div>`;
+  const LOGOUT_IC = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`;
+  sheet.innerHTML = `<div class="mob-mehr-backdrop" onclick="_closeMehrSheet()"></div><div class="mob-mehr-panel"><div class="mob-mehr-handle"></div><div class="mob-mehr-header">Weitere Module</div>${groupsHTML}<div style="padding:0 16px 8px;"><button onclick="m4wLogout()" style="width:100%;display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:12px;border:none;background:rgba(255,59,48,.08);cursor:pointer;font-family:inherit;"><span style="width:36px;height:36px;border-radius:9px;background:#FF3B30;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;">${LOGOUT_IC}</span><span style="font-size:15px;font-weight:500;color:#FF3B30;">Abmelden</span></button></div><div style="height:20px"></div></div>`;
   document.body.appendChild(sheet);
 }
 
