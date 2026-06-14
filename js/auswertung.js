@@ -154,6 +154,9 @@
     // Quartalsübersicht
     if (_isFeatureOn('panel_quartal')) renderQuartal(data.zahlungen, data.belege, year);
 
+    // Steuerübersicht
+    if (_isFeatureOn('panel_steuern')) renderSteuern(data.zahlungen, data.belege, data.rechnungen, year);
+
     // Kleinunternehmergrenze (nur rendern wenn sichtbar)
     if (_isFeatureOn('panel_kleinunternehmer')) {
       document.getElementById('kuTitle').textContent = `Kleinunternehmergrenze §19 UStG – ${year}`;
