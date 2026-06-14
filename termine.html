@@ -11,8 +11,8 @@
 <meta property="og:url" content="https://max4work.com/termine.html">
 <title>max4work – Termine</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/shared.css?v=202606141819">
-<script src="shared.js?v=202606141819"></script>
+<link rel="stylesheet" href="css/shared.css?v=202606141847">
+<script src="shared.js?v=202606141847"></script>
 <style>
 .topbar-right { display: flex; gap: 8px; align-items: center; }
 .btn { padding: 7px 15px; border-radius: 8px; font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; border: none; transition: all 0.12s; display: inline-flex; align-items: center; gap: 6px; }
@@ -104,6 +104,37 @@
 .kunde-dd-item:hover { background: var(--soft); }
 .kunde-dd-name { font-size: 13px; font-weight: 500; }
 .kunde-dd-sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+/* View Toggle */
+.cal-view-toggle { display:flex; background:var(--soft); border-radius:8px; padding:3px; gap:2px; }
+.cal-vbtn { padding:4px 14px; border-radius:6px; font-size:12px; font-weight:500; cursor:pointer; border:none; background:transparent; color:var(--muted); font-family:inherit; transition:all .12s; -webkit-tap-highlight-color:transparent; }
+.cal-vbtn.on { background:var(--surface); color:var(--text); font-weight:600; box-shadow:0 1px 3px rgba(0,0,0,.1); }
+/* Wochenansicht */
+.week-wrap { display:flex; flex-direction:column; flex:1; overflow:hidden; }
+.week-nav { display:flex; align-items:center; justify-content:space-between; padding:12px 20px; border-bottom:1px solid var(--border); background:var(--surface); flex-shrink:0; }
+.week-nav-title { font-size:14px; font-weight:600; }
+.week-scroll { flex:1; overflow:auto; }
+.week-grid-header { display:grid; grid-template-columns:52px repeat(7,1fr); min-width:500px; position:sticky; top:0; z-index:10; background:var(--surface); border-bottom:2px solid var(--border); }
+.week-time-label-col { width:52px; border-right:1px solid var(--border); }
+.week-col-head { text-align:center; padding:8px 4px 6px; border-left:1px solid var(--border); cursor:pointer; transition:background .1s; }
+.week-col-head:hover { background:var(--soft); }
+.week-col-head-day { font-size:10px; color:var(--muted); font-weight:600; letter-spacing:.5px; text-transform:uppercase; }
+.week-col-head-day.sun { color:var(--red); }
+.week-col-head-nr { font-size:22px; font-weight:300; line-height:1.2; width:36px; height:36px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin:2px auto 0; }
+.week-col-head-nr.is-today { background:var(--accent); color:#fff; font-weight:600; font-size:17px; }
+.week-allday-strip { display:none; grid-template-columns:52px repeat(7,1fr); min-width:500px; border-bottom:1px solid var(--border); }
+.week-allday-cell { padding:2px 3px; border-left:1px solid var(--border); min-height:24px; }
+.week-grid { display:grid; grid-template-columns:52px repeat(7,1fr); min-width:500px; }
+.week-time-cell { padding:6px 6px 0 0; text-align:right; font-size:10.5px; color:var(--muted); border-right:1px solid var(--border); min-height:52px; line-height:1; }
+.week-day-cell { border-left:1px solid var(--border); border-bottom:1px solid var(--border); padding:2px 3px; position:relative; min-height:52px; cursor:pointer; transition:background .1s; }
+.week-day-cell:hover { background:rgba(200,217,58,.08); }
+.week-event { border-radius:4px; padding:2px 5px; margin-bottom:2px; font-size:11px; font-weight:500; cursor:pointer; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; line-height:1.5; }
+.week-event:hover { opacity:.82; }
+/* Statistik */
+.cal-stats { padding:8px 18px; border-top:1px solid var(--border); font-size:11.5px; color:var(--muted); flex-shrink:0; }
+.cal-stats strong { color:var(--text); }
+/* Wiederholung */
+.wieder-hide { display:none !important; }
+.wieder-section { border-top:1px solid var(--border); padding-top:12px; margin-top:4px; }
 </style>
 
 <!-- mob-only-injected -->
@@ -241,6 +272,6 @@
 </div>
 
 <input type="file" id="icsFileInput" accept=".ics,text/calendar" style="display:none" onchange="_handleICSFile(this)">
-<script src="js/termine.js?v=202606141819"></script>
+<script src="js/termine.js?v=202606141847"></script>
 </body>
 </html>
