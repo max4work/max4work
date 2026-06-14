@@ -799,14 +799,11 @@
           <span class="st-row-lbl"><b>Gewinn / Verlust</b> (Gewerbeertrag §7 GewStG)</span>
           <span class="st-row-val ${gewinn>=0?'green':'red'}">${gewinn>=0?'+':''} ${fmtE(gewinn)}</span>
         </div>
-        <div class="st-row">
-          <span class="st-row-lbl">Freibetrag §11 Abs. 1 S.3 Nr.1 GewStG</span>
-          <span class="st-row-val muted">− ${fmtE(freibetrag)}</span>
-        </div>
-        <div class="st-row">
-          <span class="st-row-lbl">Steuerpflichtiger Gewerbeertrag × 3,5 % × 460 %</span>
-          <span class="st-row-val ${gewst>0?'red':'muted'}">${gewst>0?fmtE(gewst):'0,00 € (Freibetrag)'}</span>
-        </div>
+        ${isFreiberufler
+          ? `<div class="st-row"><span class="st-row-lbl">Gewerbesteuer §2 GewStG</span><span class="st-row-val green">0,00 € – Freiberufler §18 EStG befreit</span></div>`
+          : `<div class="st-row"><span class="st-row-lbl">Freibetrag §11 Abs. 1 S.3 Nr.1 GewStG</span><span class="st-row-val muted">− ${fmtE(freibetrag)}</span></div>
+        <div class="st-row"><span class="st-row-lbl">Steuerpflichtiger Gewerbeertrag × 3,5 % × 460 %</span><span class="st-row-val ${gewst>0?'red':'muted'}">${gewst>0?fmtE(gewst):'0,00 € (Freibetrag)'}</span></div>`
+        }
         <div class="st-row">
           <span class="st-row-lbl">Grundfreibetrag §32a EStG (${year})</span>
           <span class="st-row-val muted">− ${fmtE(gf)}</span>
