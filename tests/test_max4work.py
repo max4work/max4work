@@ -446,4 +446,4 @@ class TestWerkzeuge:
 
     def test_werkzeuge_sichtbar(self, page):
         go(page, "werkzeuge.html")
-        expect(page.locator(".tool-card, .card, [class*='tool']")).first.to_be_visible(timeout=5000)
+        expect(page.locator(".tool-section").first).to_be_visible(timeout=5000)
