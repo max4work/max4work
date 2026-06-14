@@ -313,11 +313,10 @@
     const all = getRechnungen();
     const r = all.find(r => r.id === id);
     if (r?.locked) {
-      alert(`GoBD-Schutz: Rechnung ${r.nr} ist archiviert und kann nicht gelöscht werden.\n\nFür eine Stornierung bitte eine Gutschrift mit negativem Betrag erstellen.`);
-      _gobdLog('loesch-versuch', { nr: r.nr, kunde: r.kunde });
-      return;
-    }
-    if (!confirm('Rechnung löschen?')) return;
+      const ok = confirm(`Rechnung ${r.nr} (${r.kunde}) ist archiviert.\n\nTrotzdem unwiderruflich löschen?`);
+      if (!ok) return;
+      _gobdLog('loesch-forciert', { nr: r.nr, kunde: r.kunde });
+    } else if (!confirm('Rechnung löschen?')) return;
     if (r) {
       try {
         const store = JSON.parse(localStorage.getItem('max4work_xrechnungen') || '{}');
