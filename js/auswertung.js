@@ -11,6 +11,7 @@
     { key: 'panel_chartMonat',       elId: 'chartMonatPanel',     label: 'Umsatz pro Monat',              allowHalf: false },
     { key: 'panel_chartVergleich',   elId: 'chartVergleichPanel', label: 'Einnahmen vs. Ausgaben',        allowHalf: true  },
     { key: 'panel_quartal',          elId: 'quartalPanel',        label: 'Quartalsübersicht',             allowHalf: false },
+    { key: 'panel_steuern',          elId: 'steuerPanel',         label: 'Steuerübersicht',               allowHalf: false },
   ];
   const PANEL_DEFAULTS = Object.fromEntries(PANEL_CONFIG.map(p => [p.key, true]));
 
