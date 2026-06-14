@@ -11,8 +11,8 @@
 <meta property="og:url" content="https://max4work.com/termine.html">
 <title>max4work – Termine</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/shared.css?v=202606141848">
-<script src="shared.js?v=202606141848"></script>
+<link rel="stylesheet" href="css/shared.css?v=202606141849">
+<script src="shared.js?v=202606141849"></script>
 <style>
 .topbar-right { display: flex; gap: 8px; align-items: center; }
 .btn { padding: 7px 15px; border-radius: 8px; font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; border: none; transition: all 0.12s; display: inline-flex; align-items: center; gap: 6px; }
@@ -233,6 +233,18 @@
       <div class="time-grid" id="timeGrid"></div>
     </div>
   </div>
+  <div id="weekView" style="display:none" class="week-wrap">
+    <div class="week-nav">
+      <button class="nav-arrow" onclick="prevWeek()">‹</button>
+      <div class="week-nav-title" id="weekNavTitle"></div>
+      <button class="nav-arrow" onclick="nextWeek()">›</button>
+    </div>
+    <div class="week-scroll" id="weekScroll">
+      <div id="weekGridHeader" class="week-grid-header"><div class="week-time-label-col"></div></div>
+      <div id="weekAlldayStrip" class="week-allday-strip"></div>
+      <div id="weekGrid" class="week-grid"></div>
+    </div>
+  </div>
 </main>
 
 <div class="overlay" id="overlay" onclick="overlayClick(event)">
@@ -277,6 +289,6 @@
 </div>
 
 <input type="file" id="icsFileInput" accept=".ics,text/calendar" style="display:none" onchange="_handleICSFile(this)">
-<script src="js/termine.js?v=202606141848"></script>
+<script src="js/termine.js?v=202606141849"></script>
 </body>
 </html>
