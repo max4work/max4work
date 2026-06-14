@@ -582,4 +582,137 @@ function _showImportToast(imported, skipped) {
   setTimeout(() => document.getElementById('importToast')?.remove(), 6000);
 }
 
+/* ══════════════ Wochenansicht ══════════════ */
+function getWeekMonday(d){const t=new Date(d);const dow=(t.getDay()+6)%7;t.setDate(t.getDate()-dow);t.setHours(0,0,0,0);return t;}
+
+function setCalView(v){
+  calView=v;localStorage.setItem('max4work_cal_view',v);
+  document.querySelectorAll('.cal-vbtn').forEach(b=>b.classList.toggle('on',b.dataset.view===v));
+  const cl=document.getElementById('calLayout'), wv=document.getElementById('weekView');
+  if(v==='woche'){
+    cl.style.display='none';wv.style.display='flex';
+    if(!viewWeekStart)viewWeekStart=getWeekMonday(parseDate(selectedDate));
+    renderWeekView();
+  }else{
+    wv.style.display='none';cl.style.display='grid';
+    renderCalendar();
+  }
+}
+
+function prevWeek(){viewWeekStart=new Date(viewWeekStart);viewWeekStart.setDate(viewWeekStart.getDate()-7);renderWeekView();}
+function nextWeek(){viewWeekStart=new Date(viewWeekStart);viewWeekStart.setDate(viewWeekStart.getDate()+7);renderWeekView();}
+
+function renderWeekView(){
+  if(!viewWeekStart)viewWeekStart=getWeekMonday(parseDate(selectedDate));
+  const todayStr=dateStr(today);
+  const days=[];
+  for(let i=0;i<7;i++){const d=new Date(viewWeekStart);d.setDate(d.getDate()+i);days.push(d);}
+  const first=days[0],last=days[6];
+  const sameMonth=first.getMonth()===last.getMonth();
+  document.getElementById('weekNavTitle').textContent=sameMonth
+    ?`${first.getDate()}. – ${last.getDate()}. ${MONATE_LANG[first.getMonth()]} ${first.getFullYear()}`
+    :`${first.getDate()}. ${MONATE_SHORT[first.getMonth()]} – ${last.getDate()}. ${MONATE_SHORT[last.getMonth()]} ${first.getFullYear()}`;
+
+  const hdr=document.getElementById('weekGridHeader');
+  hdr.innerHTML='<div class="week-time-label-col"></div>'+days.map((d,i)=>{
+    const ds=dateStr(d),isToday=ds===todayStr,isSun=i===6;
+    return `<div class="week-col-head" onclick="selectedDate='${ds}';setCalView('monat')">
+      <div class="week-col-head-day${isSun?' sun':''}">${WDAY_SHORT[i]}</div>
+      <div class="week-col-head-nr${isToday?' is-today':''}">${d.getDate()}</div>
+    </div>`;
+  }).join('');
+
+  const alldayStrip=document.getElementById('weekAlldayStrip');
+  const hasAllDay=days.some(d=>termine.some(t=>t.datum===dateStr(d)&&t.ganztag==='ja'));
+  if(hasAllDay){
+    alldayStrip.style.display='grid';
+    alldayStrip.innerHTML='<div style="border-right:1px solid var(--border);font-size:9px;color:var(--muted);display:flex;align-items:center;justify-content:flex-end;padding:0 4px;">ganztg.</div>'+
+      days.map(d=>{
+        const ds=dateStr(d),evts=termine.filter(t=>t.datum===ds&&t.ganztag==='ja');
+        return `<div class="week-allday-cell">${evts.map(t=>`<div class="week-event" style="background:${t.farbe}20;color:${t.farbe};border-left:3px solid ${t.farbe}" onclick="event.stopPropagation();openDetail(${t.id})">${esc(t.titel)}</div>`).join('')}</div>`;
+      }).join('');
+  }else{alldayStrip.style.display='none';alldayStrip.innerHTML='';}
+
+  const grid=document.getElementById('weekGrid');
+  const nowH=new Date().getHours(),nowMin=new Date().getMinutes();
+  let html='';
+  for(let h=0;h<24;h++){
+    html+=`<div class="week-time-cell">${h===0?'':String(h).padStart(2,'0')+':00'}</div>`;
+    days.forEach((d)=>{
+      const ds=dateStr(d),isToday=ds===todayStr;
+      const evts=termine.filter(t=>t.datum===ds&&t.ganztag!=='ja'&&t.von&&parseInt(t.von.split(':')[0])===h);
+      const nowBar=(isToday&&h===nowH)?`<div style="position:absolute;left:0;right:0;top:${Math.round(nowMin/60*52)}px;height:2px;background:var(--red);z-index:3;pointer-events:none;"></div>`:'';
+      html+=`<div class="week-day-cell" onclick="openAtTime('${ds}',${h})">${nowBar}${evts.map(t=>`<div class="week-event" style="background:${t.farbe}20;color:${t.farbe};border-left:3px solid ${t.farbe}" onclick="event.stopPropagation();openDetail(${t.id})">${esc(t.titel)}</div>`).join('')}</div>`;
+    });
+  }
+  grid.innerHTML=html;
+  const scroll=document.getElementById('weekScroll');
+  if(scroll)requestAnimationFrame(()=>{scroll.scrollTop=7*52;});
+  renderStats();
+}
+
+/* ══════════════ Wochenstatistik ══════════════ */
+function renderStats(){
+  const el=document.getElementById('calStats');if(!el)return;
+  const wMon=getWeekMonday(parseDate(selectedDate));
+  let cnt=0,mins=0;
+  for(let i=0;i<7;i++){
+    const dd=new Date(wMon);dd.setDate(dd.getDate()+i);
+    termine.filter(t=>t.datum===dateStr(dd)).forEach(t=>{
+      cnt++;
+      if(t.von&&t.bis){const[vh,vm]=t.von.split(':').map(Number),[bh,bm]=t.bis.split(':').map(Number);const delta=(bh*60+bm)-(vh*60+vm);if(delta>0)mins+=delta;}
+    });
+  }
+  const kw=isoWeek(parseDate(selectedDate));
+  if(!cnt){el.innerHTML=`KW ${kw}: Keine Termine`;return;}
+  const stdStr=mins>0?` · <strong>${(mins/60).toFixed(1).replace('.',',')} Std.</strong>`:'';
+  el.innerHTML=`KW ${kw}: <strong>${cnt} Termin${cnt!==1?'e':''}</strong>${stdStr}`;
+}
+
+/* ══════════════ Schnell-Termin + Duplizieren ══════════════ */
+function openAtTime(ds,h){selectedDate=ds;openModal(null,h);}
+
+function duplicateTermin(id){
+  const t=termine.find(x=>x.id===id);if(!t)return;
+  const newT={...t,id:Date.now()};delete newT.gruppeId;
+  termine.push(newT);saveStorage();
+  selectedDate=newT.datum;
+  viewMonth=parseDate(newT.datum).getMonth();viewYear=parseDate(newT.datum).getFullYear();
+  closeModal();
+  if(calView==='woche'){viewWeekStart=getWeekMonday(parseDate(newT.datum));renderWeekView();}
+  else renderCalendar();
+  showToast('Termin dupliziert');
+}
+
+/* ══════════════ Wiederholung ══════════════ */
+function toggleWieder(){
+  const val=document.getElementById('f-wieder')?.value;
+  document.getElementById('wieder-bis-field')?.classList.toggle('wieder-hide',!val);
+}
+
+function generateDates(startDate,interval,endDate){
+  const dates=[],end=endDate?parseDate(endDate):null;
+  const limits={daily:90,weekly:52,monthly:24,yearly:5};
+  const limit=limits[interval]||30;
+  let curr=parseDate(startDate);
+  while(dates.length<limit){
+    if(end&&curr>end)break;
+    dates.push(dateStr(curr));
+    const next=new Date(curr);
+    if(interval==='daily')next.setDate(next.getDate()+1);
+    else if(interval==='weekly')next.setDate(next.getDate()+7);
+    else if(interval==='monthly')next.setMonth(next.getMonth()+1);
+    else if(interval==='yearly')next.setFullYear(next.getFullYear()+1);
+    curr=next;
+  }
+  return dates;
+}
+
+/* Init */
 renderCalendar();
+if(calView==='woche'){
+  viewWeekStart=getWeekMonday(today);
+  setTimeout(()=>setCalView('woche'),0);
+}else{
+  document.querySelectorAll('.cal-vbtn').forEach(b=>b.classList.toggle('on',b.dataset.view==='monat'));
+}
