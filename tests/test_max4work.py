@@ -430,11 +430,11 @@ class TestEinstellungen:
         go(page, "einstellungen.html")
         page.click("button.stab[data-section='funktionen']")
         page.wait_for_timeout(300)
-        toggle = page.locator("#autoSuggestInvoice")
-        state_before = toggle.is_checked()
-        toggle.click()
+        toggle_input = page.locator("#autoSuggestInvoice")
+        state_before = toggle_input.is_checked()
+        page.locator("label.toggle:has(#autoSuggestInvoice)").click()
         page.wait_for_timeout(300)
-        state_after = toggle.is_checked()
+        state_after = toggle_input.is_checked()
         assert state_before != state_after, "Toggle hat sich nicht verändert"
 
 
