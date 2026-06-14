@@ -183,10 +183,22 @@ function saveTermin(){
   const titel=document.getElementById('f-titel').value.trim();
   if(!titel){document.getElementById('f-titel').focus();return;}
   const data={titel,datum:document.getElementById('f-datum').value,von:document.getElementById('f-von').value,bis:document.getElementById('f-bis').value,kunde:document.getElementById('f-kunde').value.trim(),notiz:document.getElementById('f-notiz').value.trim(),ganztag:document.getElementById('f-ganztag').value,farbe:selectedColor};
-  if(editId){const i=termine.findIndex(t=>t.id===editId);termine[i]={...termine[i],...data};}
-  else{data.id=Date.now();termine.push(data);}
+  const wieder=document.getElementById('f-wieder')?.value||'';
+  const wiederBis=document.getElementById('f-wieder-bis')?.value||'';
+  if(wieder&&!editId){
+    const gruppeId='g'+Date.now(), baseId=Date.now();
+    generateDates(data.datum,wieder,wiederBis).forEach((d,i)=>{
+      termine.push({...data,datum:d,id:baseId+i+1,gruppeId});
+    });
+  } else if(editId){
+    const i=termine.findIndex(t=>t.id===editId);termine[i]={...termine[i],...data};
+  } else{
+    data.id=Date.now();termine.push(data);
+  }
   saveStorage();closeModal();selectedDate=data.datum;
-  viewMonth=parseDate(data.datum).getMonth();viewYear=parseDate(data.datum).getFullYear();renderCalendar();
+  viewMonth=parseDate(data.datum).getMonth();viewYear=parseDate(data.datum).getFullYear();
+  if(calView==='woche'){viewWeekStart=getWeekMonday(parseDate(data.datum));renderWeekView();}
+  else renderCalendar();
 }
 function deleteTermin(id){
   if(!confirm('Termin wirklich löschen?'))return;
