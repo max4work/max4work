@@ -267,9 +267,24 @@ python3 -m http.server 8080
 Dashboard → Rechnungen (Rechnungen | Zahlungen) → Kunden (Liste | Karte) → Belege → Termine →
 Produkte → Auswertung → Einstellungen (Design | Firma | Funktionen | Daten & Sync | Portale | Handbuch | Blatt-Design | E-Mail | Datentransfer) → Werkzeuge (Angebot | m² | Kamera | MwSt | Stundensatz) → **Fahrtenbuch** (ganz unten)
 
-## Letzter Stand (2026-06-13)
+## Letzter Stand (2026-06-14)
 
-- Sessions 1–27 abgeschlossen
+- Sessions 1–29 abgeschlossen
+- **14.06.2026 Session 29 – Tab Bar Icons + Externe Kalender + Frosted Glass:**
+  - **Externe Kalender abonnieren (einstellungen.html / einstellungen.js):**
+    - Neues Panel „Externe Kalender abonnieren" in Tab „Daten & Sync"
+    - `addExtKalender()`, `delExtKalender(id)`, `syncExtKal(id)`, `syncAlleExtKal()`, `renderExtKalListe()`, `_extParseICS()`, `_extMapEvent()`
+    - Externe Events: `{ extern: true, externSrc: id, farbe: kal.farbe }` in `max4work_termine`
+    - CORS: `webcal://` → `https://` Konvertierung; Fehlertext bei fehlschlagendem Fetch
+    - `max4work_ext_kalender` localStorage-Key
+  - **Tab Bar – Frosted Glass (shared.css):**
+    - `background: rgba(255,255,255,0.80)`, `backdrop-filter: blur(28px) saturate(200%)`
+    - Inaktiv: `color: rgba(0,0,0,0.35)`, Aktiv: `color: var(--dark)` + `background: var(--accent-pale)` auf Icon-Span
+  - **Tab Bar – Dashboard-Icon (shared.js + index.html + kassenbuch.html):**
+    - `_MOB_IC.house` → 2×2 Grid-Icon (4 Rechtecke `rx="1"`, `stroke-width="1.85"`)
+    - Entspricht dem Sidebar-Icon für Dashboard, das in 8 von 10 Dateien bereits verwendet wird
+    - `index.html` + `kassenbuch.html`: `◻` Platzhalter → Grid-SVG (konsistent mit allen anderen Seiten)
+  - **Backup:** `Backups/backup_2026-06-14/` (shared.js, shared.css, index.html, kassenbuch.html, einstellungen.html)
 - **13.06.2026 Session 28 – Kalender Wochentrenner + Auto-Push:**
   - **Claude Code Auto-Push Hook:** `~/.claude/settings.json` – PostToolUse Hook auf `Write|Edit`; prüft ob Datei im max4work-Verzeichnis liegt; führt automatisch `git add → commit → push` aus nach jeder Dateiänderung
   - **termine.html – Kalender Wochentrenner:**
