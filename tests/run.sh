@@ -19,7 +19,7 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo ""
 
 # Playwright-Browser installieren falls nötig
-python3 -m playwright install chromium --quiet 2>/dev/null || true
+python3 -m playwright install chromium 2>/dev/null || true
 
 # Tests ausführen
 python3 -m pytest test_max4work.py -v --tb=short "$@"
