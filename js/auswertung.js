@@ -702,11 +702,14 @@
     const kuGrenze = year >= 2025 ? 25000 : 22000;
     const isKU     = sumEin <= kuGrenze;
 
-    // GewSt §11 GewStG
+    let isFreiberufler = false;
+    try { isFreiberufler = !!(JSON.parse(localStorage.getItem('max4work_einstellungen') || '{}').isFreiberufler); } catch(e) {}
+
+    // GewSt §11 GewStG (entfällt bei Freiberuflern §2 GewStG)
     const freibetrag   = 24500;
-    const gewerbeertrag = Math.max(gewinn - freibetrag, 0);
+    const gewerbeertrag = isFreiberufler ? 0 : Math.max(gewinn - freibetrag, 0);
     const messbetrag    = gewerbeertrag * 0.035;
-    const gewst         = Math.round(messbetrag * 4.60); // Hebesatz BS 460 %
+    const gewst         = isFreiberufler ? 0 : Math.round(messbetrag * 4.60); // Hebesatz BS 460 %
 
     // ESt §32a EStG
     const gf  = year >= 2025 ? 12096 : 11604;
