@@ -11,8 +11,8 @@
 <meta property="og:url" content="https://max4work.com/einstellungen.html">
 <title>max4work – Einstellungen</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/shared.css?v=202606141935">
-<script src="shared.js?v=202606141935"></script>
+<link rel="stylesheet" href="css/shared.css?v=202606141942">
+<script src="shared.js?v=202606141942"></script>
 <style>
     .content { padding: 28px 32px; max-width: 1221px; display: flex; flex-direction: column; gap: 20px; }
   .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
@@ -634,6 +634,23 @@ Bitte überweisen Sie den Rechnungsbetrag unter Angabe der Rechnungsnummer auf d
           <button type="button" id="logoRemoveBtn_f" onclick="removeLogo()" style="display:none; position:absolute; top:-8px; right:-8px; width:22px; height:22px; border-radius:50%; background:var(--red); color:white; font-size:13px; border:none; cursor:pointer; z-index:10; font-weight:700; line-height:1; align-items:center; justify-content:center;">×</button>
         </div>
         <div style="font-size:11.5px;color:var(--muted);margin-top:8px;">Das Logo erscheint auf Rechnungen und in der Sidebar. PNG oder JPG, max. ~1 MB.</div>
+      </div>
+    </div>
+
+    <!-- Steuerliche Einordnung -->
+    <div class="panel">
+      <div class="panel-head">Steuerliche Einordnung</div>
+      <div class="panel-body" style="gap:0;">
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Freiberufler (§18 EStG)</div>
+            <div class="toggle-desc">Ärzte, Anwälte, Architekten, Ingenieure, Künstler, freie Berufe – keine Gewerbesteuer (§2 GewStG). Die Gewerbesteuer-Schätzung wird in EÜR und Auswertung ausgeblendet.</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="isFreiberufler" onchange="updateFreiberufler(this.checked)">
+            <div class="toggle-track"></div>
+          </label>
+        </div>
       </div>
     </div>
 
@@ -1724,7 +1741,7 @@ Bitte überweisen Sie den Rechnungsbetrag unter Angabe der Rechnungsnummer auf d
   </div>
 </div>
 
-<script src="js/datentransfer.js?v=202606141935"></script>
-<script src="js/einstellungen.js?v=202606141935"></script>
+<script src="js/datentransfer.js?v=202606141942"></script>
+<script src="js/einstellungen.js?v=202606141942"></script>
 </body>
 </html>
