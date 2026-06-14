@@ -269,7 +269,40 @@ Produkte → Auswertung → Einstellungen (Design | Firma | Funktionen | Daten &
 
 ## Letzter Stand (2026-06-14)
 
-- Sessions 1–30 abgeschlossen
+- Sessions 1–31 abgeschlossen
+- **14.06.2026 Session 31 – SuperShift-inspirierte Kalender-Features:**
+  - **termine.html + js/termine.js – 5 neue Features:**
+  - **Wochenansicht** (`setCalView('woche')`):
+    - Toggle-Buttons „Monat / Woche" in der Topbar (`.cal-view-toggle` > `.cal-vbtn`)
+    - 7-Spalten-Grid (Mo–So), Zeitslots 00:00–23:00 à 52px Höhe
+    - `#weekView.week-wrap` als Geschwister-Element von `#calLayout` (beide `flex:1`)
+    - `viewWeekStart` (Montag der angezeigten Woche), `prevWeek()` / `nextWeek()`
+    - Heute-Markierung (roter Kreis im Header), Jetzt-Linie (roter Balken)
+    - Ganztägige Events in eigenem `#weekAlldayStrip`
+    - Klick auf Tageskopf → `setCalView('monat')` mit dem gewählten Tag
+    - `calView` in localStorage gespeichert → bleibt beim Reload erhalten
+  - **Wochenstatistik** (`renderStats()`):
+    - Zeile `#calStats` unter der Mini-Liste (`.cal-stats`)
+    - Zeigt KW-Nummer, Terminanzahl und Gesamtstunden der aktuellen KW
+    - Wird bei `renderCalendar()` und `renderWeekView()` aktualisiert
+  - **Schnell-Termin** (`openAtTime(ds, h)`):
+    - `.time-content` in Tagesansicht hat `onclick="openAtTime()"` → öffnet Modal mit vorausgefüllter Uhrzeit
+    - Events in `.time-content` stoppen Propagation (`event.stopPropagation()`)
+    - Gleiches Verhalten in `.week-day-cell` der Wochenansicht
+    - `openModal(id=null, prefillHour=null)` — zweiter Parameter setzt `f-von` + `f-bis`
+  - **Termin duplizieren** (`duplicateTermin(id)`):
+    - „Duplizieren"-Button (`#btn-dup`) in der Detail-Ansicht
+    - Kopiert alle Felder, vergibt neue `id`, entfernt `gruppeId`
+    - Navigiert zur Kopie und zeigt Toast
+  - **Wiederholende Termine** (`generateDates()` + `gruppeId`):
+    - Formular-Sektion `#wieder-section` (nur beim Anlegen sichtbar, nicht beim Bearbeiten)
+    - `#f-wieder`: Keine / Täglich (max. 90) / Wöchentlich (max. 52) / Monatlich (max. 24) / Jährlich (max. 5)
+    - `#f-wieder-bis`: optionales Enddatum (blendet sich per `toggleWieder()` ein)
+    - Alle Instanzen erhalten `gruppeId: 'g' + Date.now()`
+    - **Löschen von Gruppen:** erster Tipp → Button wandelt sich zu „Nur diesen | Alle N löschen"
+    - `_delOne(id)` / `_delGroup(gruppeId)` — kein `confirm()`, iOS-kompatibel
+  - **Löschen allgemein:** Zwei-Tipp-Muster (`_delTerminPending`, `_delTerminTimer`, 3 s) statt `confirm()`
+  - **Backup:** `Backups/backup_2026-06-14c/` (termine.html, termine.js)
 - **14.06.2026 Session 30 – Kunden-Suche Mobile + Rechnungen löschen:**
   - **kunden.html – Suchfeld auf Mobile:**
     - `.toolbar { flex-wrap: wrap; gap: 8px }` im `@media (max-width: 768px)`-Block
