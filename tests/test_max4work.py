@@ -119,8 +119,8 @@ def _FAHRZEUGE():
 def _BELEGE():
     return [
         {"id": 6001, "datum": "2026-06-01", "betrag": 45.50,
-         "kategorie": "büro", "beschreibung": "Druckerpapier",
-         "lieferant": "Staples", "dateiname": "", "data": ""},
+         "kat": "Büro", "notiz": "Druckerpapier", "steuer": True,
+         "dateiname": "", "data": ""},
     ]
 
 def _TERMINE():
