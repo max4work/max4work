@@ -402,11 +402,11 @@ class TestEinstellungen:
 
     def test_seite_ladet(self, page):
         go(page, "einstellungen.html")
-        expect(page.locator(".tab-btn, [onclick*='showTab']")).first.to_be_visible(timeout=5000)
+        expect(page.locator(".stab").first).to_be_visible(timeout=5000)
 
     def test_tabs_schaltbar(self, page):
         go(page, "einstellungen.html")
-        tabs = page.locator(".tab-btn, [onclick*='showTab']")
+        tabs = page.locator(".stab")
         count = tabs.count()
         assert count >= 2, f"Erwartet mindestens 2 Tabs, gefunden: {count}"
         tabs.nth(1).click()
@@ -415,22 +415,24 @@ class TestEinstellungen:
 
     def test_firmendaten_speichern(self, page):
         go(page, "einstellungen.html")
-        name_feld = page.locator("#sName, input[id*='Name']").first
-        name_feld.fill("Neue Testfirma")
-        page.click("button:has-text('Speichern'), button[onclick*='save']")
+        page.click("button.stab[data-section='firma']")
+        page.wait_for_timeout(300)
+        page.fill("#sName", "Neue Testfirma")
+        page.click("button[onclick*='saveEinstellungen'], button[onclick*='save']:not([data-section])")
         page.wait_for_timeout(500)
         saved = page.evaluate("JSON.parse(localStorage.getItem('max4work_einstellungen') || '{}').sName")
         assert saved == "Neue Testfirma", f"Gespeicherter Name: {saved}"
 
     def test_toggle_schalten(self, page):
         go(page, "einstellungen.html")
-        toggle = page.locator("input[type='checkbox'][id*='toggle'], .toggle input").first
-        if toggle.count():
-            state_before = toggle.is_checked()
-            toggle.click()
-            page.wait_for_timeout(300)
-            state_after = toggle.is_checked()
-            assert state_before != state_after, "Toggle hat sich nicht verändert"
+        page.click("button.stab[data-section='funktionen']")
+        page.wait_for_timeout(300)
+        toggle = page.locator("#autoSuggestInvoice")
+        state_before = toggle.is_checked()
+        toggle.click()
+        page.wait_for_timeout(300)
+        state_after = toggle.is_checked()
+        assert state_before != state_after, "Toggle hat sich nicht verändert"
 
 
 # ═══════════════════════════════════════════════════
