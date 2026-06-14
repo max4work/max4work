@@ -338,18 +338,16 @@ function m4wLogout() {
 window.m4wLogout = m4wLogout;
 
 function _injectLogoutBtn() {
-  const wrap = document.querySelector('.sidebar-user');
-  if (!wrap || wrap.querySelector('.logout-btn')) return;
+  const sidebar = document.querySelector('.sidebar');
+  if (!sidebar || sidebar.querySelector('.logout-btn')) return;
   const btn = document.createElement('button');
   btn.className = 'logout-btn';
-  btn.title = 'Abmelden';
   btn.onclick = m4wLogout;
-  btn.innerHTML = `<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`;
-  wrap.style.position = 'relative';
-  btn.style.cssText = 'margin-left:auto;background:none;border:none;cursor:pointer;color:var(--muted);padding:4px 6px;border-radius:7px;display:flex;align-items:center;transition:color .12s,background .12s;';
-  btn.onmouseenter = () => { btn.style.color = 'var(--red)'; btn.style.background = 'rgba(220,38,38,.08)'; };
-  btn.onmouseleave = () => { btn.style.color = 'var(--muted)'; btn.style.background = 'none'; };
-  wrap.appendChild(btn);
+  btn.innerHTML = `<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Abmelden</span>`;
+  btn.style.cssText = 'display:flex;align-items:center;gap:8px;width:calc(100% - 24px);margin:0 12px;padding:9px 12px;border-radius:8px;border:none;background:none;cursor:pointer;color:var(--muted);font-family:inherit;font-size:13px;font-weight:500;transition:background .12s,color .12s;-webkit-tap-highlight-color:transparent;';
+  btn.onmouseenter = () => { btn.style.background = 'var(--soft)'; btn.style.color = 'var(--text)'; };
+  btn.onmouseleave = () => { btn.style.background = 'none'; btn.style.color = 'var(--muted)'; };
+  sidebar.appendChild(btn);
 }
 document.addEventListener('DOMContentLoaded', _injectLogoutBtn);
 
