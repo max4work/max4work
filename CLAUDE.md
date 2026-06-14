@@ -269,7 +269,17 @@ Produkte → Auswertung → Einstellungen (Design | Firma | Funktionen | Daten &
 
 ## Letzter Stand (2026-06-14)
 
-- Sessions 1–29 abgeschlossen
+- Sessions 1–30 abgeschlossen
+- **14.06.2026 Session 30 – Kunden-Suche Mobile + Rechnungen löschen:**
+  - **kunden.html – Suchfeld auf Mobile:**
+    - `.toolbar { flex-wrap: wrap; gap: 8px }` im `@media (max-width: 768px)`-Block
+    - `.search-wrap { width: 100%; max-width: 100%; flex: none; order: -1 }` → volle Breite als eigene Zeile
+    - Filter-Tabs (Alle/Aktiv/Inaktiv) + Ansichts-Umschalter bleiben darunter nebeneinander
+  - **rechnungen.js – Archivierte Rechnungen löschen:**
+    - `deleteRechnung()`: GoBD-Sperre wirft keinen harten Block mehr, sondern zeigt Bestätigungsdialog
+    - `delCell` in `renderListe()`: Löschen-Button erscheint jetzt bei allen Einträgen (archiviert = Opacity 0.45)
+    - Protokollierung via `_gobdLog('loesch-forciert', ...)` erhalten
+  - **Backup:** `Backups/backup_2026-06-14b/` (rechnungen.js, kunden.html)
 - **14.06.2026 Session 29 – Tab Bar Icons + Externe Kalender + Frosted Glass:**
   - **Externe Kalender abonnieren (einstellungen.html / einstellungen.js):**
     - Neues Panel „Externe Kalender abonnieren" in Tab „Daten & Sync"
