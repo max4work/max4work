@@ -145,9 +145,12 @@ function openDetail(id){
   document.getElementById('edit-view').style.display='none';
   document.getElementById('modal-title').textContent=t.titel;
   document.getElementById('detail-content').innerHTML=`<div style="display:flex;flex-direction:column;gap:0;margin-bottom:8px;"><div class="detail-row"><div class="detail-icon">◷</div><div class="detail-val">${fmtDatum(t.datum)}${t.ganztag==='ja'?' · Ganztägig':(t.von?` · ${t.von}${t.bis?' – '+t.bis:''}`:'' )}</div></div>${t.kunde?`<div class="detail-row"><div class="detail-icon">○</div><div class="detail-val">${esc(t.kunde)}</div></div>`:''} ${t.notiz?`<div class="detail-row"><div class="detail-icon">◳</div><div class="detail-val">${esc(t.notiz)}</div></div>`:''}<div class="detail-row"><div class="detail-icon">◉</div><div class="detail-val" style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:50%;background:${t.farbe};display:inline-block;flex-shrink:0;"></span>${COLORS.find(c=>c.hex===t.farbe)?.name||'Eigene Farbe'} <span style="font-size:11px;color:var(--muted);">${t.farbe}</span></div></div></div>`;
-  document.getElementById('btn-delete').onclick = () => deleteTermin(id);
+  const delBtn=document.getElementById('btn-delete');
+  delBtn.textContent='Löschen';delBtn.style.cssText='';delete delBtn.dataset.gruppePrompt;
+  delBtn.onclick = () => deleteTermin(id);
   document.getElementById('btn-edit').onclick   = () => openModal(id);
   document.getElementById('btn-fahrt').onclick  = () => terminToFahrt(id);
+  document.getElementById('btn-dup').onclick    = () => duplicateTermin(id);
   document.getElementById('overlay').classList.add('open');
 }
 
