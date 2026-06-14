@@ -53,7 +53,7 @@ function renderCalendar() {
     }
     addDayCell(grid, d, other);
   });
-  renderMiniList(); renderDayView();
+  renderMiniList(); renderDayView(); renderStats();
 }
 function addDayCell(grid,d,otherMonth) {
   const ds=dateStr(d), isToday=ds===dateStr(today), isSelected=ds===selectedDate, isSun=d.getDay()===0, hasEvt=termine.some(t=>t.datum===ds);
