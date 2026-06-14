@@ -185,6 +185,12 @@
       `<br><a href="javascript:void(0)" onclick="editKunde(${k.id})" ` +
       `style="font-size:12px;color:#0066ff;font-weight:500;text-decoration:none;margin-top:3px;display:inline-block">Bearbeiten →</a></div>`
     );
+    m.on('popupopen', function(){
+      const btn=document.getElementById('btnAppleMaps');
+      if(!btn)return;
+      const q=encodeURIComponent([k.name,k.strasse,k.ort].filter(Boolean).join(', '));
+      btn.href=`https://maps.apple.com/?q=${q}&ll=${coords.lat},${coords.lon}&t=h`;
+    });
     mapMarkers.push(m);
   }
 
