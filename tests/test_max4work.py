@@ -303,15 +303,17 @@ class TestBelege:
 
     def test_belege_aus_localstorage_sichtbar(self, page):
         go(page, "belege.html", {"max4work_belege": json.dumps(_BELEGE())})
-        expect(page.locator("text=Druckerpapier")).to_be_visible(timeout=4000)
-        expect(page.locator("text=Staples")).to_be_visible(timeout=4000)
+        expect(page.locator("#belegListe")).to_be_visible(timeout=4000)
+        expect(page.locator("#belegListe").locator("text=Druckerpapier")).to_be_visible(timeout=4000)
 
-    def test_suche_in_belegen(self, page):
+    def test_filter_chips_belege(self, page):
         go(page, "belege.html", {"max4work_belege": json.dumps(_BELEGE())})
-        page.fill("#searchInput", "Drucker")
-        expect(page.locator("text=Druckerpapier")).to_be_visible(timeout=3000)
-        page.fill("#searchInput", "nichtsvorhanden")
-        expect(page.locator("text=Druckerpapier")).not_to_be_visible(timeout=3000)
+        page.click(".fchip[data-f='Büro']")
+        page.wait_for_timeout(300)
+        expect(page.locator("#belegListe").locator("text=Druckerpapier")).to_be_visible(timeout=3000)
+        page.click(".fchip[data-f='steuer']")
+        page.wait_for_timeout(300)
+        expect(page.locator("#belegListe").locator("text=Druckerpapier")).not_to_be_visible(timeout=3000)
 
 
 # ═══════════════════════════════════════════════════
