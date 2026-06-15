@@ -267,9 +267,17 @@ python3 -m http.server 8080
 Dashboard → Rechnungen (Rechnungen | Zahlungen) → Kunden (Liste | Karte) → Belege → Termine →
 Produkte → Auswertung → Einstellungen (Design | Firma | Funktionen | Daten & Sync | Portale | Handbuch | Blatt-Design | E-Mail | Datentransfer) → Werkzeuge (Angebot | m² | Kamera | MwSt | Stundensatz) → **Fahrtenbuch** (ganz unten)
 
-## Letzter Stand (2026-06-14)
+## Letzter Stand (2026-06-15)
 
-- Sessions 1–36 abgeschlossen
+- Sessions 1–37 abgeschlossen
+- **15.06.2026 Session 37 – Mobile-Format Durchtest + Fixes:**
+  - **Playwright-Screenshottest** (375×812 iPhone-Viewport): 7 Seiten geprüft – kein horizontaler Overflow, Tab-Bar korrekt
+  - **fahrtenbuch.html:** `#topMeta`-Text (`0 Fahrten · 0 km gesamt`) auf Mobile ausgeblendet (`display:none`) – kollidierte mit absolut zentriertem `.page-name`-Titel
+  - **termine.html:** `.cal-view-toggle` in Topbar auf Mobile ausgeblendet; neues `.mob-view-toggle` direkt über dem Kalender eingefügt (in `.cal-left`, vor `.month-nav`) – `setCalView()` aktualisiert beide Sets via `querySelectorAll('.cal-vbtn')`; `.mob-view-toggle { display:none }` im Haupt-Style, `display:flex !important` im Mobile-Block; Nav-Pfeile 28→40px, `.cal-vbtn` min-height 40px
+  - **kunden.html:** `.view-btn` + `.ftab` min-height 44px auf Mobile
+  - **einstellungen.html:** `.stab` min-height 44px auf Mobile
+  - **css/shared.css:** `.topbar-right .btn` min-height 36→44px
+  - **Backup:** `Backups/backup_2026-06-15a/` (fahrtenbuch.html, termine.html, kunden.html, einstellungen.html, shared.css)
 - **14.06.2026 Session 36 – Playwright Testsuite (37 Tests, 10 Bereiche):**
   - **tests/test_max4work.py:** 37 automatisierte Playwright-Tests (Python) für alle 10 Bereiche: Kunden, Produkte, Rechnungen, Fahrtenbuch, Belege, Termine, Dashboard, Auswertung, Einstellungen, Werkzeuge
   - **tests/run.sh:** Startskript – `bash run.sh` führt alle Tests aus (~76 Sek., 100% grün)
