@@ -335,7 +335,7 @@ nav::-webkit-scrollbar-thumb:hover { background: var(--muted); }
   .save-bar { flex-wrap: wrap; gap: 8px; }
 
   /* Topbar-Buttons kompakter */
-  .topbar-right .btn { padding: 6px 12px !important; font-size: 13px !important; min-height: 36px; }
+  .topbar-right .btn { padding: 6px 12px !important; font-size: 13px !important; min-height: 44px; }
 
   /* iOS: Kein Zoom beim Fokus auf Formularfelder */
   input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([type=submit]):not([type=button]):not([type=color]),
