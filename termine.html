@@ -216,6 +216,10 @@
   </div>
   <div class="cal-layout" id="calLayout">
     <div class="cal-left">
+      <div class="mob-view-toggle">
+        <button class="cal-vbtn on" data-view="monat" onclick="setCalView('monat')">Monat</button>
+        <button class="cal-vbtn" data-view="woche" onclick="setCalView('woche')">Woche</button>
+      </div>
       <div class="month-nav">
         <button type="button" class="nav-arrow" onclick="prevMonth()">‹</button>
         <div class="month-title" id="monthTitle"></div>
