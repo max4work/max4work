@@ -145,6 +145,12 @@
   /* Topbar: Heute + Exportieren + Importieren ausblenden, nur Terminvergabe + Sync */
   .topbar-right .btn-ghost { display: none !important; }
   .btn-sync-mob { display: flex !important; }
+  /* View-Toggle aus Topbar ausblenden → erscheint im Kalender */
+  .topbar-right .cal-view-toggle { display: none !important; }
+  .mob-view-toggle { display: flex !important; background: var(--soft); border-radius: 8px; padding: 3px; gap: 2px; margin: 8px auto 4px; }
+  /* Touch-Targets */
+  .cal-vbtn { min-height: 40px; padding: 0 16px; }
+  .nav-arrow { width: 40px; height: 40px; }
 }
 </style>
 </head>
