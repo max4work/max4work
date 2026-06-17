@@ -164,15 +164,16 @@
   }
 
   const SECTION_TITLES = {
-    design:     'Einstellungen – Design',
-    firma:      'Einstellungen – Firma',
-    funktionen: 'Einstellungen – Funktionen',
-    daten:      'Einstellungen – Daten & Sync',
-    portale:    'Einstellungen – Behörden & Portale',
-    handbuch:   'Einstellungen – Handbuch',
-    rechnung:       'Einstellungen – Rechnungsblatt-Design',
-    email:          'Einstellungen – E-Mail',
-    datentransfer:  'Einstellungen – Datentransfer',
+    design:       'Einstellungen – Design',
+    firma:        'Einstellungen – Firma',
+    funktionen:   'Einstellungen – Funktionen',
+    daten:        'Einstellungen – Daten & Sync',
+    portale:      'Einstellungen – Behörden & Portale',
+    handbuch:     'Einstellungen – Handbuch',
+    rechnung:     'Einstellungen – Rechnungsblatt-Design',
+    email:        'Einstellungen – E-Mail',
+    datentransfer:'Einstellungen – Datentransfer',
+    account:      'Einstellungen – Account',
   };
 
   function showSection(id) {
@@ -501,6 +502,7 @@
     initInvSection();
     initEmailSettings();
     _loadGhToken();
+    _loadAccountTab();
     const existingLogo = loadLogo();
     if (existingLogo) showLogoPreview(existingLogo);
 
@@ -2511,3 +2513,127 @@ function _extMapEvent(e) {
 }
 
 renderExtKalListe();
+
+/* ══ Account-Tab ══════════════════════════════════════════════════════ */
+
+const _ACC_KEY = 'max4work_auth';
+const _ACC_H0  = 'b22ef2de2ea994cbe15b7d63acc6c2dcacea108737704f4015952e9ecacb362a';
+
+async function _accSha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function _getAccAuth() {
+  try { return JSON.parse(localStorage.getItem(_ACC_KEY) || 'null'); } catch(e) { return null; }
+}
+
+function _loadAccountTab() {
+  const auth  = _getAccAuth();
+  const userEl = document.getElementById('accCurUser');
+  if (userEl && auth && auth.user) userEl.value = auth.user;
+  const secQEl = document.getElementById('accSecQ');
+  if (secQEl && auth && auth.secQ) secQEl.value = auth.secQ;
+  const statusEl = document.getElementById('accSecQStatus');
+  if (statusEl) {
+    statusEl.textContent = (auth && auth.secQ)
+      ? '✓ Sicherheitsfrage eingerichtet'
+      : 'Noch keine Sicherheitsfrage eingerichtet.';
+    statusEl.style.color = (auth && auth.secQ) ? 'var(--green)' : 'var(--muted)';
+  }
+  const mins = parseInt(localStorage.getItem('max4work_auto_logout') || '0');
+  document.querySelectorAll('.inv-chip[data-logout]').forEach(btn => {
+    btn.classList.toggle('on', parseInt(btn.dataset.logout) === mins);
+  });
+}
+
+function accCheckStrength() {
+  const pw   = document.getElementById('accNewPw').value;
+  const fill = document.getElementById('accPwFill');
+  const text = document.getElementById('accPwText');
+  const wrap = document.getElementById('accNewPw2Wrap');
+  if (wrap) wrap.style.display = pw ? 'block' : 'none';
+  if (!pw) { fill.style.width = '0%'; text.textContent = ''; return; }
+  let score = 0;
+  if (pw.length >= 8) score++;
+  if (pw.length >= 12) score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  const lv = [
+    { pct:'20%', color:'#EF4444', label:'Sehr schwach'  },
+    { pct:'40%', color:'#F97316', label:'Schwach'       },
+    { pct:'60%', color:'#EAB308', label:'Mittel'        },
+    { pct:'80%', color:'#84CC16', label:'Gut'           },
+    { pct:'100%',color:'#22C55E', label:'Sehr stark'    },
+  ][Math.min(score, 4)];
+  fill.style.width      = lv.pct;
+  fill.style.background = lv.color;
+  text.textContent      = lv.label;
+  text.style.color      = lv.color;
+}
+
+async function accSaveCreds() {
+  const hint    = document.getElementById('accCredsHint');
+  const curUser = document.getElementById('accCurUser').value.trim();
+  const curPw   = document.getElementById('accCurPw').value;
+  const newUser = document.getElementById('accNewUser').value.trim();
+  const newPw   = document.getElementById('accNewPw').value;
+  const newPw2  = document.getElementById('accNewPw2').value;
+
+  function _err(msg) { hint.textContent = msg; hint.style.color = 'var(--red)'; }
+  function _ok(msg)  { hint.textContent = msg; hint.style.color = 'var(--green)'; setTimeout(() => hint.textContent = '', 4000); }
+
+  if (!curUser || !curPw) { _err('Bitte aktuellen Benutzernamen und Passwort eingeben.'); return; }
+  if (newPw && newPw !== newPw2) { _err('Neue Passwörter stimmen nicht überein.'); return; }
+  if (newPw && newPw.length < 6) { _err('Neues Passwort: mindestens 6 Zeichen erforderlich.'); return; }
+
+  const auth     = _getAccAuth();
+  const expected = auth ? auth.hash : _ACC_H0;
+  const curHash  = await _accSha256(curUser + ':' + curPw);
+  if (curHash !== expected) { _err('Aktueller Benutzername oder Passwort falsch.'); return; }
+
+  const finalUser = newUser || curUser;
+  const finalPw   = newPw   || curPw;
+  const newHash   = await _accSha256(finalUser + ':' + finalPw);
+  const updated   = { ...(auth || {}), hash: newHash, user: finalUser };
+  localStorage.setItem(_ACC_KEY, JSON.stringify(updated));
+
+  document.getElementById('accCurUser').value          = finalUser;
+  document.getElementById('accCurPw').value            = '';
+  document.getElementById('accNewUser').value          = '';
+  document.getElementById('accNewPw').value            = '';
+  document.getElementById('accNewPw2').value           = '';
+  document.getElementById('accPwFill').style.width     = '0%';
+  document.getElementById('accPwText').textContent     = '';
+  document.getElementById('accNewPw2Wrap').style.display = 'none';
+
+  _ok('✓ Zugangsdaten gespeichert');
+}
+
+async function accSaveSecQ() {
+  const q    = document.getElementById('accSecQ').value.trim();
+  const a    = document.getElementById('accSecA').value.trim();
+  const hint = document.getElementById('accSecHint');
+  function _err(msg) { hint.textContent = msg; hint.style.color = 'var(--red)'; }
+  function _ok(msg)  { hint.textContent = msg; hint.style.color = 'var(--green)'; setTimeout(() => hint.textContent = '', 3000); }
+
+  if (!q || !a) { _err('Bitte Frage und Antwort eingeben.'); return; }
+  const aHash = await _accSha256(a.toLowerCase());
+  const auth  = _getAccAuth() || {};
+  if (!auth.hash) auth.hash = _ACC_H0;
+  auth.secQ     = q;
+  auth.secAHash = aHash;
+  localStorage.setItem(_ACC_KEY, JSON.stringify(auth));
+  document.getElementById('accSecA').value = '';
+  const statusEl = document.getElementById('accSecQStatus');
+  if (statusEl) { statusEl.textContent = '✓ Sicherheitsfrage eingerichtet'; statusEl.style.color = 'var(--green)'; }
+  _ok('✓ Sicherheitsfrage gespeichert');
+}
+
+function accSetAutoLogout(mins) {
+  localStorage.setItem('max4work_auto_logout', String(mins));
+  document.querySelectorAll('.inv-chip[data-logout]').forEach(btn => {
+    btn.classList.toggle('on', parseInt(btn.dataset.logout) === mins);
+  });
+}

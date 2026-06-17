@@ -11,7 +11,7 @@
 /* ── Auth-Schutz ── */
 (function _authGuard() {
   const page = location.pathname.split('/').pop() || 'index.html';
-  const exempt = ['login.html', 'reset.html'];
+  const exempt = ['login.html', 'reset.html', 'pw-reset.html'];
   if (exempt.includes(page)) return;
   if (sessionStorage.getItem('m4w_sess') === '1' || localStorage.getItem('m4w_sess') === '1') return;
   location.replace('login.html');
@@ -336,6 +336,28 @@ function m4wLogout() {
   location.replace('login.html');
 }
 window.m4wLogout = m4wLogout;
+
+/* ── Auto-Abmeldung ── */
+(function _initAutoLogout() {
+  const page = location.pathname.split('/').pop() || 'index.html';
+  if (['login.html', 'reset.html', 'pw-reset.html'].includes(page)) return;
+  let _alTimer = null;
+  function _doLogout() {
+    sessionStorage.removeItem('m4w_sess');
+    localStorage.removeItem('m4w_sess');
+    location.replace('login.html');
+  }
+  function _reset() {
+    const mins = parseInt(localStorage.getItem('max4work_auto_logout') || '0');
+    clearTimeout(_alTimer);
+    if (!mins) return;
+    _alTimer = setTimeout(_doLogout, mins * 60 * 1000);
+  }
+  ['mousemove', 'keydown', 'touchstart', 'click', 'scroll'].forEach(ev => {
+    document.addEventListener(ev, _reset, { passive: true });
+  });
+  _reset();
+})();
 
 function _injectLogoutBtn() {
   const sidebar = document.querySelector('.sidebar');

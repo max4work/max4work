@@ -306,6 +306,14 @@
   .format-hint { background: var(--soft); border-radius: 8px; padding: 12px 16px; font-size: 12px; color: var(--muted); margin-bottom: 16px; line-height: 1.6; }
   .format-hint strong { color: var(--text); }
   .section-label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
+
+  /* Account-Tab */
+  .pw-strength-bar { height: 4px; border-radius: 2px; background: var(--border); overflow: hidden; margin-top: 6px; }
+  .pw-strength-fill { height: 100%; width: 0%; border-radius: 2px; transition: width .2s, background .2s; }
+  .pw-strength-text { font-size: 11px; color: var(--muted); margin-top: 3px; min-height: 14px; }
+  .acc-info-box { background: var(--soft); border-radius: 8px; padding: 10px 14px; font-size: 12.5px; color: var(--muted); line-height: 1.6; }
+  .acc-danger-btn { padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1.5px solid var(--red); background: transparent; color: var(--red); font-family: inherit; transition: all .12s; }
+  .acc-danger-btn:hover { background: #FEE2E2; }
 </style>
 
 <!-- mob-only-injected -->
@@ -407,6 +415,10 @@
       <button class="stab" data-section="datentransfer" onclick="showSection('datentransfer')" role="tab">
         <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         Datentransfer
+      </button>
+      <button class="stab" data-section="account" onclick="showSection('account')" role="tab">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        Account
       </button>
     </div>
 
@@ -1717,6 +1729,109 @@ Bitte überweisen Sie den Rechnungsbetrag unter Angabe der Rechnungsnummer auf d
       </div>
 
     </div><!-- /section-datentransfer -->
+
+    <!-- ══ ACCOUNT ═══════════════════════════════════════════════════════ -->
+    <div class="settings-section" id="section-account" style="display:none">
+
+      <!-- Zugangsdaten ändern -->
+      <div class="panel">
+        <div class="panel-head">Zugangsdaten ändern</div>
+        <div class="panel-body">
+          <div class="acc-info-box" style="margin-bottom:4px;">Zur Änderung von Benutzername oder Passwort sind deine aktuellen Login-Daten erforderlich. Lasse Felder leer, die du nicht ändern möchtest.</div>
+          <div class="field-row">
+            <div class="field">
+              <label>Aktueller Benutzername</label>
+              <input type="text" id="accCurUser" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="Wie beim Login">
+            </div>
+            <div class="field">
+              <label>Aktuelles Passwort</label>
+              <input type="password" id="accCurPw" autocomplete="current-password">
+            </div>
+          </div>
+          <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:2px;">
+            <div class="field-row">
+              <div class="field">
+                <label>Neuer Benutzername <span style="color:var(--muted);font-weight:400;text-transform:none;">(optional)</span></label>
+                <input type="text" id="accNewUser" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Unverändert lassen = leer lassen">
+              </div>
+              <div class="field">
+                <label>Neues Passwort <span style="color:var(--muted);font-weight:400;text-transform:none;">(optional)</span></label>
+                <input type="password" id="accNewPw" autocomplete="new-password" oninput="accCheckStrength()" placeholder="Unverändert lassen = leer lassen">
+                <div class="pw-strength-bar"><div class="pw-strength-fill" id="accPwFill"></div></div>
+                <div class="pw-strength-text" id="accPwText"></div>
+              </div>
+            </div>
+            <div class="field" id="accNewPw2Wrap" style="display:none;">
+              <label>Neues Passwort wiederholen</label>
+              <input type="password" id="accNewPw2" autocomplete="new-password">
+            </div>
+          </div>
+          <div class="save-bar">
+            <span class="save-hint" id="accCredsHint"></span>
+            <button class="btn btn-blue" onclick="accSaveCreds()">Änderungen speichern</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sicherheitsfrage -->
+      <div class="panel">
+        <div class="panel-head">Sicherheitsfrage (Passwort vergessen)</div>
+        <div class="panel-body">
+          <div class="acc-info-box" style="margin-bottom:4px;">Wird verwendet, wenn du dein Passwort vergessen hast. Da kein E-Mail-Server vorhanden ist, ist dies der einzige Weg zum Zurücksetzen.</div>
+          <div id="accSecQStatus" style="font-size:12px;color:var(--muted);margin-bottom:10px;"></div>
+          <div class="field">
+            <label>Frage</label>
+            <input type="text" id="accSecQ" placeholder="z.B. Wie lautet der Name deines ersten Haustiers?">
+          </div>
+          <div class="field">
+            <label>Antwort <span style="color:var(--muted);font-weight:400;text-transform:none;">(Groß-/Kleinschreibung wird ignoriert)</span></label>
+            <input type="text" id="accSecA" autocomplete="off">
+          </div>
+          <div class="save-bar">
+            <span class="save-hint" id="accSecHint"></span>
+            <button class="btn btn-blue" onclick="accSaveSecQ()">Sicherheitsfrage speichern</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sicherheit -->
+      <div class="panel">
+        <div class="panel-head">Sicherheit</div>
+        <div class="panel-body">
+
+          <!-- Auto-Abmeldung -->
+          <div class="toggle-row" style="flex-direction:column;align-items:flex-start;gap:10px;border-bottom:1px solid var(--border);padding-bottom:14px;">
+            <div>
+              <div class="toggle-label">Automatische Abmeldung</div>
+              <div class="toggle-desc">Bei Inaktivität automatisch abmelden</div>
+            </div>
+            <div class="inv-chip-row">
+              <button class="inv-chip" data-logout="0"  onclick="accSetAutoLogout(0)">Aus</button>
+              <button class="inv-chip" data-logout="15" onclick="accSetAutoLogout(15)">15 Min</button>
+              <button class="inv-chip" data-logout="30" onclick="accSetAutoLogout(30)">30 Min</button>
+              <button class="inv-chip" data-logout="60" onclick="accSetAutoLogout(60)">60 Min</button>
+            </div>
+          </div>
+
+          <!-- Brute-Force -->
+          <div class="toggle-row" style="flex-direction:column;align-items:flex-start;gap:4px;border-bottom:1px solid var(--border);padding-bottom:14px;">
+            <div class="toggle-label">Brute-Force-Schutz</div>
+            <div class="toggle-desc">Nach 5 falschen Anmeldeversuchen wird der Login automatisch für 5 Minuten gesperrt.</div>
+          </div>
+
+          <!-- Sitzung beenden -->
+          <div class="toggle-row" style="padding-top:14px;">
+            <div>
+              <div class="toggle-label">Sitzung beenden</div>
+              <div class="toggle-desc">Auf diesem Gerät sofort abmelden</div>
+            </div>
+            <button class="acc-danger-btn" onclick="m4wLogout()">Jetzt abmelden</button>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- /section-account -->
 
 
   </div>

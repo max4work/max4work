@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>max4work – Passwort zurücksetzen</title>
+  <link rel="icon" href="logo.png" type="image/png">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Outfit', system-ui, sans-serif; background: #F2F3F0; color: #1A1C18; min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .card { background: #fff; border: 1px solid #E4E6E2; border-radius: 18px; padding: 40px 36px 36px; width: 100%; max-width: 360px; box-shadow: 0 4px 32px rgba(0,0,0,.07); }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; justify-content: center; }
+    .brand img { width: 36px; height: 36px; border-radius: 8px; object-fit: contain; }
+    .brand-name { font-size: 20px; font-weight: 700; letter-spacing: -.3px; }
+    h1 { font-size: 15px; font-weight: 600; margin-bottom: 6px; color: #1A1C18; text-align: center; }
+    .sub { font-size: 12.5px; color: #7B8278; text-align: center; margin-bottom: 22px; line-height: 1.5; }
+    label { display: block; font-size: 12px; font-weight: 600; color: #7B8278; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 5px; }
+    .field { margin-bottom: 14px; }
+    input[type=text], input[type=password] { width: 100%; padding: 10px 13px; border: 1.5px solid #E4E6E2; border-radius: 10px; font-size: 15px; font-family: inherit; background: #F2F3F0; color: #1A1C18; outline: none; transition: border-color .12s; }
+    input[type=text]:focus, input[type=password]:focus { border-color: #C8D93A; background: #fff; }
+    .btn { width: 100%; padding: 12px; background: #C8D93A; color: #1A1C18; font-size: 15px; font-weight: 700; font-family: inherit; border: none; border-radius: 10px; cursor: pointer; transition: background .12s; }
+    .btn:hover { background: #b8c930; }
+    .btn:disabled { opacity: .6; cursor: default; }
+    .msg-err  { margin-top: 12px; padding: 9px 13px; background: #FEF2F2; border: 1px solid #FECACA; border-radius: 8px; font-size: 13px; color: #DC2626; display: none; }
+    .msg-ok   { margin-top: 12px; padding: 9px 13px; background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 8px; font-size: 13px; color: #15803D; display: none; }
+    .msg-err.show, .msg-ok.show { display: block; }
+    .back-link { display: block; text-align: center; margin-top: 18px; font-size: 12.5px; color: #7B8278; text-decoration: none; }
+    .back-link:hover { color: #1A1C18; }
+    .pw-bar { margin-top: 6px; height: 4px; border-radius: 2px; background: #E4E6E2; overflow: hidden; }
+    .pw-fill { height: 100%; width: 0%; border-radius: 2px; transition: all .2s; }
+    .pw-label { font-size: 11px; color: #7B8278; margin-top: 3px; }
+    #stepAnswer, #stepNewPw { display: none; }
+    @media (max-width: 400px) { .card { padding: 28px 20px 24px; } }
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="card">
+  <div class="brand">
+    <img src="logo.png" alt="max4work Logo">
+    <span class="brand-name">max4work</span>
+  </div>
+
+  <!-- Keine Sicherheitsfrage eingerichtet -->
+  <div id="stepNoQ">
+    <h1>Passwort vergessen</h1>
+    <p class="sub">Es wurde keine Sicherheitsfrage eingerichtet.<br>Stelle sie unter <strong>Einstellungen → Account</strong> ein, um diesen Reset-Weg zu nutzen.</p>
+    <a class="back-link" href="login.html">← Zurück zur Anmeldung</a>
+  </div>
+
+  <!-- Schritt 1: Sicherheitsfrage beantworten -->
+  <div id="stepAnswer">
+    <h1>Passwort vergessen</h1>
+    <p class="sub">Beantworte deine Sicherheitsfrage, um das Passwort zurückzusetzen.</p>
+    <div class="field">
+      <label id="secQLabel">Sicherheitsfrage</label>
+      <input type="text" id="secAnswerInput" autocomplete="off" placeholder="Antwort eingeben…">
+    </div>
+    <div class="msg-err" id="answerErr">Falsche Antwort.</div>
+    <button class="btn" onclick="checkAnswer()">Weiter</button>
+    <a class="back-link" href="login.html">← Zurück zur Anmeldung</a>
+  </div>
+
+  <!-- Schritt 2: Neues Passwort setzen -->
+  <div id="stepNewPw">
+    <h1>Neues Passwort</h1>
+    <p class="sub">Wähle ein neues Passwort für dein Konto.</p>
+    <div class="field">
+      <label>Neues Passwort</label>
+      <input type="password" id="newPwInput" autocomplete="new-password" oninput="checkStrength()">
+      <div class="pw-bar"><div class="pw-fill" id="pwFill"></div></div>
+      <div class="pw-label" id="pwLabel"></div>
+    </div>
+    <div class="field">
+      <label>Passwort wiederholen</label>
+      <input type="password" id="newPw2Input" autocomplete="new-password">
+    </div>
+    <div class="msg-err" id="pwErr"></div>
+    <div class="msg-ok" id="pwOk">✓ Passwort geändert – du wirst weitergeleitet…</div>
+    <button class="btn" id="savePwBtn" onclick="saveNewPw()">Passwort speichern</button>
+  </div>
+</div>
+
+<script>
+  const _H0 = 'b22ef2de2ea994cbe15b7d63acc6c2dcacea108737704f4015952e9ecacb362a';
+
+  async function _sha256(str) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  function _getAuth() { try { return JSON.parse(localStorage.getItem('max4work_auth') || 'null'); } catch(e) { return null; } }
+
+  const auth = _getAuth();
+
+  if (!auth || !auth.secQ || !auth.secAHash) {
+    document.getElementById('stepNoQ').style.display = 'block';
+  } else {
+    document.getElementById('stepAnswer').style.display = 'block';
+    document.getElementById('secQLabel').textContent = auth.secQ;
+    setTimeout(() => document.getElementById('secAnswerInput').focus(), 100);
+  }
+
+  async function checkAnswer() {
+    const answer = document.getElementById('secAnswerInput').value.trim();
+    const err = document.getElementById('answerErr');
+    if (!answer) { err.textContent = 'Bitte Antwort eingeben.'; err.classList.add('show'); return; }
+    const hash = await _sha256(answer.toLowerCase());
+    if (hash === auth.secAHash) {
+      err.classList.remove('show');
+      document.getElementById('stepAnswer').style.display = 'none';
+      document.getElementById('stepNewPw').style.display = 'block';
+      setTimeout(() => document.getElementById('newPwInput').focus(), 100);
+    } else {
+      err.textContent = 'Falsche Antwort.';
+      err.classList.add('show');
+      document.getElementById('secAnswerInput').value = '';
+      document.getElementById('secAnswerInput').focus();
+    }
+  }
+
+  function checkStrength() {
+    const pw = document.getElementById('newPwInput').value;
+    const fill = document.getElementById('pwFill');
+    const lbl  = document.getElementById('pwLabel');
+    if (!pw) { fill.style.width = '0%'; lbl.textContent = ''; return; }
+    let score = 0;
+    if (pw.length >= 8) score++;
+    if (pw.length >= 12) score++;
+    if (/[A-Z]/.test(pw)) score++;
+    if (/[0-9]/.test(pw)) score++;
+    if (/[^A-Za-z0-9]/.test(pw)) score++;
+    const lv = [
+      { pct:'20%', color:'#EF4444', label:'Sehr schwach' },
+      { pct:'40%', color:'#F97316', label:'Schwach' },
+      { pct:'60%', color:'#EAB308', label:'Mittel' },
+      { pct:'80%', color:'#84CC16', label:'Gut' },
+      { pct:'100%',color:'#22C55E', label:'Sehr stark' },
+    ][Math.min(score, 4)];
+    fill.style.width = lv.pct;
+    fill.style.background = lv.color;
+    lbl.textContent = lv.label;
+    lbl.style.color = lv.color;
+  }
+
+  async function saveNewPw() {
+    const pw  = document.getElementById('newPwInput').value;
+    const pw2 = document.getElementById('newPw2Input').value;
+    const err = document.getElementById('pwErr');
+    const btn = document.getElementById('savePwBtn');
+    err.classList.remove('show');
+    if (!pw || !pw2)  { err.textContent = 'Bitte beide Felder ausfüllen.'; err.classList.add('show'); return; }
+    if (pw !== pw2)   { err.textContent = 'Passwörter stimmen nicht überein.'; err.classList.add('show'); return; }
+    if (pw.length < 6){ err.textContent = 'Mindestens 6 Zeichen erforderlich.'; err.classList.add('show'); return; }
+    btn.disabled = true;
+    const user = auth.user || 'admin';
+    const newHash = await _sha256(user + ':' + pw);
+    localStorage.setItem('max4work_auth', JSON.stringify({ ...auth, hash: newHash }));
+    localStorage.removeItem('max4work_login_fail');
+    document.getElementById('pwOk').classList.add('show');
+    setTimeout(() => location.replace('login.html'), 2000);
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    if (document.getElementById('stepAnswer').style.display !== 'none') checkAnswer();
+    else if (document.getElementById('stepNewPw').style.display !== 'none') saveNewPw();
+  });
+</script>
+</body>
+</html>

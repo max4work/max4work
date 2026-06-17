@@ -139,20 +139,52 @@
       <input type="checkbox" id="rememberMe"> Angemeldet bleiben
     </label>
     <button class="btn-login" id="loginBtn" onclick="doLogin()">Anmelden</button>
-    <div class="error" id="loginError">Benutzername oder Passwort falsch.</div>
+    <div class="error" id="loginError"></div>
+    <div style="text-align:center;margin-top:14px;">
+      <a href="pw-reset.html" id="resetLink" style="font-size:12.5px;color:#7B8278;text-decoration:none;">Passwort vergessen?</a>
+    </div>
   </div>
 
   <script>
-    const _H = 'b22ef2de2ea994cbe15b7d63acc6c2dcacea108737704f4015952e9ecacb362a';
+    const _H0 = 'b22ef2de2ea994cbe15b7d63acc6c2dcacea108737704f4015952e9ecacb362a';
 
     async function _sha256(str) {
       const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
       return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
     }
 
+    function _getAuth()  { try { return JSON.parse(localStorage.getItem('max4work_auth') || 'null'); } catch(e) { return null; } }
+    function _getFail()  { try { return JSON.parse(localStorage.getItem('max4work_login_fail') || 'null'); } catch(e) { return null; } }
+
+    function _isLocked() {
+      const f = _getFail();
+      if (!f || !f.until) return false;
+      if (Date.now() < f.until) return true;
+      localStorage.removeItem('max4work_login_fail');
+      return false;
+    }
+
+    function _recordFail() {
+      const f = _getFail() || { count: 0 };
+      if (f.until && Date.now() >= f.until) { localStorage.removeItem('max4work_login_fail'); f.count = 0; f.until = null; }
+      f.count = (f.count || 0) + 1;
+      if (f.count >= 5) { f.until = Date.now() + 5 * 60 * 1000; }
+      localStorage.setItem('max4work_login_fail', JSON.stringify(f));
+      return f;
+    }
+
     async function doLogin() {
       const btn = document.getElementById('loginBtn');
       const err = document.getElementById('loginError');
+
+      if (_isLocked()) {
+        const f = _getFail();
+        const mins = Math.ceil((f.until - Date.now()) / 60000);
+        err.textContent = `Zu viele Fehlversuche. Bitte ${mins} Minute${mins !== 1 ? 'n' : ''} warten.`;
+        err.classList.add('show');
+        return;
+      }
+
       const user = document.getElementById('loginUser').value.trim();
       const pass = document.getElementById('loginPass').value;
       const remember = document.getElementById('rememberMe').checked;
@@ -161,11 +193,24 @@
       err.classList.remove('show');
 
       const hash = await _sha256(user + ':' + pass);
-      if (hash === _H) {
+      const auth = _getAuth();
+      const expected = auth ? auth.hash : _H0;
+
+      if (hash === expected) {
+        localStorage.removeItem('max4work_login_fail');
         if (remember) localStorage.setItem('m4w_sess', '1');
         else sessionStorage.setItem('m4w_sess', '1');
         location.replace('index.html');
       } else {
+        const f = _recordFail();
+        if (_isLocked()) {
+          err.textContent = 'Zu viele Fehlversuche. Bitte 5 Minuten warten.';
+        } else {
+          const remaining = Math.max(0, 5 - (f.count || 0));
+          err.textContent = remaining > 0
+            ? `Benutzername oder Passwort falsch. (${remaining} Versuch${remaining !== 1 ? 'e' : ''} verbleibend)`
+            : 'Benutzername oder Passwort falsch.';
+        }
         err.classList.add('show');
         btn.disabled = false;
         document.getElementById('loginPass').value = '';
@@ -173,11 +218,14 @@
       }
     }
 
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Enter') doLogin();
-    });
+    // "Passwort vergessen?" nur anzeigen wenn Sicherheitsfrage eingerichtet
+    (function() {
+      const auth = _getAuth();
+      if (!auth || !auth.secQ) document.getElementById('resetLink').style.display = 'none';
+    })();
 
-    // Bereits eingeloggt?
+    document.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
     if (sessionStorage.getItem('m4w_sess') === '1' || localStorage.getItem('m4w_sess') === '1') {
       location.replace('index.html');
     }
