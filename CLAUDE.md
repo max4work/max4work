@@ -53,7 +53,8 @@ max4work/
 ├── termine.html
 ├── produkte.html
 ├── auswertung.html
-├── einstellungen.html               # 9 Tabs (inkl. Datentransfer)
+├── einstellungen.html               # 10 Tabs (inkl. Datentransfer + Account)
+├── pw-reset.html                    # Passwort-Reset via Sicherheitsfrage (Auth-Exempt)
 ├── werkzeuge.html
 ├── 404.html
 ├── manifest.json                    # PWA-Manifest
@@ -140,6 +141,9 @@ max4work/
 | `max4work_kunden_view` | `'liste'\|'karte'` |
 | `max4work_portale` | Behörden-Zugangsdaten |
 | `max4work_xrechnungen` | XRechnung-Daten |
+| `max4work_auth` | `{ hash, user, secQ, secAHash }` – Login-Credentials (Fallback: hardcodierter SHA-256) |
+| `max4work_login_fail` | `{ count, until }` – Brute-Force-Zähler |
+| `max4work_auto_logout` | `0\|15\|30\|60` – Auto-Abmeldung nach Inaktivität (Minuten, 0 = Aus) |
 
 ## Seiten & Features
 
@@ -199,6 +203,7 @@ max4work/
 | Blatt-Design | `rechnung` | A4-Vorschau, 10 Layouts, Schrift, Farbe, Felder, Texte, Vorlagen |
 | E-Mail | `email` | Absender, Textvorlagen (4 Typen), Signatur + Meine Signaturen |
 | Datentransfer | `datentransfer` | CSV-Import (7 App-Presets), CSV-Export, ZIP-Backup |
+| Account | `account` | Zugangsdaten (User+PW), Sicherheitsfrage, Auto-Abmeldung, Brute-Force-Info |
 
 **Wichtig:** `showSection(id)` setzt `display: grid` für `rechnung`, `display: flex` für alle anderen.
 `js/datentransfer.js` wird in einstellungen.html VOR einstellungen.js eingebunden.
@@ -265,11 +270,40 @@ python3 -m http.server 8080
 ## Sidebar-Reihenfolge
 
 Dashboard → Rechnungen (Rechnungen | Zahlungen) → Kunden (Liste | Karte) → Belege → Termine →
-Produkte → Auswertung → Einstellungen (Design | Firma | Funktionen | Daten & Sync | Portale | Handbuch | Blatt-Design | E-Mail | Datentransfer) → Werkzeuge (Angebot | m² | Kamera | MwSt | Stundensatz) → **Fahrtenbuch** (ganz unten)
+Produkte → Auswertung → Einstellungen (Design | Firma | Funktionen | Daten & Sync | Portale | Handbuch | Blatt-Design | E-Mail | Datentransfer | Account) → Werkzeuge (Angebot | m² | Kamera | MwSt | Stundensatz) → **Fahrtenbuch** (ganz unten)
 
 ## Letzter Stand (2026-06-17)
 
-- Sessions 1–38 abgeschlossen
+- Sessions 1–39 abgeschlossen
+- **17.06.2026 Session 39 – Account-Einstellungen + Sicherheit:**
+  - **login.html – Auth-System modernisiert:**
+    - `max4work_auth` (localStorage) als primäre Credential-Quelle; Fallback auf hardcodierten SHA-256 (`_H0`)
+    - Hash-Format: `sha256(username + ':' + password)`
+    - Brute-Force-Schutz: 5 Fehlversuche → 5 Min Sperre (`max4work_login_fail = { count, until }`)
+    - Fehlermeldung zeigt verbleibende Versuche an
+    - „Passwort vergessen?"-Link nur sichtbar wenn Sicherheitsfrage in `max4work_auth.secQ` eingerichtet
+  - **pw-reset.html (neu) – Passwort-Reset via Sicherheitsfrage:**
+    - Auth-Exempt-Seite (in shared.js + login.html Whitelist)
+    - 2-Schritt-Flow: Sicherheitsfrage beantworten → neues Passwort setzen
+    - Antwort-Vergleich via `sha256(answer.toLowerCase())` === `max4work_auth.secAHash`
+    - Bei fehlendem `secQ/secAHash`: Hinweis anstatt Formular
+    - Nach Reset: `max4work_login_fail` gelöscht, Weiterleitung zu login.html
+  - **shared.js – Auto-Abmeldung:**
+    - IIFE `_initAutoLogout()` nach `m4wLogout` eingefügt
+    - Liest `max4work_auto_logout` (0/15/30/60 Min) aus localStorage
+    - Event-Listener: mousemove / keydown / touchstart / click / scroll → Timer reset
+    - Timer-Callback: ruft intern doLogout (kein `m4wLogout`-Referenz-Problem)
+    - Auth-Exempt-Liste um `pw-reset.html` erweitert
+  - **einstellungen.html + js/einstellungen.js – Account-Tab (10. Tab):**
+    - Tab-Button: SVG Person-Icon + „Account"
+    - `SECTION_TITLES.account = 'Einstellungen – Account'`
+    - `_loadAccountTab()` in `load()` eingehängt
+    - **Panel 1 – Zugangsdaten ändern:** Aktueller Username + PW (Verifikation) + optionaler neuer Username + optionales neues PW (mit Stärke-Anzeige) + Bestätigung
+    - **Panel 2 – Sicherheitsfrage:** Frage + Antwort (SHA-256, lowercase-normiert) + Status-Anzeige
+    - **Panel 3 – Sicherheit:** Auto-Abmeldung (Chips: Aus/15/30/60 Min), Brute-Force-Info-Text, „Jetzt abmelden"-Button
+    - Neue JS-Funktionen: `_loadAccountTab()`, `accCheckStrength()`, `accSaveCreds()`, `accSaveSecQ()`, `accSetAutoLogout()`
+    - CSS: `.pw-strength-bar`, `.pw-strength-fill`, `.pw-strength-text`, `.acc-info-box`, `.acc-danger-btn`
+  - **Backup:** `Backups/backup_2026-06-17b/` (login.html, pw-reset.html, einstellungen.html, einstellungen.js, shared.js)
 - **17.06.2026 Session 38 – Kalender-Overlap-Fix + iOS Monats-Picker:**
   - **termine.html – Bugfix Kalender-Overlap Mobile:**
     - `max-height: 420px` auf `.cal-left` entfernt (war zu klein seit Session 37 `.mob-view-toggle` ~56px extra hinzukam)
