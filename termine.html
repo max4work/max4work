@@ -137,13 +137,29 @@
 .wieder-section { border-top:1px solid var(--border); padding-top:12px; margin-top:4px; }
 /* Mobile-Only View-Toggle (Desktop: ausgeblendet) */
 .mob-view-toggle { display:none; }
+/* Monats-Picker */
+.month-title-btn { display:flex; align-items:center; gap:5px; cursor:pointer; user-select:none; -webkit-tap-highlight-color:transparent; background:none; border:none; font-family:inherit; padding:0; }
+.month-title-btn:active { opacity:0.7; }
+.mp-chevron { transition:transform 0.2s; flex-shrink:0; color:var(--accent); }
+.mp-chevron.open { transform:rotate(180deg); }
+.month-picker { border-top:1px solid var(--border); padding:12px 16px 14px; animation:mpIn 0.16s ease-out; }
+@keyframes mpIn { from { opacity:0; transform:scaleY(0.92); transform-origin:top; } to { opacity:1; transform:scaleY(1); } }
+.month-picker-year { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.month-picker-y-num { font-size:15px; font-weight:600; }
+.month-picker-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:4px; }
+.mp-month { padding:9px 4px; border-radius:8px; text-align:center; font-size:13px; font-weight:500; cursor:pointer; border:none; background:transparent; color:var(--text); font-family:inherit; transition:background 0.1s; -webkit-tap-highlight-color:transparent; }
+.mp-month:hover { background:var(--soft); }
+.mp-month.on { background:var(--accent); color:var(--dark); font-weight:700; border-radius:20px; }
+.mp-month.cur { color:var(--accent); font-weight:600; }
+.mp-month.on.cur { color:var(--dark); }
 </style>
 
 <!-- mob-only-injected -->
 <style>
 @media (max-width: 768px) {
   .cal-layout { display: flex !important; flex-direction: column; }
-  .cal-left { border-right: none !important; border-bottom: 1px solid var(--border); max-height: 420px; }
+  .cal-left { border-right: none !important; border-bottom: 1px solid var(--border); overflow: hidden; }
+  .mini-list, .cal-stats { display: none !important; }
   /* Topbar: Heute + Exportieren + Importieren ausblenden, nur Terminvergabe + Sync */
   .topbar-right .btn-ghost { display: none !important; }
   .btn-sync-mob { display: flex !important; }
@@ -222,9 +238,13 @@
       </div>
       <div class="month-nav">
         <button type="button" class="nav-arrow" onclick="prevMonth()">‹</button>
-        <div class="month-title" id="monthTitle"></div>
+        <button type="button" class="month-title-btn" onclick="toggleMonthPicker()">
+          <span class="month-title" id="monthTitle"></span>
+          <svg id="mpChevron" class="mp-chevron" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
         <button type="button" class="nav-arrow" onclick="nextMonth()">›</button>
       </div>
+      <div id="monthPicker" class="month-picker" style="display:none;"></div>
       <div class="weekdays">
         <div class="wd kw-head">KW</div>
         <div class="wd">Mo</div><div class="wd">Di</div><div class="wd">Mi</div>

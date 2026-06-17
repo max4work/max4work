@@ -468,6 +468,9 @@ document.addEventListener('click',e=>{
     document.getElementById('kundeTerminDd').style.display='none';
     document.getElementById('titelTerminDd').style.display='none';
   }
+  if(!e.target.closest('.month-nav') && !e.target.closest('#monthPicker')){
+    closeMonthPicker();
+  }
 });
 
 /* ══════════════ ICS Import (Smartphone Sync) ══════════════ */
@@ -706,6 +709,58 @@ function generateDates(startDate,interval,endDate){
     curr=next;
   }
   return dates;
+}
+
+/* ══════════════ Monats-Picker ══════════════ */
+let _pickerYear = viewYear;
+
+function toggleMonthPicker() {
+  const picker = document.getElementById('monthPicker');
+  const chevron = document.getElementById('mpChevron');
+  if (!picker) return;
+  if (picker.style.display !== 'none') {
+    picker.style.display = 'none';
+    chevron?.classList.remove('open');
+  } else {
+    _pickerYear = viewYear;
+    _renderMonthPicker();
+    picker.style.display = 'block';
+    chevron?.classList.add('open');
+  }
+}
+
+function closeMonthPicker() {
+  const picker = document.getElementById('monthPicker');
+  document.getElementById('mpChevron')?.classList.remove('open');
+  if (picker) picker.style.display = 'none';
+}
+
+function _renderMonthPicker() {
+  const picker = document.getElementById('monthPicker');
+  if (!picker) return;
+  picker.innerHTML = `
+    <div class="month-picker-year">
+      <button class="nav-arrow" onclick="pickerPrevYear()">‹</button>
+      <div class="month-picker-y-num">${_pickerYear}</div>
+      <button class="nav-arrow" onclick="pickerNextYear()">›</button>
+    </div>
+    <div class="month-picker-grid">
+      ${MONATE_SHORT.map((name, i) => {
+        const isOn = _pickerYear === viewYear && i === viewMonth;
+        const isCur = _pickerYear === today.getFullYear() && i === today.getMonth();
+        return `<button class="mp-month${isOn ? ' on' : ''}${isCur && !isOn ? ' cur' : ''}" onclick="pickMonth(${i})">${name}</button>`;
+      }).join('')}
+    </div>`;
+}
+
+function pickerPrevYear() { _pickerYear--; _renderMonthPicker(); }
+function pickerNextYear() { _pickerYear++; _renderMonthPicker(); }
+
+function pickMonth(m) {
+  viewMonth = m;
+  viewYear = _pickerYear;
+  closeMonthPicker();
+  renderCalendar();
 }
 
 /* Init */
