@@ -65,7 +65,11 @@
   <!-- Schritt 2: Neues Passwort setzen -->
   <div id="stepNewPw">
     <h1>Neues Passwort</h1>
-    <p class="sub">Wähle ein neues Passwort für dein Konto.</p>
+    <p class="sub">Bestätige deinen Benutzernamen und wähle ein neues Passwort.</p>
+    <div class="field">
+      <label>Benutzername</label>
+      <input type="text" id="resetUser" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="Benutzername wie beim Login">
+    </div>
     <div class="field">
       <label>Neues Passwort</label>
       <input type="password" id="newPwInput" autocomplete="new-password" oninput="checkStrength()">
@@ -111,7 +115,9 @@
       err.classList.remove('show');
       document.getElementById('stepAnswer').style.display = 'none';
       document.getElementById('stepNewPw').style.display = 'block';
-      setTimeout(() => document.getElementById('newPwInput').focus(), 100);
+      const resetUserEl = document.getElementById('resetUser');
+      if (auth.user) resetUserEl.value = auth.user;
+      setTimeout(() => (auth.user ? document.getElementById('newPwInput') : resetUserEl).focus(), 100);
     } else {
       err.textContent = 'Falsche Antwort.';
       err.classList.add('show');
@@ -153,10 +159,11 @@
     if (!pw || !pw2)  { err.textContent = 'Bitte beide Felder ausfüllen.'; err.classList.add('show'); return; }
     if (pw !== pw2)   { err.textContent = 'Passwörter stimmen nicht überein.'; err.classList.add('show'); return; }
     if (pw.length < 6){ err.textContent = 'Mindestens 6 Zeichen erforderlich.'; err.classList.add('show'); return; }
+    const user = document.getElementById('resetUser').value.trim();
+    if (!user) { err.textContent = 'Bitte Benutzernamen eingeben.'; err.classList.add('show'); return; }
     btn.disabled = true;
-    const user = auth.user || 'admin';
     const newHash = await _sha256(user + ':' + pw);
-    localStorage.setItem('max4work_auth', JSON.stringify({ ...auth, hash: newHash }));
+    localStorage.setItem('max4work_auth', JSON.stringify({ ...auth, hash: newHash, user }));
     localStorage.removeItem('max4work_login_fail');
     document.getElementById('pwOk').classList.add('show');
     setTimeout(() => location.replace('login.html'), 2000);

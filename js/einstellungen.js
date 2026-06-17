@@ -183,6 +183,7 @@
     document.querySelector(`.stab[data-section="${id}"]`).classList.add('on');
     document.getElementById('topbarTitle').textContent = SECTION_TITLES[id] || 'Einstellungen';
     try { localStorage.setItem('max4work_settings_tab', id); } catch(e) {}
+    if (id === 'account' && typeof _loadAccountTab === 'function') _loadAccountTab();
     if (typeof refreshSubNav === 'function') refreshSubNav();
   }
 
