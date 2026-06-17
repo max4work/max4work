@@ -267,9 +267,25 @@ python3 -m http.server 8080
 Dashboard → Rechnungen (Rechnungen | Zahlungen) → Kunden (Liste | Karte) → Belege → Termine →
 Produkte → Auswertung → Einstellungen (Design | Firma | Funktionen | Daten & Sync | Portale | Handbuch | Blatt-Design | E-Mail | Datentransfer) → Werkzeuge (Angebot | m² | Kamera | MwSt | Stundensatz) → **Fahrtenbuch** (ganz unten)
 
-## Letzter Stand (2026-06-15)
+## Letzter Stand (2026-06-17)
 
-- Sessions 1–37 abgeschlossen
+- Sessions 1–38 abgeschlossen
+- **17.06.2026 Session 38 – Kalender-Overlap-Fix + iOS Monats-Picker:**
+  - **termine.html – Bugfix Kalender-Overlap Mobile:**
+    - `max-height: 420px` auf `.cal-left` entfernt (war zu klein seit Session 37 `.mob-view-toggle` ~56px extra hinzukam)
+    - `overflow: hidden` auf `.cal-left` gesetzt → letzte KW-Zeile überlappt nicht mehr
+    - `.mini-list` + `.cal-stats` auf Mobile ausgeblendet (`display: none !important`) – redundant, da `.cal-right` Events vollständig zeigt
+  - **termine.html + js/termine.js – iOS Monats-Picker:**
+    - Monatstitel ist jetzt klickbarer Button (`.month-title-btn`) mit Chevron-Pfeil (`#mpChevron`)
+    - Chevron dreht sich beim Öffnen/Schließen (`.mp-chevron.open { transform: rotate(180deg) }`)
+    - Picker (`#monthPicker`) klappt mit Slide-down-Animation auf (`@keyframes mpIn`)
+    - Jahr-Navigation: `< 2026 >` mit `pickerPrevYear()` / `pickerNextYear()`, State `_pickerYear`
+    - 12 Monats-Buttons (Jan–Dez) in 4×3-Grid (`.month-picker-grid`, `.mp-month`)
+    - Aktueller Monat: Akzentfarbe (`.mp-month.cur`); ausgewählter Monat: Pill-Hintergrund (`.mp-month.on`)
+    - `pickMonth(m)` → setzt `viewMonth`/`viewYear`, schließt Picker, `renderCalendar()`
+    - Schließt bei Klick außerhalb (document click-Listener, Ausnahme: `.month-nav` + `#monthPicker`)
+    - Neue JS-Funktionen: `toggleMonthPicker()`, `closeMonthPicker()`, `_renderMonthPicker()`, `pickerPrevYear()`, `pickerNextYear()`, `pickMonth(m)`
+  - **Backup:** `Backups/backup_2026-06-17/` (termine.html, termine.js)
 - **15.06.2026 Session 37 – Mobile-Format Durchtest + Fixes:**
   - **Playwright-Screenshottest** (375×812 iPhone-Viewport): 7 Seiten geprüft – kein horizontaler Overflow, Tab-Bar korrekt
   - **fahrtenbuch.html:** `#topMeta`-Text (`0 Fahrten · 0 km gesamt`) auf Mobile ausgeblendet (`display:none`) – kollidierte mit absolut zentriertem `.page-name`-Titel
