@@ -731,9 +731,14 @@ function toggleMonthPicker() {
 function closeYearOv(e) {
   if (e && e.target !== document.getElementById('yearOvBackdrop')) return;
   const bd = document.getElementById('yearOvBackdrop');
-  if (bd) bd.style.display = 'none';
+  if (!bd || bd.style.display === 'none') return;
+  bd.classList.add('closing');
   document.getElementById('mpChevron')?.classList.remove('open');
-  document.body.style.overflow = '';
+  setTimeout(() => {
+    bd.style.display = 'none';
+    bd.classList.remove('closing');
+    document.body.style.overflow = '';
+  }, 220);
 }
 
 function yearOvPrev() { _yearOvYear--; _renderYearOv(); }

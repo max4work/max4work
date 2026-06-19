@@ -144,9 +144,14 @@
 .mp-chevron.open { transform:rotate(180deg); }
 
 /* Jahresüberblick Modal */
-.year-ov-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:600; display:flex; align-items:center; justify-content:center; animation:fadeIn .15s ease; }
-@keyframes fadeIn { from{opacity:0} to{opacity:1} }
-.year-ov { background:var(--surface); border-radius:20px; padding:22px 24px 24px; box-shadow:0 28px 72px rgba(0,0,0,.28); width:min(880px,94vw); max-height:92vh; overflow-y:auto; animation:pop .18s ease-out; }
+.year-ov-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:600; display:flex; align-items:center; justify-content:center; animation:yearBdIn .28s ease forwards; }
+.year-ov-backdrop.closing { animation:yearBdOut .22s ease forwards; }
+@keyframes yearBdIn  { from{opacity:0} to{opacity:1} }
+@keyframes yearBdOut { from{opacity:1} to{opacity:0} }
+.year-ov { background:var(--surface); border-radius:20px; padding:22px 24px 24px; box-shadow:0 28px 72px rgba(0,0,0,.28); width:min(880px,94vw); max-height:92vh; overflow-y:auto; transform-origin:top center; animation:yearRollIn .35s cubic-bezier(0.22,1,0.36,1) forwards; }
+.year-ov-backdrop.closing .year-ov { animation:yearRollOut .2s ease-in forwards; }
+@keyframes yearRollIn  { from{opacity:0; transform:scaleY(0.06) translateY(-12px)} to{opacity:1; transform:scaleY(1) translateY(0)} }
+@keyframes yearRollOut { from{opacity:1; transform:scaleY(1) translateY(0)} to{opacity:0; transform:scaleY(0.06) translateY(-12px)} }
 .year-ov-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
 .year-ov-title { font-size:22px; font-weight:700; letter-spacing:-0.5px; }
 .year-ov-nav { display:flex; align-items:center; gap:8px; }
