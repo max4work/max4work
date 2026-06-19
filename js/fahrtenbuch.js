@@ -136,6 +136,7 @@ function addFahrt() {
     abfahrt: document.getElementById('fAbfahrt').value,
     ankunft: document.getElementById('fAnkunft').value,
     zweck: currentZweck,
+    fahrzeug: document.getElementById('fFahrzeug').value,
     kunde: document.getElementById('fKunde').value.trim(),
     notiz: document.getElementById('fNotiz').value.trim(),
     startFoto, endFoto,
@@ -193,7 +194,7 @@ function render() {
             <span class="${f.zweck==='dienstlich'?'badge-dienst':'badge-privat'}">${f.zweck==='dienstlich'?'Dienstlich':'Privat'}</span>
           </div>
           ${f.notiz ? `<div style="font-size:11.5px;color:var(--muted);margin-top:2px;">${f.notiz}</div>` : ''}
-          <div style="font-size:11px;color:var(--muted);margin-top:2px;">${f.startKm.toLocaleString('de-DE')} → ${f.endKm.toLocaleString('de-DE')} km</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;">${f.startKm.toLocaleString('de-DE')} → ${f.endKm.toLocaleString('de-DE')} km${f.fahrzeug ? ` · <span style="font-weight:600;letter-spacing:0.4px;">${f.fahrzeug}</span>` : ''}</div>
         </div>
         <div class="fahrt-km">${f.distanz} km</div>
         <button class="fahrt-del" onclick="delFahrt(${f.id})" title="Löschen">${delIcon}</button>
@@ -235,9 +236,9 @@ function fillKundenList() {
 /* ═══ Export ═══ */
 function exportCSV() {
   if (!fahrten.length) { alert('Keine Fahrten vorhanden.'); return; }
-  const rows = [['Datum','Start-km','End-km','Distanz (km)','Startort','Zielort','Abfahrt','Ankunft','Zweck','Kunde','Notiz']];
+  const rows = [['Datum','Fahrzeug','Start-km','End-km','Distanz (km)','Startort','Zielort','Abfahrt','Ankunft','Zweck','Kunde','Notiz']];
   fahrten.forEach(f => rows.push([
-    f.datum, f.startKm, f.endKm, f.distanz,
+    f.datum, f.fahrzeug||'', f.startKm, f.endKm, f.distanz,
     f.startOrt||'', f.zielOrt||'', f.abfahrt||'', f.ankunft||'',
     f.zweck, f.kunde||'', f.notiz||''
   ]));
@@ -261,6 +262,8 @@ function exportPDF() {
   doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(100);
   if (firma) { doc.text(firma, M, y); y+=4.5; }
   if (steuernr) { doc.text('Steuer-Nr.: '+steuernr, M, y); y+=4.5; }
+  const kfzListe = [...new Set(fahrten.map(f=>f.fahrzeug).filter(Boolean))];
+  if (kfzListe.length) { doc.text('Fahrzeug: '+kfzListe.join(', '), M, y); y+=4.5; }
   doc.text('Erstellt am '+new Date().toLocaleDateString('de-DE'), M, y); y+=8;
   doc.setTextColor(0);
 
@@ -273,8 +276,8 @@ function exportPDF() {
   doc.setFillColor(43,56,41); doc.setTextColor(255);
   doc.rect(M, y, 174, 7, 'F');
   doc.setFont('helvetica','bold'); doc.setFontSize(8);
-  const cols = [20,24,30,28,20,32,20];
-  const heads = ['Datum','km Anfang','km Ende','Strecke (km)','Abfahrt','Route','Zweck'];
+  const cols = [18,22,22,22,16,28,18,20];
+  const heads = ['Datum','km Anf.','km End.','Strecke km','Abfahrt','Route','Zweck','KFZ'];
   let cx = M+2;
   heads.forEach((h,i) => { doc.text(h, cx, y+5); cx+=cols[i]; });
   y+=7; doc.setTextColor(0); doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
@@ -285,7 +288,7 @@ function exportPDF() {
     const route = [f.startOrt,f.zielOrt].filter(Boolean).join(' → ') || '–';
     const fmtD = v => { if(!v)return'—'; const[y2,m,d]=v.split('-');return`${d}.${m}.${y2}`; };
     cx = M+2;
-    const vals = [fmtD(f.datum), f.startKm.toLocaleString('de-DE'), f.endKm.toLocaleString('de-DE'), f.distanz.toLocaleString('de-DE'), f.abfahrt||'–', route.slice(0,22), f.zweck];
+    const vals = [fmtD(f.datum), f.startKm.toLocaleString('de-DE'), f.endKm.toLocaleString('de-DE'), f.distanz.toLocaleString('de-DE'), f.abfahrt||'–', route.slice(0,18), f.zweck, f.fahrzeug||'–'];
     vals.forEach((v,j) => { doc.text(String(v), cx, y+5); cx+=cols[j]; });
     y+=7;
   });
