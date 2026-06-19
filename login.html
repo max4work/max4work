@@ -142,6 +142,7 @@
     <div class="error" id="loginError"></div>
     <div style="text-align:center;margin-top:14px;">
       <a href="pw-reset.html" id="resetLink" style="font-size:12.5px;color:#7B8278;text-decoration:none;">Passwort vergessen?</a>
+      <a href="#" id="unlockLink" onclick="doUnlock();return false;" style="display:none;font-size:12px;color:#DC2626;margin-top:8px;display:none;text-decoration:none;">Sperre aufheben</a>
     </div>
   </div>
 
@@ -182,6 +183,7 @@
         const mins = Math.ceil((f.until - Date.now()) / 60000);
         err.textContent = `Zu viele Fehlversuche. Bitte ${mins} Minute${mins !== 1 ? 'n' : ''} warten.`;
         err.classList.add('show');
+        document.getElementById('unlockLink').style.display = 'block';
         return;
       }
 
@@ -224,7 +226,25 @@
       if (!auth || !auth.secQ) document.getElementById('resetLink').style.display = 'none';
     })();
 
+    function doUnlock() {
+      localStorage.removeItem('max4work_login_fail');
+      localStorage.removeItem('max4work_auth');
+      document.getElementById('unlockLink').style.display = 'none';
+      const err = document.getElementById('loginError');
+      err.textContent = 'Sperre aufgehoben. Bitte mit juergen / max4work anmelden.';
+      err.style.background = '#F0FDF4';
+      err.style.borderColor = '#BBF7D0';
+      err.style.color = '#166534';
+      err.classList.add('show');
+      document.getElementById('loginBtn').disabled = false;
+    }
+
     document.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+    // Sperre-Link direkt anzeigen wenn bereits gesperrt
+    if (_isLocked()) {
+      document.getElementById('unlockLink').style.display = 'block';
+    }
 
     if (sessionStorage.getItem('m4w_sess') === '1' || localStorage.getItem('m4w_sess') === '1') {
       location.replace('index.html');
