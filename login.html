@@ -200,6 +200,9 @@
 
       if (hash === expected) {
         localStorage.removeItem('max4work_login_fail');
+        if (!auth) {
+          localStorage.setItem('max4work_auth', JSON.stringify({ hash: hash, user: user }));
+        }
         if (remember) localStorage.setItem('m4w_sess', '1');
         else sessionStorage.setItem('m4w_sess', '1');
         location.replace('index.html');
