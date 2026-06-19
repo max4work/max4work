@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE = 'max4work-v4';
+const CACHE = 'max4work-v5';
 const OFFLINE = 'offline.html';
 
 const SHELL = [
@@ -16,7 +16,7 @@ const SHELL = [
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE).then(cache =>
-      Promise.allSettled(SHELL.map(url => cache.add(url)))
+      Promise.allSettled(SHELL.map(url => cache.add(new Request(url, { redirect: 'follow' }))))
     ).then(() => self.skipWaiting())
   );
 });
@@ -34,7 +34,7 @@ self.addEventListener('fetch', e => {
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
-      return fetch(e.request)
+      return fetch(new Request(e.request, { redirect: 'follow' }))
         .then(res => {
           if (res.ok && (res.type === 'basic' || res.type === 'cors')) {
             const clone = res.clone();
