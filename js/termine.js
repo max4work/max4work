@@ -712,56 +712,74 @@ function generateDates(startDate,interval,endDate){
 }
 
 /* ══════════════ Monats-Picker ══════════════ */
-let _pickerYear = viewYear;
+let _yearOvYear = viewYear;
 
 function toggleMonthPicker() {
-  const picker = document.getElementById('monthPicker');
-  const chevron = document.getElementById('mpChevron');
-  if (!picker) return;
-  if (picker.style.display !== 'none') {
-    picker.style.display = 'none';
-    chevron?.classList.remove('open');
+  const bd = document.getElementById('yearOvBackdrop');
+  if (!bd) return;
+  if (bd.style.display !== 'none') {
+    closeYearOv();
   } else {
-    _pickerYear = viewYear;
-    _renderMonthPicker();
-    picker.style.display = 'block';
-    chevron?.classList.add('open');
+    _yearOvYear = viewYear;
+    _renderYearOv();
+    bd.style.display = 'flex';
+    document.getElementById('mpChevron')?.classList.add('open');
+    document.body.style.overflow = 'hidden';
   }
 }
 
-function closeMonthPicker() {
-  const picker = document.getElementById('monthPicker');
+function closeYearOv(e) {
+  if (e && e.target !== document.getElementById('yearOvBackdrop')) return;
+  const bd = document.getElementById('yearOvBackdrop');
+  if (bd) bd.style.display = 'none';
   document.getElementById('mpChevron')?.classList.remove('open');
-  if (picker) picker.style.display = 'none';
+  document.body.style.overflow = '';
 }
 
-function _renderMonthPicker() {
-  const picker = document.getElementById('monthPicker');
-  if (!picker) return;
-  picker.innerHTML = `
-    <div class="month-picker-year">
-      <button class="nav-arrow" onclick="pickerPrevYear()">‹</button>
-      <div class="month-picker-y-num">${_pickerYear}</div>
-      <button class="nav-arrow" onclick="pickerNextYear()">›</button>
-    </div>
-    <div class="month-picker-grid">
-      ${MONATE_SHORT.map((name, i) => {
-        const isOn = _pickerYear === viewYear && i === viewMonth;
-        const isCur = _pickerYear === today.getFullYear() && i === today.getMonth();
-        return `<button class="mp-month${isOn ? ' on' : ''}${isCur && !isOn ? ' cur' : ''}" onclick="pickMonth(${i})">${name}</button>`;
-      }).join('')}
-    </div>`;
+function yearOvPrev() { _yearOvYear--; _renderYearOv(); }
+function yearOvNext() { _yearOvYear++; _renderYearOv(); }
+
+function _renderYearOv() {
+  document.getElementById('yearOvTitle').textContent = _yearOvYear;
+  const WD = ['Mo','Di','Mi','Do','Fr','Sa','So'];
+  const grid = document.getElementById('yearOvGrid');
+  grid.innerHTML = MONATE_LANG.map((mName, mIdx) => {
+    const isActive = _yearOvYear === viewYear && mIdx === viewMonth;
+    const firstDay = new Date(_yearOvYear, mIdx, 1);
+    const lastDay  = new Date(_yearOvYear, mIdx + 1, 0).getDate();
+    const startCol = (firstDay.getDay() + 6) % 7; // Mon=0 … Sun=6
+    let cells = '';
+    for (let i = 0; i < startCol; i++) cells += `<div class="year-ov-day empty"></div>`;
+    for (let d = 1; d <= lastDay; d++) {
+      const date = new Date(_yearOvYear, mIdx, d);
+      const dow  = (date.getDay() + 6) % 7;
+      const isToday = date.getTime() === today.getTime();
+      const isSun   = dow === 6;
+      let cls = 'year-ov-day';
+      if (isToday) cls += ' today';
+      else if (isSun) cls += ' sun';
+      cells += `<div class="${cls}">${d}</div>`;
+    }
+    return `
+      <div class="year-ov-card${isActive ? ' active' : ''}" onclick="pickYearMonth(${mIdx})">
+        <div class="year-ov-card-name">${mName}</div>
+        <div class="year-ov-wdays">${WD.map((w,i)=>`<div class="year-ov-wd${i===6?' sun':''}">${w}</div>`).join('')}</div>
+        <div class="year-ov-days">${cells}</div>
+      </div>`;
+  }).join('');
 }
 
-function pickerPrevYear() { _pickerYear--; _renderMonthPicker(); }
-function pickerNextYear() { _pickerYear++; _renderMonthPicker(); }
-
-function pickMonth(m) {
+function pickYearMonth(m) {
   viewMonth = m;
-  viewYear = _pickerYear;
-  closeMonthPicker();
+  viewYear = _yearOvYear;
+  const bd = document.getElementById('yearOvBackdrop');
+  if (bd) bd.style.display = 'none';
+  document.getElementById('mpChevron')?.classList.remove('open');
+  document.body.style.overflow = '';
   renderCalendar();
 }
+
+function closeMonthPicker() { closeYearOv(); }
 
 /* Init */
 renderCalendar();
