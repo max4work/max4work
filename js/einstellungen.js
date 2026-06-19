@@ -2518,7 +2518,7 @@ renderExtKalListe();
 /* ══ Account-Tab ══════════════════════════════════════════════════════ */
 
 const _ACC_KEY = 'max4work_auth';
-const _ACC_H0  = 'b22ef2de2ea994cbe15b7d63acc6c2dcacea108737704f4015952e9ecacb362a';
+const _ACC_H0  = '716933019166307e67137c1af99259be1f2117a1d7434a1105f28d083a55afb4';
 
 async function _accSha256(str) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
