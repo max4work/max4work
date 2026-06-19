@@ -129,11 +129,11 @@
     <h1>Anmelden</h1>
     <div class="field">
       <label for="loginUser">Benutzername</label>
-      <input type="text" id="loginUser" autocomplete="username" autocapitalize="none" spellcheck="false">
+      <input type="text" id="loginUser" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="juergen">
     </div>
     <div class="field">
       <label for="loginPass">Passwort</label>
-      <input type="password" id="loginPass" autocomplete="current-password">
+      <input type="password" id="loginPass" autocomplete="current-password" placeholder="max4work">
     </div>
     <label class="remember">
       <input type="checkbox" id="rememberMe"> Angemeldet bleiben
@@ -146,7 +146,7 @@
   </div>
 
   <script>
-    const _H0 = 'b22ef2de2ea994cbe15b7d63acc6c2dcacea108737704f4015952e9ecacb362a';
+    const _H0 = '716933019166307e67137c1af99259be1f2117a1d7434a1105f28d083a55afb4';
 
     async function _sha256(str) {
       const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));

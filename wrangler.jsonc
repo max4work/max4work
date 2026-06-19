@@ -2,9 +2,11 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "max4work",
   "compatibility_date": "2026-06-17",
+  "main": "worker.js",
   "assets": {
     "directory": ".",
-    "html_handling": "auto-trailing-slash",
+    "binding": "ASSETS",
+    "html_handling": "none",
     "not_found_handling": "404-page"
   }
 }
