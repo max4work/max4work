@@ -274,6 +274,19 @@ python3 -m http.server 8080
 Dashboard → Rechnungen (Rechnungen | Zahlungen) → Kunden (Liste | Karte) → Belege → Termine →
 Produkte → Auswertung → Einstellungen (Design | Firma | Funktionen | Daten & Sync | Portale | Handbuch | Blatt-Design | E-Mail | Datentransfer | Account) → Werkzeuge (Angebot | m² | Kamera | MwSt | Stundensatz) → **Fahrtenbuch** (ganz unten)
 
+## Letzter Stand (2026-06-19)
+
+- Sessions 1–40 abgeschlossen
+- **19.06.2026 Session 40 – Kalender-Verbesserungen + Fahrtenbuch Kennzeichen:**
+  - **termine.html – Kalenderbereich 10% größer:** `.cal-layout` 320px → 352px; KW-Spalte 28→31px; Padding 12→13px; Heute/Auswahl-Kreis 30→33px; Monatstitel 17→19px; Tageszahlen 14→15px
+  - **termine.html – Desktop 15% breiter:** `.cal-layout` 352px → 405px (nur Desktop, Mobile unberührt)
+  - **termine.html – Mobile: Monatsname-Farbe:** `.month-title-btn` bekommt `color:var(--text)` → kein Safari-Blau mehr
+  - **termine.html – Pfeile neben Monatsname:** `.month-nav` von `justify-content:space-between` auf `center; gap:10px` → Pfeile direkt am Monatsnamen
+  - **js/fahrtenbuch.js – Kennzeichen pro Fahrt:** `fahrzeug`-Feld wird beim Speichern aus `#fFahrzeug` übernommen; erscheint in Liste (fett neben km), PDF-Header (alle Fahrzeuge), PDF-Tabelle (neue Spalte KFZ), CSV (neue Spalte Fahrzeug)
+  - **termine.html + js/termine.js – iOS-Jahresüberblick:** Klick auf Monatsnamen öffnet Modal mit 12 Mini-Kalendern (4×3 Grid); jeder zeigt echte Tageszahlen; heute = Akzentfarbe; aktiver Monat = Akzentrahmen; Jahrespfeile; Klick → Navigation; Backdrop-Klick oder × schließt
+  - **Animation:** Sanftes Ausrollen statt Aufploppen (`scaleY 0.06→1`, 350ms `cubic-bezier(0.22,1,0.36,1)`); Schließen rollt zurück (220ms); Backdrop faded ein/aus
+  - **Backup:** `Backups/backup_2026-06-19_session40/` (termine.html, termine.js, fahrtenbuch.js)
+
 ## Letzter Stand (2026-06-17)
 
 - Sessions 1–39 abgeschlossen
