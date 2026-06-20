@@ -190,6 +190,7 @@
   /* ── Feature-Toggles ── */
   const TOGGLE_DEFAULTS = {
     autoSuggestInvoice: false, livePreview: false, highlightOverdue: false,
+    bankAbgleich: false,
     // Auswertungs-Panels – neue Panels hier ergänzen (Key + true/false)
     panel_kpiGrid: false, panel_bank: false, panel_top5: false,
     panel_kleinunternehmer: false, panel_ausstehend: false,
@@ -204,6 +205,7 @@
         const el = document.getElementById(id);
         if (el) el.checked = val;
       });
+      toggleBankPanel(getFeature('bankAbgleich'));
     } catch(e) {}
   }
 
@@ -2637,4 +2639,198 @@ function accSetAutoLogout(mins) {
   document.querySelectorAll('.inv-chip[data-logout]').forEach(btn => {
     btn.classList.toggle('on', parseInt(btn.dataset.logout) === mins);
   });
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   BANKABGLEICH – MT940-Import + automatischer Rechnungsabgleich
+   Modus jetzt: MT940-Dateiimport (manuell).
+   Modus später: Server-URL aktivieren → vollautomatischer Abruf.
+═══════════════════════════════════════════════════════════════════ */
+
+function toggleBankPanel(on) {
+  const panel = document.getElementById('bankAbgleichPanel');
+  if (panel) panel.style.display = on ? '' : 'none';
+}
+
+// MT940-Parser – liest nur Kreditbuchungen (Geldeingänge)
+function _parseMT940(text) {
+  const txs = [];
+  const parts = text.split(/(?=^:61:)/m);
+
+  for (const part of parts) {
+    if (!part.startsWith(':61:')) continue;
+
+    const lines = part.split(/\r?\n/);
+    const line61 = lines[0].replace(':61:', '');
+
+    // YYMMDD[MMDD][C|D|RC|RD]Betrag
+    const m = line61.match(/^(\d{6})(\d{4})?(C|D|RC|RD)([\d]+,\d{2})/);
+    if (!m) continue;
+
+    const isCredit = m[3] === 'C' || m[3] === 'RC';
+    if (!isCredit) continue;
+
+    const amount = parseFloat(m[4].replace(',', '.'));
+    const ds = m[1];
+    const date = `20${ds.slice(0,2)}-${ds.slice(2,4)}-${ds.slice(4,6)}`;
+
+    const block = lines.slice(1).join('\n');
+    const m86 = block.match(/:86:([\s\S]*?)(?=\r?\n:|$)/);
+    let name = '', reference = '';
+
+    if (m86) {
+      const info = m86[1].replace(/\r?\n/g, '');
+      let vz = '';
+      for (let j = 20; j <= 29; j++) {
+        const vM = info.match(new RegExp(`\\?${j}([^?]*)`));
+        if (vM) vz += vM[1];
+      }
+      reference = vz.trim();
+      const n32 = info.match(/\?32([^?]*)/);
+      const n33 = info.match(/\?33([^?]*)/);
+      name = [(n32 ? n32[1] : ''), (n33 ? n33[1] : '')].join(' ').trim();
+    }
+
+    txs.push({ date, amount, name, reference });
+  }
+  return txs;
+}
+
+// Abgleich: Transaktionen vs. offene Rechnungen
+// Score: +1 Betrag stimmt · +3 RE-Nummer im Verwendungszweck · +1/+2 Kundenname
+// Score ≥ 4 → automatisch · Score 2–3 → Vorschlag · Score 1 → kein Treffer
+function _matchTransactions(txs) {
+  const rechnungen = JSON.parse(localStorage.getItem('max4work_rechnungen') || '[]');
+  const offene = rechnungen.filter(r => r.status === 'offen' || r.status === 'überfällig');
+  const auto = [], suggest = [], unmatched = [];
+
+  txs.forEach(tx => {
+    const amtStr = tx.amount.toFixed(2);
+    const ref    = (tx.reference || '').toLowerCase();
+    const txName = (tx.name || '').toLowerCase();
+
+    const byAmt = offene.filter(r => parseFloat(r.betrag || 0).toFixed(2) === amtStr);
+    if (!byAmt.length) { unmatched.push(tx); return; }
+
+    let best = null, bestScore = 0;
+    byAmt.forEach(r => {
+      let score = 1;
+      const nr    = (r.nr || '').toLowerCase();
+      const kunde = (r.kunde || '').toLowerCase();
+
+      if (nr && ref.includes(nr)) score += 3;
+      if (kunde) {
+        const words = kunde.split(/\s+/).filter(w => w.length > 2);
+        if (words.some(w => txName.includes(w))) score += 1;
+        if (txName.includes(kunde)) score += 1;
+      }
+      if (score > bestScore) { bestScore = score; best = r; }
+    });
+
+    if (!best) { unmatched.push(tx); return; }
+    if (bestScore >= 4)      auto.push({ re: best, tx });
+    else if (bestScore >= 2) suggest.push({ re: best, tx });
+    else                     unmatched.push(tx);
+  });
+
+  return { auto, suggest, unmatched };
+}
+
+// Rechnung als bezahlt markieren + Zahlung protokollieren
+function _markRechnungBezahlt(reId) {
+  const rechnungen = JSON.parse(localStorage.getItem('max4work_rechnungen') || '[]');
+  const idx = rechnungen.findIndex(r => r.id === reId);
+  if (idx === -1) return false;
+  const r = rechnungen[idx];
+  r.status     = 'bezahlt';
+  r.bezahltAm  = new Date().toISOString().split('T')[0];
+  r.zahlungsart = 'Überweisung (Bankabgleich)';
+  localStorage.setItem('max4work_rechnungen', JSON.stringify(rechnungen));
+  try {
+    const z = JSON.parse(localStorage.getItem('max4work_zahlungen') || '[]');
+    z.unshift({ id: Date.now(), _auto: true, datum: r.bezahltAm, betrag: Number(r.betrag || 0), kunde: r.kunde, rechNr: r.nr, notiz: 'Bankabgleich (MT940)' });
+    localStorage.setItem('max4work_zahlungen', JSON.stringify(z));
+  } catch(e) {}
+  return true;
+}
+
+function _fmtB2(n) {
+  return n.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+}
+
+function confirmBankMatch(reId, btnEl) {
+  _markRechnungBezahlt(reId);
+  const row = btnEl.closest('.bank-match-row');
+  if (row) {
+    row.style.background = '#f0fdf4';
+    row.style.borderColor = '#bbf7d0';
+    btnEl.outerHTML = '<span style="color:#166534;font-weight:600;font-size:12px;">✓ Als bezahlt markiert</span>';
+  }
+}
+
+function handleMT940Import(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const status = document.getElementById('bankImportStatus');
+  status.textContent = 'Wird verarbeitet…';
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const txs = _parseMT940(ev.target.result);
+      if (!txs.length) {
+        status.textContent = 'Keine Eingänge in der Datei gefunden.';
+        return;
+      }
+      const result = _matchTransactions(txs);
+      result.auto.forEach(m => _markRechnungBezahlt(m.re.id));
+      _showBankResult({ ...result, total: txs.length });
+      status.textContent = `${txs.length} Transaktion${txs.length !== 1 ? 'en' : ''} verarbeitet`;
+    } catch(err) {
+      status.textContent = 'Fehler beim Lesen der Datei.';
+    }
+    e.target.value = '';
+  };
+  reader.readAsText(file, 'ISO-8859-1');
+}
+
+function _showBankResult({ auto, suggest, unmatched, total }) {
+  const el = document.getElementById('bankAbgleichResult');
+  if (!el) return;
+  let html = '';
+
+  if (auto.length) {
+    html += `<div style="margin-bottom:12px;">
+      <div style="font-size:12px;font-weight:700;color:#166534;margin-bottom:6px;">✓ Automatisch als bezahlt markiert (${auto.length})</div>`;
+    auto.forEach(m => {
+      html += `<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:8px 10px;margin-bottom:4px;font-size:12.5px;">
+        <strong>${m.re.nr}</strong> · ${m.re.kunde} · ${_fmtB2(m.tx.amount)}
+        <span style="color:#166534;font-weight:600;margin-left:8px;">✓ bezahlt</span>
+      </div>`;
+    });
+    html += '</div>';
+  }
+
+  if (suggest.length) {
+    html += `<div style="margin-bottom:12px;">
+      <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:6px;">Vorschläge – bitte prüfen (${suggest.length})</div>`;
+    suggest.forEach(m => {
+      html += `<div class="bank-match-row" style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:8px 10px;margin-bottom:4px;font-size:12.5px;display:flex;align-items:center;justify-content:space-between;gap:8px;">
+        <div>
+          <strong>${m.re.nr}</strong> · ${m.re.kunde} · ${_fmtB2(m.tx.amount)}<br>
+          <span style="font-size:11px;color:#92400e;">Eingang von: ${m.tx.name || '—'} · ${m.tx.date}</span>
+        </div>
+        <button onclick="confirmBankMatch('${m.re.id}', this)" style="flex-shrink:0;padding:5px 12px;border:1px solid #d97706;border-radius:7px;background:#fff;color:#92400e;font-size:12px;cursor:pointer;font-weight:600;">Bestätigen</button>
+      </div>`;
+    });
+    html += '</div>';
+  }
+
+  if (!auto.length && !suggest.length) {
+    html += `<div style="font-size:12.5px;color:var(--muted);padding:10px 0;">Keine passenden offenen Rechnungen gefunden (${total} Transaktion${total !== 1 ? 'en' : ''} geprüft).</div>`;
+  } else if (unmatched.length) {
+    html += `<div style="font-size:11.5px;color:var(--muted);padding-top:8px;border-top:1px solid var(--border);">${unmatched.length} Eingang${unmatched.length !== 1 ? 'gänge' : ''} ohne Treffer (kein Betrag stimmt mit offenen Rechnungen überein).</div>`;
+  }
+
+  el.style.display = '';
+  el.innerHTML = html;
 }

@@ -724,6 +724,43 @@ Bitte überweisen Sie den Rechnungsbetrag unter Angabe der Rechnungsnummer auf d
             <div class="toggle-track"></div>
           </label>
         </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Bankabgleich</div>
+            <div class="toggle-desc">Vergleicht Zahlungseingänge mit offenen Rechnungen – nach Betrag, Kundenname und Rechnungsnummer. Jetzt: MT940-Import. Sobald eigener Server steht: vollautomatisch aktivieren.</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="bankAbgleich" onchange="updateToggle('bankAbgleich', this.checked); toggleBankPanel(this.checked)">
+            <div class="toggle-track"></div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bankabgleich-Panel (sichtbar wenn Bankabgleich aktiv) -->
+    <div class="panel" id="bankAbgleichPanel" style="display:none">
+      <div class="panel-head">
+        <span>Bankabgleich</span>
+        <span style="font-size:11px;background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;border-radius:20px;padding:2px 10px;font-weight:600;">Manuell – MT940</span>
+      </div>
+      <div class="panel-body">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">
+          Kontoauszug von deiner Bank importieren. Die App erkennt Zahlungseingänge automatisch und hakt passende offene Rechnungen ab.<br>
+          <strong style="color:var(--text)">DKB:</strong> Online-Banking → Umsätze → Exportieren → Format: MT940 (.sta)
+        </div>
+        <input type="file" id="mt940FileInput" accept=".sta,.txt,.mt940" style="display:none" onchange="handleMT940Import(event)">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px;">
+          <button class="btn btn-blue" onclick="document.getElementById('mt940FileInput').click()" style="padding:8px 18px;font-size:13px;">MT940 importieren &amp; abgleichen</button>
+          <span id="bankImportStatus" style="font-size:12px;color:var(--muted);"></span>
+        </div>
+        <div id="bankAbgleichResult" style="display:none;"></div>
+
+        <!-- Server-Modus: deaktiviert bis Server bereit -->
+        <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);opacity:0.45;pointer-events:none;">
+          <div style="font-size:12.5px;font-weight:600;color:var(--text);margin-bottom:4px;">Automatischer Abruf (nach Server-Setup)</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">Sobald dein Server konfiguriert ist, hier URL eintragen und aktivieren – kein weiterer Aufwand nötig.</div>
+          <input type="text" placeholder="https://dein-server.de/api/bank/transactions" disabled>
+        </div>
       </div>
     </div>
 
