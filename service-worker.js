@@ -1,16 +1,18 @@
 'use strict';
 
-const CACHE = 'max4work-v10';
+const CACHE = 'max4work-v11';
 const OFFLINE = 'offline.html';
 
 const SHELL = [
   'index.html','rechnungen.html','kunden.html','termine.html',
   'auswertung.html','belege.html','kassenbuch.html','produkte.html',
   'werkzeuge.html','fahrtenbuch.html','einstellungen.html','eur.html',
+  'angebote.html',
   'shared.js','css/shared.css','manifest.json','logo.png',OFFLINE,
   'js/index.js','js/rechnungen.js','js/kunden.js','js/termine.js',
   'js/auswertung.js','js/belege.js','js/kassenbuch.js','js/zahlungen.js',
   'js/fahrtenbuch.js','js/einstellungen.js','js/werkzeuge.js','js/datentransfer.js',
+  'js/angebote.js',
 ];
 
 self.addEventListener('install', e => {

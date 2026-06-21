@@ -965,6 +965,13 @@ function _doSearch(q) {
         results.push({ icon:'💵', cat:'Kassenbuch', title:`${e.kategorie||'—'} · ${e.notiz||'—'}`, sub:`${fmtD(e.datum)} · ${e.art === 'einnahme' ? '+' : '−'} ${fmtE(e.betrag)}`, href:'kassenbuch.html' }));
   } catch(e) {}
 
+  try {
+    JSON.parse(localStorage.getItem('max4work_angebote')||'[]')
+      .filter(a => (a.nr||'').toLowerCase().includes(query) || (a.kunde||'').toLowerCase().includes(query) || (a.betreff||'').toLowerCase().includes(query))
+      .slice(0,4).forEach(a =>
+        results.push({ icon:'📋', cat:'Angebote', title:`${a.nr||'—'} · ${a.kunde||'—'}`, sub:`${fmtD(a.datum)} · ${fmtE(a.betrag)} · ${a.status||''}`, href:'angebote.html' }));
+  } catch(e) {}
+
   if (!results.length) {
     el.innerHTML = `<div class="_searchEmpty">Keine Treffer für „${q.replace(/</g,'&lt;')}"</div>`;
     return;

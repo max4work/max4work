@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<link rel="icon" href="logo.png" type="image/png">
+<link rel="manifest" href="manifest.json">
+<link rel="canonical" href="https://max4work.com/angebote.html">
+<title>max4work – Angebote</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/shared.css?v=202606210001">
+<script src="shared.js?v=202606210001"></script>
+<style>
+  .btn { padding: 7px 15px; border-radius: 8px; font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; border: none; transition: all 0.12s; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-blue { background: var(--accent); color: var(--text); font-weight: 600; }
+  .btn-blue:hover { background: #b8c930; }
+  .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: var(--soft); }
+  .btn-red { background: var(--red); color: #fff; }
+  .content { padding: 28px 32px; }
+  .stats-row { display: flex; gap: 14px; margin-bottom: 22px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 14px 18px; flex: 1; }
+  .stat-label { font-size: 11px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .stat-value { font-size: 22px; font-weight: 600; letter-spacing: -0.4px; }
+  .stat-value.green { color: var(--green); }
+  .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+  .search-wrap { position: relative; flex: 1; max-width: 340px; }
+  .search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; font-size: 13px; }
+  .search-input { width: 100%; padding: 8px 12px 8px 34px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 13px; background: var(--surface); color: var(--text); outline: none; }
+  .search-input:focus { border-color: var(--accent); }
+  .filter-tabs { display: flex; gap: 4px; }
+  .ftab { padding: 6px 13px; border-radius: 7px; font-size: 12.5px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--muted); transition: all 0.12s; }
+  .ftab.on { background: var(--accent-pale); color: var(--accent); border-color: transparent; }
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
+  .table-head { display: grid; grid-template-columns: 90px 2fr 1.4fr 1.2fr 130px 120px; align-items: center; padding: 10px 20px; border-bottom: 1px solid var(--border); background: var(--soft); }
+  .th { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .th.r { text-align: right; }
+  .ang-row { display: grid; grid-template-columns: 90px 2fr 1.4fr 1.2fr 130px 120px; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--border); transition: background 0.1s; cursor: pointer; }
+  .ang-row:last-child { border-bottom: none; }
+  .ang-row:hover { background: var(--soft); }
+  .ang-nr { font-size: 13px; font-weight: 600; color: var(--accent); }
+  .ang-kunde { font-size: 13.5px; font-weight: 500; }
+  .ang-sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
+  .ang-cell { font-size: 13px; color: var(--text); }
+  .ang-cell.muted { color: var(--muted); }
+  .ang-cell.r { text-align: right; font-weight: 500; }
+  .ang-actions { display: flex; gap: 6px; justify-content: flex-end; }
+  .icon-btn { width: 30px; height: 30px; border-radius: 7px; border: 1px solid var(--border); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 14px; transition: all 0.12s; }
+  .icon-btn:hover { background: var(--soft); color: var(--text); }
+  .status-badge { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; white-space: nowrap; }
+  .s-offen { background: #FFF4CC; color: #8B6900; }
+  .s-gesendet { background: #E3F0FF; color: #1a5fb4; }
+  .s-angenommen { background: #D1F2E0; color: #1A7A3C; }
+  .s-abgelehnt { background: #FFE5E5; color: #c0392b; }
+  .s-verrechnet { background: var(--soft); color: var(--muted); }
+  .empty { padding: 60px 20px; text-align: center; color: var(--muted); }
+  .empty-icon { font-size: 36px; margin-bottom: 10px; }
+
+  /* Modal */
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 100; display: none; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 40px 20px; }
+  .overlay.open { display: flex; }
+  .modal { background: var(--surface); border-radius: 16px; width: 100%; max-width: 680px; padding: 28px; box-shadow: 0 20px 60px rgba(0,0,0,.15); }
+  .modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+  .modal-title { font-size: 16px; font-weight: 600; }
+  .modal-close { background: var(--soft); border: none; border-radius: 7px; width: 28px; height: 28px; cursor: pointer; font-size: 16px; color: var(--muted); }
+  .modal-close:hover { color: var(--text); }
+  .field { margin-bottom: 14px; }
+  .field label { font-size: 12px; font-weight: 500; color: var(--muted); display: block; margin-bottom: 5px; }
+  .field input, .field select, .field textarea { width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 13.5px; color: var(--text); background: var(--bg); outline: none; transition: border 0.15s; }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); background: var(--surface); }
+  .field textarea { resize: vertical; min-height: 60px; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .field-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .section-title { font-size: 10.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; margin: 20px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 22px; }
+
+  /* Positions-Tabelle */
+  .pos-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+  .pos-table th { font-size: 10px; font-weight: 500; color: var(--muted); padding: 5px 3px; text-align: left; border-bottom: 1px solid var(--border); }
+  .pos-table td { padding: 4px 3px; }
+  .pos-table input, .pos-table select { width: 100%; padding: 6px 7px; border: 1px solid var(--border); border-radius: 6px; font-family: inherit; font-size: 12px; outline: none; }
+  .pos-table input:focus, .pos-table select:focus { border-color: var(--accent); }
+  .pos-del { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 15px; padding: 3px; }
+  .pos-del:hover { color: var(--red); }
+  .pos-sum { text-align: right; font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .pos-sum strong { color: var(--text); font-size: 14px; }
+  .btn-add-pos { background: none; border: 1.5px dashed var(--border); border-radius: 7px; padding: 7px 14px; font-family: inherit; font-size: 12.5px; color: var(--muted); cursor: pointer; width: 100%; transition: all 0.12s; }
+  .btn-add-pos:hover { border-color: var(--accent); color: var(--text); }
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="brand"><img class="brand-logo" src="" alt="max4work" style="height:28px;width:28px;object-fit:contain;border-radius:4px;"><div class="brand-name">max4work</div></div>
+  <nav>
+    <div class="nav-group">
+      <div class="nav-group-label">Übersicht</div>
+      <a class="nav-link" href="index.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg></span> Dashboard</a>
+      <a class="nav-link" href="auswertung.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span> Auswertung</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Buchhaltung</div>
+      <a class="nav-link" href="rechnungen.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span> Rechnungen <span class="pill" id="offenPill">0</span></a>
+      <a class="nav-link on" href="angebote.html" aria-current="page"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span> Angebote</a>
+      <a class="nav-link" href="belege.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg></span> Belege</a>
+      <a class="nav-link" href="kassenbuch.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg></span> Kassenbuch</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Stammdaten</div>
+      <a class="nav-link" href="termine.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span> Termine</a>
+      <a class="nav-link" href="kunden.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Kunden</a>
+      <a class="nav-link" href="produkte.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span> Produkte</a>
+      <a class="nav-link" href="einstellungen.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span> Einstellungen</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Werkzeuge</div>
+      <a class="nav-link" href="werkzeuge.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span> Werkzeuge</a>
+      <a class="nav-link" href="fahrtenbuch.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M5 17H3a2 2 0 0 1-2-2V9l3-5h10l3 5h2a2 2 0 0 1 2 2v1"/><path d="M17 17H9"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg></span> Fahrtenbuch</a>
+    </div>
+  </nav>
+  <div class="sidebar-user" aria-label="Benutzerprofil">
+    <div class="av" aria-hidden="true"></div>
+    <div><div class="av-name"></div><div class="av-sub"></div></div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="page-name">Angebote</div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button type="button" class="btn btn-ghost" onclick="openModal()">+ Neues Angebot</button>
+    </div>
+  </div>
+  <div class="content">
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">Gesamt</div><div class="stat-value" id="statGesamt">0</div></div>
+      <div class="stat-card"><div class="stat-label">Offen</div><div class="stat-value" id="statOffen">0</div></div>
+      <div class="stat-card"><div class="stat-label">Angenommen</div><div class="stat-value green" id="statAngenommen">0</div></div>
+      <div class="stat-card"><div class="stat-label">Gesamtvolumen</div><div class="stat-value" id="statVolumen">0,00 €</div></div>
+    </div>
+    <div class="toolbar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input class="search-input" id="searchInput" type="text" placeholder="Angebot, Kunde …" oninput="render()">
+      </div>
+      <div class="filter-tabs">
+        <div class="ftab on" data-f="alle" onclick="setFilter(this)">Alle</div>
+        <div class="ftab" data-f="offen" onclick="setFilter(this)">Offen</div>
+        <div class="ftab" data-f="gesendet" onclick="setFilter(this)">Gesendet</div>
+        <div class="ftab" data-f="angenommen" onclick="setFilter(this)">Angenommen</div>
+        <div class="ftab" data-f="abgelehnt" onclick="setFilter(this)">Abgelehnt</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="table-head">
+        <div class="th">Nr.</div>
+        <div class="th">Kunde / Betreff</div>
+        <div class="th">Datum</div>
+        <div class="th">Gültig bis</div>
+        <div class="th">Betrag</div>
+        <div class="th">Status / Aktionen</div>
+      </div>
+      <div id="listBody"></div>
+    </div>
+  </div>
+</main>
+
+<!-- Angebot erstellen/bearbeiten -->
+<div class="overlay" id="overlay" onclick="overlayBg(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <div class="modal-title" id="modalTitle">Neues Angebot</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+
+    <div class="field-row">
+      <div class="field"><label>Angebotsnummer *</label><input type="text" id="fNr" placeholder="ANG-2026-001"></div>
+      <div class="field"><label>Datum *</label><input type="date" id="fDatum"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Gültig bis</label><input type="date" id="fGueltig"></div>
+      <div class="field">
+        <label>Status</label>
+        <select id="fStatus">
+          <option value="offen">Offen</option>
+          <option value="gesendet">Gesendet</option>
+          <option value="angenommen">Angenommen</option>
+          <option value="abgelehnt">Abgelehnt</option>
+          <option value="verrechnet" disabled>Verrechnet (als Rechnung übernommen)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="section-title">Empfänger</div>
+    <div class="field-row">
+      <div class="field"><label>Kundenname *</label><input type="text" id="fKunde" placeholder="Firma oder Name" list="kundenListeAng"></div>
+      <div class="field"><label>E-Mail</label><input type="email" id="fEmail" placeholder="name@domain.de"></div>
+    </div>
+    <datalist id="kundenListeAng"></datalist>
+    <div class="field"><label>Betreff</label><input type="text" id="fBetreff" placeholder="z. B. Angebot Webdesign Paket Basic"></div>
+
+    <div class="section-title">Positionen</div>
+    <table class="pos-table">
+      <thead>
+        <tr>
+          <th style="width:40%">Beschreibung</th>
+          <th style="width:12%">Menge</th>
+          <th style="width:12%">Einheit</th>
+          <th style="width:16%">Preis</th>
+          <th style="width:14%">MwSt.</th>
+          <th style="width:6%"></th>
+        </tr>
+      </thead>
+      <tbody id="posBody"></tbody>
+    </table>
+    <button class="btn-add-pos" onclick="addPos()">+ Position hinzufügen</button>
+    <div class="pos-sum" id="posSumLine">Gesamt: <strong>0,00 €</strong></div>
+
+    <div class="field" style="margin-top:14px;"><label>Notiz / Freitext</label><textarea id="fNotiz" placeholder="z. B. Zahlungsbedingungen, Hinweise …"></textarea></div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" onclick="closeModal()">Abbrechen</button>
+      <button type="button" class="btn btn-ghost" id="btnZuRechnung" onclick="zuRechnung()" style="display:none">→ Als Rechnung</button>
+      <button type="button" class="btn btn-blue" onclick="saveAngebot()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/angebote.js?v=202606210001"></script>
+</body>
+</html>

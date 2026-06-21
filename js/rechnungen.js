@@ -250,6 +250,7 @@
     if (r.status === 'bezahlt') {
       r.status = 'offen';
       r.zahlungsart = '';
+      r.teilzahlungen = [];
       _gobdLog('status', { nr: r.nr, kunde: r.kunde, von: 'bezahlt', nach: 'offen' });
       saveRechnungen(list);
       _syncZahlungen(r, true);
@@ -266,8 +267,48 @@
     if (r) {
       const fmtB = n => parseFloat(n||0).toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
       document.getElementById('zmSub').textContent = `${r.kunde} · ${r.nr} · ${fmtB(r.betrag)}`;
+
+      // Teilzahlungen anzeigen
+      const teil = r.teilzahlungen || [];
+      const teilSumme = teil.reduce((s, t) => s + parseFloat(t.betrag || 0), 0);
+      const rest = parseFloat(r.betrag || 0) - teilSumme;
+
+      const listEl = document.getElementById('zmTeilList');
+      const restEl = document.getElementById('zmRestInfo');
+      if (teil.length > 0) {
+        listEl.style.display = 'block';
+        listEl.innerHTML = `<div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Bisherige Teilzahlungen</div>` +
+          teil.map((t, i) => `<div style="display:flex;justify-content:space-between;font-size:12.5px;padding:5px 0;border-bottom:1px solid var(--border);">
+            <span>${t.datum ? t.datum.split('-').reverse().join('.') : '—'} · ${t.zahlungsart || ''}</span>
+            <span style="font-weight:600;">${fmtB(t.betrag)}</span>
+          </div>`).join('') +
+          `<div style="display:flex;justify-content:space-between;font-size:12.5px;padding:6px 0;font-weight:700;">
+            <span>Restbetrag</span><span style="color:${rest <= 0 ? 'var(--green)' : 'var(--red)'};">${fmtB(rest)}</span>
+          </div>`;
+        restEl.style.display = 'none';
+        document.getElementById('zmTeilBetrag').value = rest > 0 ? rest.toFixed(2) : '';
+      } else {
+        listEl.style.display = 'none';
+        restEl.style.display = 'none';
+      }
+
+      // Datum vorbelegen
+      const datEl = document.getElementById('zmTeilDatum');
+      if (datEl) datEl.value = new Date().toISOString().split('T')[0];
     }
+
+    // Reset Teilzahlung-Toggle
+    const check = document.getElementById('zmTeilCheck');
+    if (check) { check.checked = false; zmToggleTeil(); }
+
     document.getElementById('zmOverlay').classList.add('open');
+  }
+
+  function zmToggleTeil() {
+    const isTeil = document.getElementById('zmTeilCheck').checked;
+    document.getElementById('zmTeilFields').style.display = isTeil ? 'block' : 'none';
+    document.getElementById('zmBtnBezahlt').style.display = isTeil ? 'none' : '';
+    document.getElementById('zmBtnTeil').style.display = isTeil ? '' : 'none';
   }
 
   function closeZahlModal() {
@@ -279,15 +320,48 @@
     if (e.target === document.getElementById('zmOverlay')) closeZahlModal();
   }
 
+  function confirmTeilzahlung() {
+    if (!_zmCurrentId) return;
+    const betrag = parseFloat(document.getElementById('zmTeilBetrag').value);
+    const datum = document.getElementById('zmTeilDatum').value;
+    const zahlungsart = document.getElementById('zmZahlungsart').value;
+    if (!betrag || betrag <= 0) { alert('Bitte einen gültigen Betrag eingeben.'); return; }
+
+    const list = getRechnungen();
+    const r = list.find(r => r.id === _zmCurrentId);
+    if (!r) { closeZahlModal(); return; }
+
+    if (!r.teilzahlungen) r.teilzahlungen = [];
+    r.teilzahlungen.push({ betrag, datum: datum || new Date().toISOString().split('T')[0], zahlungsart });
+
+    const teilSumme = r.teilzahlungen.reduce((s, t) => s + parseFloat(t.betrag || 0), 0);
+    const gesamtBetrag = parseFloat(r.betrag || 0);
+    const vonStatus = r.status || 'offen';
+    if (teilSumme >= gesamtBetrag - 0.005) {
+      r.status = 'bezahlt';
+      r.zahlungsart = zahlungsart;
+      _gobdLog('status', { nr: r.nr, kunde: r.kunde, von: vonStatus, nach: 'bezahlt', zahlungsart: 'Teilzahlungen komplett' });
+      _syncZahlungen(r, false);
+    } else {
+      r.status = 'teilbezahlt';
+      _gobdLog('teilzahlung', { nr: r.nr, kunde: r.kunde, betrag, teilsumme: teilSumme, gesamt: gesamtBetrag });
+    }
+    saveRechnungen(list);
+    closeZahlModal();
+    renderListe();
+    showToast(`Teilzahlung ${parseFloat(betrag).toLocaleString('de-DE',{minimumFractionDigits:2})} € gebucht`);
+  }
+
   function confirmBezahlt() {
     if (!_zmCurrentId) return;
     const zahlungsart = document.getElementById('zmZahlungsart').value;
     const list = getRechnungen();
     const r = list.find(r => r.id === _zmCurrentId);
     if (!r) { closeZahlModal(); return; }
+    const vonStatus = r.status || 'offen';
     r.status = 'bezahlt';
     r.zahlungsart = zahlungsart;
-    _gobdLog('status', { nr: r.nr, kunde: r.kunde, von: 'offen', nach: 'bezahlt', zahlungsart });
+    _gobdLog('status', { nr: r.nr, kunde: r.kunde, von: vonStatus, nach: 'bezahlt', zahlungsart });
     saveRechnungen(list);
     _syncZahlungen(r, false);
     closeZahlModal();
@@ -380,9 +454,9 @@
     const xrStore = (() => { try { return JSON.parse(localStorage.getItem('max4work_xrechnungen') || '{}'); } catch(e) { return {}; } })();
     _updateParkenBtn();
     tbody.innerHTML = list.map(r => {
-      const ueberfaellig = _isFeatureOn('highlightOverdue') && r.status === 'offen' && r.faellig && r.faellig < heute;
-      const badgeClass = r.status === 'bezahlt' ? 'badge-bezahlt' : ueberfaellig ? 'badge-ueberfaellig' : 'badge-offen';
-      const badgeText = r.status === 'bezahlt' ? 'Bezahlt' : ueberfaellig ? 'Überfällig' : 'Offen';
+      const ueberfaellig = _isFeatureOn('highlightOverdue') && (r.status === 'offen' || r.status === 'teilbezahlt') && r.faellig && r.faellig < heute;
+      const badgeClass = r.status === 'bezahlt' ? 'badge-bezahlt' : r.status === 'teilbezahlt' ? 'badge-teilbezahlt' : ueberfaellig ? 'badge-ueberfaellig' : 'badge-offen';
+      const badgeText = r.status === 'bezahlt' ? 'Bezahlt' : r.status === 'teilbezahlt' ? 'Teilbezahlt' : ueberfaellig ? 'Überfällig' : 'Offen';
       const typChip = r.typ === 'gutschrift' ? '<span class="typ-chip typ-chip-gs">GS</span>'
                     : r.typ === 'mahnung'    ? '<span class="typ-chip typ-chip-ma">MA</span>' : '';
       const xrBtn = xrStore[r.nr]
@@ -1318,32 +1392,68 @@ ${lineItems}
   }
 
   function sendPerEmail() {
-    const xml = buildXRechnungXML();
-    _downloadXML(xml);
-    _saveXRechnung(g('invNr'), xml);
-
     const email = _findKundeEmail();
     const nr = g('invNr');
     const netto = calcNetto();
     const greeting = (g('cGreeting') || 'Sehr geehrte Damen und Herren') + ',';
-    const dueStr = g('invDue') ? `\nZahlungsziel: ${fmtDate(g('invDue'))}` : '';
-    const ibanStr = g('sIBAN') ? `\nIBAN: ${g('sIBAN')}` : '';
+    const dueStr = g('invDue') ? `Zahlungsziel: ${fmtDate(g('invDue'))}` : '';
+    const ibanStr = g('sIBAN') ? `IBAN: ${g('sIBAN')}` + (g('sBIC') ? `  ·  BIC: ${g('sBIC')}` : '') : '';
+    const bankStr = g('sBank') ? `Bank: ${g('sBank')}` : '';
+    const nettoFmt = netto.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const body = [
       greeting,
       '',
-      `anbei erhalten Sie die Rechnung ${nr} vom ${fmtDate(g('invDate'))} über ${fmt(netto)} EUR.`,
+      `anbei erhalten Sie die Rechnung ${nr} vom ${fmtDate(g('invDate'))} über ${nettoFmt} EUR.`,
       '',
-      `Die XRechnung-${nr}.xml (maschinenlesbar nach EN 16931) wurde heruntergeladen – bitte als Anhang beifügen.`,
-      dueStr.trim(),
-      ibanStr.trim(),
+      dueStr,
+      ibanStr,
+      bankStr,
       '',
       'Mit freundlichen Grüßen',
       g('sContact') || g('sName'),
+      g('sName') !== g('sContact') ? g('sName') : '',
+      g('sTel') ? `Tel: ${g('sTel')}` : '',
     ].filter(Boolean).join('\n');
 
-    const subject = encodeURIComponent(`Rechnung ${nr} – ${g('sName')}`);
-    window.open(`mailto:${email}?subject=${subject}&body=${encodeURIComponent(body)}`, '_blank');
-    showToast(`XRechnung-${nr}.xml heruntergeladen – als Anhang in die E-Mail einfügen`);
+    const subject = `Rechnung ${nr} – ${g('sName')}`;
+
+    // E-Mail-Modal öffnen
+    const toEl = document.getElementById('emTo');
+    const subEl = document.getElementById('emSubject');
+    const bodyEl = document.getElementById('emBody');
+    if (toEl) toEl.value = email;
+    if (subEl) subEl.value = subject;
+    if (bodyEl) bodyEl.value = body;
+    document.getElementById('emailOverlay').style.display = 'flex';
+  }
+
+  function closeEmailModal() {
+    document.getElementById('emailOverlay').style.display = 'none';
+  }
+
+  function copyEmailBody() {
+    const body = document.getElementById('emBody').value;
+    const sub = document.getElementById('emSubject').value;
+    const text = `Betreff: ${sub}\n\n${body}`;
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('E-Mail-Text in Zwischenablage kopiert');
+    }).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast('E-Mail-Text kopiert');
+    });
+  }
+
+  function openMailtoLink() {
+    const to = document.getElementById('emTo').value;
+    const sub = encodeURIComponent(document.getElementById('emSubject').value);
+    const body = encodeURIComponent(document.getElementById('emBody').value);
+    window.open(`mailto:${to}?subject=${sub}&body=${body}`, '_blank');
+    closeEmailModal();
   }
 
   function _findKundeEmail() {
@@ -2492,6 +2602,35 @@ ${lineItems}
     _wiederCheckFaellig();
   }
 
+  function _applyAngebotParams() {
+    const p = new URLSearchParams(location.search);
+    if (!p.has('ang_kunde')) return;
+    showForm();
+    setTimeout(() => {
+      const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+      set('cSalutation', p.get('ang_kunde'));
+      set('cName', p.get('ang_kunde'));
+      const ang_positions = p.get('ang_positions');
+      if (ang_positions) {
+        try {
+          const pArr = JSON.parse(ang_positions);
+          if (pArr.length) {
+            positions = pArr.map(pos => ({
+              desc: pos.desc || '',
+              qty: pos.qty || '1',
+              price: parseFloat(pos.price) || 0,
+              ust: pos.vat || pos.ust || _defaultUst()
+            }));
+            renderPos();
+          }
+        } catch(e) {}
+      }
+      rp();
+      showToast(`Angebot ${p.get('ang_nr') || ''} als Rechnung übernommen`);
+      history.replaceState({}, '', location.pathname);
+    }, 150);
+  }
+
   setTimeout(() => {
     renderListe();
     loadDraft();
@@ -2499,7 +2638,7 @@ ${lineItems}
     applyDatevVisibility();
     _wiederCheckFaellig();
     _updateParkenBtn();
-    // xmlBtn: nur sichtbar wenn XRechnung aktiv
     const xmlBtn = document.getElementById('xmlBtn');
     if (xmlBtn) xmlBtn.style.display = _xrIsEnabled() ? '' : 'none';
+    _applyAngebotParams();
   }, 0);

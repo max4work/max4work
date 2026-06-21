@@ -38,7 +38,8 @@ max4work/
 │   └── shared.css                   # Globales CSS + Mobile-Breakpoints
 ├── js/                              # Seitenspezifische JS-Module
 │   ├── einstellungen.js             # ~1033+ Zeilen
-│   ├── rechnungen.js                # ~1200+ Zeilen
+│   ├── rechnungen.js                # ~2643 Zeilen (Teilzahlungen, E-Mail-Modal, GoBD-Log)
+│   ├── angebote.js                  # Angebote-Modul (NEU Session 45)
 │   ├── auswertung.js
 │   ├── belege.js
 │   ├── datentransfer.js             # wird in einstellungen.html geladen
@@ -49,6 +50,7 @@ max4work/
 │   ├── termine.js
 │   └── zahlungen.js                 # Modul, in rechnungen.html geladen
 ├── index.html                       # Dashboard
+├── angebote.html                    # Angebotsverwaltung (NEU Session 45)
 ├── rechnungen.html                  # 3 Views: Rechnungen / Zahlungen (integriert)
 ├── kunden.html
 ├── fahrtenbuch.html
@@ -131,6 +133,7 @@ max4work/
 | `max4work_rechnungen` | Felder inkl. `locked: boolean, lockedAt: ISO-Timestamp` (GoBD-Sperre nach erstem PDF-Export) |
 | `max4work_ocr_key` | OCR.space API-Key (optional, Default: Demo-Key `helloworld`) |
 | `max4work_gobd_log` | GoBD-Audit-Log `{ ts, aktion, nr, kunde, betrag?, von?, nach?, zahlungsart? }[]` |
+| `max4work_angebote` | Angebote `{ id, nr, datum, gueltig, status: 'offen'\|'gesendet'\|'angenommen'\|'abgelehnt'\|'verrechnet', kunde, email, betreff, notiz, betrag, positions: [{desc, qty, unit, price, vat}] }[]` |
 | `max4work_mahn_config` | Mahnungseinstellungen `{ stufe1/2/3: { bezeichnung, tage, gebuehr, text } }` |
 | `max4work_wiederkehrend` | Wiederkehrende Rechnungs-Vorlagen `{ id, aktiv, kunde, intervall, naechste, positions, cStreet, cPlz, cCity, zuletzt }[]` |
 | `max4work_blattvorlagen` | Gespeicherte Blatt-Design-Vorlagen `{ id, name, cfg }` |
@@ -277,7 +280,26 @@ Produkte → Auswertung → Einstellungen (Design | Firma | Funktionen | Daten &
 
 ## Letzter Stand (2026-06-21)
 
-- Sessions 1–44 abgeschlossen
+- Sessions 1–46 abgeschlossen
+- **21.06.2026 Session 46 – Simulation + Bug-Fixes:**
+  - Node.js-Simulation 43 Tests → **43 ✅ 0 ❌**
+  - **js/rechnungen.js:** GoBD-Log `confirmTeilzahlung()` + `confirmBezahlt()` — `von:` las `r.status` NACH Zuweisung → immer `bezahlt→bezahlt`. Fix: `const vonStatus = r.status` VOR Zuweisung.
+  - **js/rechnungen.js:** `openZahlModal()` — Dead code `gesamtBrutto` (nutzte `r.ust` = immer undefined) entfernt.
+  - **js/rechnungen.js:** `sendPerEmail()` — `fmt(netto)` ohne Tausendertrennzeichen. Fix: `netto.toLocaleString('de-DE', {minimumFractionDigits:2, maximumFractionDigits:2})`.
+  - **angebote.html:** `<select id="fStatus">` fehlte `<option value="verrechnet">` → Status-Reset beim Speichern. Fix: disabled Option ergänzt.
+  - **js/kunden.js:** `openKundenkonto()` — leerer `kName` matchte alle Rechnungen via `.includes('')`. Fix: Guard `!kName ? [] : filter(...)`.
+  - **js/angebote.js:** `saveAngebot()` — `Date.now()` als ID → Kollision bei schnellen Aufrufen. Fix: `_uniqueId()` = `Date.now()*1000 + (++_idSeq%1000)`.
+  - **Backup:** `Backups/backup_2026-06-21_session46/`
+
+- **21.06.2026 Session 45 – Angebote, Kundenkonto, Teilzahlungen, E-Mail-Modal:**
+  - **angebote.html + js/angebote.js (NEU):** Angebotsverwaltung mit Status-Filter, Positions-Editor, Gültigkeitsdatum, „→ Als Rechnung"-Button (setzt Status `verrechnet`, übergibt Daten via URL-Params). localStorage-Key: `max4work_angebote`. `_uniqueId()` zur ID-Erzeugung.
+  - **js/kunden.js:** Kundenkonto-Slide-in-Panel (440px rechts): Umsatz, offene Beträge, Rechnungen, Angebote, Kontaktdaten. `openKundenkonto(id)` + `closeKundenkonto()`.
+  - **js/rechnungen.js:** Teilzahlungen: Zahlungsmodal mit Checkbox „Teilzahlung", Betrag/Datum-Felder, Restbetrag-Anzeige. Status `teilbezahlt` (Teilsumme < Gesamt) → automatisch `bezahlt` (Teilsumme >= Gesamt). `r.teilzahlungen = [{betrag, datum, zahlungsart}]`.
+  - **js/rechnungen.js:** E-Mail-Modal statt direktem `mailto:`. Betreff + Textfeld (bearbeitbar), Kopieren-Button (Clipboard API), „E-Mail-Programm öffnen"-Button.
+  - **js/rechnungen.js:** `_applyAngebotParams()` — verarbeitet `?ang_*` URL-Params aus angebote.html, öffnet Formular vorausgefüllt, löscht Params via `history.replaceState`.
+  - **shared.js:** `max4work_angebote` in `_doSearch()` eingebunden (Icon 📋).
+  - **service-worker.js:** `max4work-v10` → `max4work-v11`, `angebote.html` + `js/angebote.js` in SHELL-Array.
+
 - **21.06.2026 Session 44 – DATEV-Schnittstelle als zuschaltbarer Toggle:**
   - **einstellungen.html + js/einstellungen.js:** Toggle „DATEV-Schnittstelle" in Funktionen → App-Funktionen; `datevSchnittstelle: false` in `TOGGLE_DEFAULTS`; `toggleDatevButtons(on)` zeigt/versteckt die Buttons auf anderen Seiten
   - **rechnungen.html + js/rechnungen.js:** `id="datevBtnRechnungen"` + `style="display:none"` default; `applyDatevVisibility()` liest Feature + steuert Sichtbarkeit beim Start + bei `storage`-Event

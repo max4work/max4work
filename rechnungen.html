@@ -11,10 +11,10 @@
 <meta property="og:url" content="https://max4work.com/rechnungen.html">
 <title>max4work – Rechnung erstellen</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/shared.css?v=202606150445">
+<link rel="stylesheet" href="css/shared.css?v=202606210001">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="shared.js?v=202606150445"></script>
+<script src="shared.js?v=202606210001"></script>
 <style>
   
   .btn { padding: 7px 15px; border-radius: 8px; font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; border: none; transition: all 0.12s; display: inline-flex; align-items: center; gap: 6px; }
@@ -175,6 +175,7 @@
   .badge-offen { background: #FEF3C7; color: #92600A; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
   .badge-bezahlt { background: #D1FAE5; color: #065F46; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
   .badge-ueberfaellig { background: #FEE2E2; color: #991B1B; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+  .badge-teilbezahlt { background: #E0F2FE; color: #0369A1; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
   .status-btn { background: none; border: none; cursor: pointer; font-size: 11px; font-family: inherit; padding: 0; }
   .del-btn { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 16px; padding: 2px 6px; border-radius: 4px; transition: color .12s; }
   .del-btn:hover { color: var(--red); }
@@ -661,11 +662,18 @@ Bitte überweisen Sie den Rechnungsbetrag unter Angabe der Rechnungsnummer auf d
   </div>
 </div>
 
-<!-- Zahlungs-Modal -->
+<!-- Zahlungs-Modal (erweitert mit Teilzahlungen) -->
 <div class="zm-overlay" id="zmOverlay" onclick="zmOverlayClick(event)">
-  <div class="zm-modal">
-    <div class="zm-title">Zahlung bestätigen</div>
+  <div class="zm-modal" style="width:400px;">
+    <div class="zm-title">Zahlung erfassen</div>
     <div class="zm-sub" id="zmSub">Rechnung als bezahlt markieren</div>
+
+    <!-- Teilzahlungs-Liste -->
+    <div id="zmTeilList" style="display:none;margin-bottom:12px;"></div>
+
+    <!-- Restbetrag-Anzeige -->
+    <div id="zmRestInfo" style="display:none;font-size:12px;color:var(--muted);background:var(--soft);border-radius:7px;padding:8px 12px;margin-bottom:12px;"></div>
+
     <div class="field">
       <label>Zahlungsart</label>
       <select id="zmZahlungsart">
@@ -677,9 +685,56 @@ Bitte überweisen Sie den Rechnungsbetrag unter Angabe der Rechnungsnummer auf d
         <option value="Sonstige">Sonstige</option>
       </select>
     </div>
+
+    <!-- Teilzahlung-Option -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+      <input type="checkbox" id="zmTeilCheck" style="width:16px;height:16px;cursor:pointer;" onchange="zmToggleTeil()">
+      <label for="zmTeilCheck" style="font-size:13px;cursor:pointer;user-select:none;">Teilzahlung erfassen</label>
+    </div>
+    <div id="zmTeilFields" style="display:none;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px;">
+        <div class="field" style="margin-bottom:0;">
+          <label>Betrag (€)</label>
+          <input type="number" id="zmTeilBetrag" min="0.01" step="0.01" placeholder="0,00">
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label>Datum</label>
+          <input type="date" id="zmTeilDatum">
+        </div>
+      </div>
+    </div>
+
     <div class="zm-foot">
-      <button type="button" class="btn btn-blue" style="flex:1" onclick="confirmBezahlt()">✓ Als bezahlt markieren</button>
+      <button type="button" class="btn btn-blue" style="flex:1" id="zmBtnBezahlt" onclick="confirmBezahlt()">✓ Als bezahlt markieren</button>
+      <button type="button" class="btn btn-ghost" id="zmBtnTeil" style="display:none;flex:1" onclick="confirmTeilzahlung()">+ Teilzahlung buchen</button>
       <button type="button" class="btn btn-ghost" onclick="closeZahlModal()">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<!-- E-Mail-Modal -->
+<div style="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:none;align-items:center;justify-content:center;" id="emailOverlay" onclick="if(event.target===this)closeEmailModal()">
+  <div style="background:var(--surface);border-radius:var(--r);width:100%;max-width:520px;padding:24px;box-shadow:0 16px 48px rgba(0,0,0,.2);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div style="font-size:15px;font-weight:600;">📧 E-Mail vorbereiten</div>
+      <button onclick="closeEmailModal()" style="background:var(--soft);border:none;border-radius:7px;width:28px;height:28px;cursor:pointer;font-size:16px;color:var(--muted);">✕</button>
+    </div>
+    <div class="field">
+      <label>An (E-Mail)</label>
+      <input type="email" id="emTo" placeholder="kunde@beispiel.de">
+    </div>
+    <div class="field">
+      <label>Betreff</label>
+      <input type="text" id="emSubject">
+    </div>
+    <div class="field">
+      <label>Text (bearbeitbar)</label>
+      <textarea id="emBody" style="min-height:160px;font-family:inherit;font-size:13px;resize:vertical;width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;outline:none;"></textarea>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px;">
+      <button class="btn btn-ghost" onclick="copyEmailBody()">📋 Kopieren</button>
+      <button class="btn btn-ghost" onclick="closeEmailModal()">Schließen</button>
+      <button class="btn btn-blue" onclick="openMailtoLink()">→ E-Mail-Programm öffnen</button>
     </div>
   </div>
 </div>
@@ -763,8 +818,8 @@ Bitte überweisen Sie den Rechnungsbetrag unter Angabe der Rechnungsnummer auf d
   </div>
 </div>
 
-<script src="js/rechnungen.js?v=202606150445"></script>
-<script src="js/zahlungen.js?v=202606150445"></script>
+<script src="js/rechnungen.js?v=202606210001"></script>
+<script src="js/zahlungen.js?v=202606210001"></script>
 <script>
 (function () {
   function _setView(v) {

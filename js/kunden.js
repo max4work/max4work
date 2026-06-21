@@ -70,8 +70,113 @@
     else{data.id=Date.now();kunden.push(data);}
     save(kunden);closeModal();renderTable();
   }
-  function editKunde(id){openModal(id);}
+  function editKunde(id){openKundenkonto(id);}
   function deleteKunde(e,id){e.stopPropagation();if(!confirm('Kunden wirklich löschen?'))return;kunden=kunden.filter(k=>k.id!==id);save(kunden);renderTable();}
+
+  /* ── Kundenkonto-Ansicht ── */
+  let _kkId = null;
+  function openKundenkonto(id) {
+    const k = kunden.find(x => x.id === id);
+    if (!k) return;
+    _kkId = id;
+
+    const rechnungen = (() => { try { return JSON.parse(localStorage.getItem('max4work_rechnungen') || '[]'); } catch { return []; } })();
+    const angebote = (() => { try { return JSON.parse(localStorage.getItem('max4work_angebote') || '[]'); } catch { return []; } })();
+    const termine = (() => { try { return JSON.parse(localStorage.getItem('max4work_termine') || '[]'); } catch { return []; } })();
+
+    const kName = (k.name || '').toLowerCase();
+    const kRech = !kName ? [] : rechnungen.filter(r => (r.kunde || '').toLowerCase().includes(kName));
+    const kAng = angebote.filter(a => (a.kunde || '').toLowerCase().includes(kName));
+    const kTermine = termine.filter(t => (t.kunde || t.title || '').toLowerCase().includes(kName));
+
+    const fmtB = n => parseFloat(n || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+    const fmtD = v => { if (!v) return '—'; const [y, m, d] = (v || '').split('-'); return `${d}.${m}.${y}`; };
+
+    const gesamt = kRech.reduce((s, r) => s + parseFloat(r.betrag || 0), 0);
+    const offen  = kRech.filter(r => r.status === 'offen' || r.status === 'teilbezahlt').reduce((s, r) => s + parseFloat(r.betrag || 0), 0);
+    const letzteRechnung = kRech.sort((a, b) => (b.datum || '').localeCompare(a.datum || ''))[0];
+
+    const rechHTML = kRech.length
+      ? kRech.slice().sort((a, b) => (b.datum || '').localeCompare(a.datum || '')).map(r => {
+          const statusBg = { bezahlt: '#D1FAE5', offen: '#FEF3C7', teilbezahlt: '#E0F2FE', ueberfaellig: '#FEE2E2' };
+          const statusClr = { bezahlt: '#065F46', offen: '#92600A', teilbezahlt: '#0369A1', ueberfaellig: '#991B1B' };
+          const heute = new Date().toISOString().split('T')[0];
+          const st = (r.status === 'offen' && r.faellig && r.faellig < heute) ? 'ueberfaellig' : r.status;
+          const stLabel = { bezahlt: 'Bezahlt', offen: 'Offen', teilbezahlt: 'Teilbezahlt', ueberfaellig: 'Überfällig' }[st] || st;
+          return `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">
+            <span style="min-width:90px;font-weight:600;color:var(--accent);">${esc(r.nr)}</span>
+            <span style="flex:1;">${fmtD(r.datum)}</span>
+            <span style="font-weight:600;">${fmtB(r.betrag)}</span>
+            <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:${statusBg[st]||'#eee'};color:${statusClr[st]||'#555'}">${stLabel}</span>
+          </div>`;
+        }).join('')
+      : '<div style="color:var(--muted);font-size:13px;padding:12px 0;">Keine Rechnungen vorhanden</div>';
+
+    const angHTML = kAng.length
+      ? kAng.slice(0, 3).map(a => `<div style="display:flex;justify-content:space-between;font-size:12.5px;padding:5px 0;border-bottom:1px solid var(--border);">
+          <span>${esc(a.nr)} · ${esc(a.betreff || '—')}</span><span style="font-weight:600;">${fmtB(a.betrag)}</span></div>`).join('')
+      : '<div style="color:var(--muted);font-size:12.5px;">Keine Angebote</div>';
+
+    const panel = document.getElementById('kundenkontoPanel');
+    const body  = document.getElementById('kundenkontoBody');
+
+    body.innerHTML = `
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;">
+        <div style="background:var(--soft);border-radius:10px;padding:12px 14px;">
+          <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Umsatz gesamt</div>
+          <div style="font-size:18px;font-weight:700;">${fmtB(gesamt)}</div>
+        </div>
+        <div style="background:${offen > 0 ? '#FEF3C7' : 'var(--soft)'};border-radius:10px;padding:12px 14px;">
+          <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Offener Betrag</div>
+          <div style="font-size:18px;font-weight:700;color:${offen > 0 ? '#92600A' : 'var(--text)'};">${fmtB(offen)}</div>
+        </div>
+        <div style="background:var(--soft);border-radius:10px;padding:12px 14px;">
+          <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Letzte Rechnung</div>
+          <div style="font-size:14px;font-weight:600;">${letzteRechnung ? fmtD(letzteRechnung.datum) : '—'}</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:18px;">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border);">
+          Rechnungen (${kRech.length})
+        </div>
+        ${rechHTML}
+        ${kRech.length > 0 ? `<a href="rechnungen.html" style="font-size:12px;color:var(--accent);text-decoration:none;font-weight:600;display:block;margin-top:8px;">Alle Rechnungen anzeigen →</a>` : ''}
+      </div>
+
+      ${kAng.length > 0 ? `<div style="margin-bottom:18px;">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border);">
+          Angebote (${kAng.length})
+        </div>
+        ${angHTML}
+      </div>` : ''}
+
+      <div style="margin-bottom:6px;">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border);">
+          Kontaktdaten
+        </div>
+        <div style="font-size:13px;line-height:1.8;">
+          ${k.strasse ? `${esc(k.strasse)}<br>` : ''}
+          ${k.ort ? `${esc(k.ort)}<br>` : ''}
+          ${k.tel ? `<a href="tel:${esc(k.tel)}" style="color:inherit;">${esc(k.tel)}</a><br>` : ''}
+          ${k.email ? `<a href="mailto:${esc(k.email)}" style="color:var(--accent);">${esc(k.email)}</a><br>` : ''}
+          ${k.notiz ? `<span style="color:var(--muted);">📝 ${esc(k.notiz)}</span>` : ''}
+        </div>
+      </div>
+    `;
+
+    document.getElementById('kkName').textContent = k.name;
+    panel.classList.add('open');
+  }
+
+  function closeKundenkonto() {
+    document.getElementById('kundenkontoPanel').classList.remove('open');
+    _kkId = null;
+  }
+
+  function editKundeFromKonto() {
+    if (_kkId) { closeKundenkonto(); openModal(_kkId); }
+  }
   renderTable();
   const _sv=localStorage.getItem('max4work_kunden_view');
   if(_sv==='karte')setTimeout(()=>setView('karte'),0);
