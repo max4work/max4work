@@ -231,10 +231,9 @@
 
     function doUnlock() {
       localStorage.removeItem('max4work_login_fail');
-      localStorage.removeItem('max4work_auth');
       document.getElementById('unlockLink').style.display = 'none';
       const err = document.getElementById('loginError');
-      err.textContent = 'Sperre aufgehoben. Bitte mit juergen / max4work anmelden.';
+      err.textContent = 'Sperre aufgehoben. Bitte erneut anmelden.';
       err.style.background = '#F0FDF4';
       err.style.borderColor = '#BBF7D0';
       err.style.color = '#166534';
