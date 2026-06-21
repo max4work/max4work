@@ -46,13 +46,36 @@ const APP_DESIGNS = {
     },
     font: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif",
     extraCSS: `
-      .sidebar { background: rgba(242,242,247,0.96); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-right: 1px solid #C6C6C8; box-shadow: none; }
-      .nav-link.on { border-left: none; border-radius: 10px; background: rgba(0,122,255,0.12); color: #007AFF; padding-left: 10px; }
-      .nav-group-label { font-size: 11px; letter-spacing: 0.3px; }
-      .btn-blue { border-radius: 12px; }
-      .panel { border-radius: 13px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
-      .kpi { border-radius: 13px; }
-      .topbar { background: rgba(242,242,247,0.9); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+      /* Sidebar – Frosted Glass, hauchdünner Rand */
+      .sidebar { background: rgba(242,242,247,0.97); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); border-right: 0.5px solid rgba(0,0,0,0.18); box-shadow: none; }
+      .brand { border-bottom: 0.5px solid rgba(0,0,0,0.1); padding-bottom: 20px; }
+      .brand-name { font-size: 17px; font-weight: 700; letter-spacing: -0.4px; }
+      .brand-dot { width: 7px; height: 7px; border-radius: 3px; }
+
+      /* Nav – iOS Sidebar-Style (keine linke Border, abgerundete Pill) */
+      .nav-link { font-size: 14px; letter-spacing: -0.1px; border-radius: 10px; }
+      .nav-link:hover { background: rgba(0,0,0,0.05); color: #000; }
+      .nav-link.on { border-left: none !important; border-radius: 10px !important; background: rgba(0,122,255,0.12) !important; color: #007AFF !important; padding-left: 10px !important; font-weight: 600 !important; }
+      .nav-group-label { font-size: 11px; font-weight: 600; letter-spacing: 0.3px; color: #8E8E93; }
+
+      /* Topbar – Ultra-Thin Frosted Glass, fetter Titel */
+      .topbar { height: 56px !important; background: rgba(242,242,247,0.92) !important; backdrop-filter: blur(24px) saturate(180%) !important; -webkit-backdrop-filter: blur(24px) saturate(180%) !important; border-bottom: 0.5px solid rgba(0,0,0,0.18) !important; }
+      .page-name { font-size: 19px !important; font-weight: 700 !important; letter-spacing: -0.5px !important; }
+
+      /* Panels – kein harter Rand, stattdessen weicher Schatten */
+      .panel { border-radius: 13px !important; border: none !important; box-shadow: 0 1px 4px rgba(0,0,0,0.1), 0 0 0 0.5px rgba(0,0,0,0.06) !important; }
+      .panel-head { border-bottom: 0.5px solid rgba(0,0,0,0.12) !important; font-size: 13px !important; font-weight: 600 !important; letter-spacing: -0.1px !important; }
+
+      /* Buttons – SF Pro Style */
+      .btn { letter-spacing: -0.1px !important; }
+      .btn-blue { border-radius: 12px !important; font-weight: 600 !important; }
+      .btn-ghost { border-radius: 12px !important; border: 1px solid #C6C6C8 !important; background: rgba(255,255,255,0.8) !important; }
+
+      /* Avatar – iOS Squircle */
+      .av { border-radius: 22% !important; width: 30px !important; height: 30px !important; }
+
+      /* KPI */
+      .kpi { border-radius: 13px !important; box-shadow: 0 1px 4px rgba(0,0,0,0.08), 0 0 0 0.5px rgba(0,0,0,0.06) !important; border: none !important; }
     `
   },
   android: {
@@ -67,14 +90,38 @@ const APP_DESIGNS = {
     },
     font: "'Roboto', 'Google Sans', sans-serif",
     extraCSS: `
-      .sidebar { background: #ECE6F0; border-right: none; box-shadow: 2px 0 8px rgba(0,0,0,.08); }
-      .nav-link.on { border-left: none; border-radius: 50px; background: #EADDFF; color: #21005D; padding-left: 10px; font-weight: 600; }
-      .nav-group-label { font-size: 11px; letter-spacing: 0.5px; }
-      .btn-blue { border-radius: 50px; padding: 8px 22px; letter-spacing: 0.1px; }
-      .btn { border-radius: 50px; }
-      .panel { border-radius: 16px; box-shadow: 0 1px 2px rgba(0,0,0,.06), 0 2px 6px rgba(0,0,0,.04); border: none; }
-      .kpi { border-radius: 16px; border: none; background: #ECE6F0; }
-      .topbar { border-bottom: none; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+      /* Sidebar – M3 Navigation Drawer, getöntes Surface */
+      .sidebar { background: #ECE6F0; border-right: none; box-shadow: 1px 0 2px rgba(0,0,0,0.15), 4px 0 10px rgba(0,0,0,0.1); }
+      .brand { padding-bottom: 16px; }
+      .brand-name { font-size: 14px; font-weight: 500; letter-spacing: 0.1px; color: #49454F; }
+      .brand-dot { background: #6750A4; border-radius: 3px; width: 6px; height: 6px; }
+
+      /* Nav – M3 vollständig abgerundete Navigation Rail Items */
+      .nav-link { border-radius: 100px !important; letter-spacing: 0.1px; font-size: 14px; font-weight: 500; }
+      .nav-link:hover { border-radius: 100px !important; background: rgba(103,80,164,0.08); }
+      .nav-link.on { border-left: none !important; border-radius: 100px !important; background: #EADDFF !important; color: #21005D !important; font-weight: 600 !important; padding-left: 12px !important; }
+      .nav-group-label { font-size: 11px; font-weight: 500; letter-spacing: 0.5px; }
+
+      /* Top App Bar – M3 64dp, Elevation statt Border */
+      .topbar { height: 64px !important; border-bottom: none !important; box-shadow: 0 1px 2px rgba(0,0,0,0.15), 0 2px 6px rgba(0,0,0,0.1) !important; background: #FFFBFE !important; }
+      /* M3 Headline Small – LEICHT, nicht fett */
+      .page-name { font-size: 22px !important; font-weight: 400 !important; letter-spacing: 0 !important; }
+
+      /* Panels – M3 Elevated Card (getöntes Surface, Elevation Shadow) */
+      .panel { border-radius: 12px !important; border: none !important; background: #F7F2FA !important; box-shadow: 0 1px 2px rgba(103,80,164,0.2), 0 2px 8px rgba(103,80,164,0.12) !important; }
+      .panel-head { border-bottom: none !important; background: rgba(103,80,164,0.06) !important; font-weight: 500 !important; letter-spacing: 0.1px !important; }
+
+      /* Buttons – M3 Filled/Outlined, immer Pill */
+      .btn { border-radius: 100px !important; letter-spacing: 0.1px !important; font-weight: 500 !important; }
+      .btn-blue { border-radius: 100px !important; background: #6750A4 !important; color: #fff !important; box-shadow: 0 1px 2px rgba(0,0,0,0.3) !important; }
+      .btn-blue:hover { background: #7965AF !important; }
+      .btn-ghost { border-radius: 100px !important; border: 1px solid #CAC4D0 !important; background: transparent !important; }
+
+      /* Avatar – M3 rund, lila */
+      .av { background: #6750A4 !important; border-radius: 50% !important; }
+
+      /* KPI – M3 Surface Variant */
+      .kpi { border-radius: 12px !important; border: none !important; background: #ECE6F0 !important; box-shadow: 0 1px 2px rgba(103,80,164,0.15) !important; }
     `
   }
 };
