@@ -281,7 +281,14 @@ Produkte → Auswertung → Einstellungen (Design | Firma | Funktionen | Daten &
 
 ## Letzter Stand (2026-06-21)
 
-- Sessions 1–50 abgeschlossen
+- Sessions 1–51 abgeschlossen
+- **21.06.2026 Session 51 – Design-Überarbeitung + Windows 98:**
+  - **shared.js – iOS extraCSS komplett neu:** Seitentitel 19px/700/−0.5px Tracking, Topbar 56px + echter Frosted-Glass (blur+saturate), Panels ohne harten Rand (0.5px rgba-Ring + Schatten), Avatar Squircle (22% border-radius), Buttons Letter-Spacing −0.1px, Nav-Links kein Border-left (blaue Pill)
+  - **shared.js – Android M3 extraCSS komplett neu:** Seitentitel 22px/weight 400 (leicht, größter Form-Unterschied), Topbar 64px + Elevation-Schatten statt Border, alle Nav-Links + Buttons `border-radius:100px` (Pill), Panels getönt (#F7F2FA) mit lila Schatten, Panel-Head ohne Separator
+  - **shared.js – Windows 98 (NEU als 4. Design):** `#C0C0C0` Silber-Grau, `#000080` Navy-Akzent, `--r:0px` (alles eckig), Tahoma-Font; Navy-Titelleiste (CSS-Gradient) in Brand + Panel-Head; 3D-Bevel-Buttons (inset box-shadow); sunken Inputs; Nav-Auswahl navy; Modal mit hartem Schatten; `DARK_VARS.win98` ergänzt
+  - **einstellungen.html:** Design-Grid 3→4 Spalten; Win98-Karte mit Mini-Vorschau (Navy-Sidebar + Panels mit Bevel-Borders) eingefügt; Mobile bleibt 2×2
+  - **Backup:** `Backups/backup_2026-06-21_session51/` · **Git:** Commits `495ea3e`, `1444fe7`
+
 - **21.06.2026 Session 50 – Housekeeping:**
   - **.gitignore:** `.wrangler/` ergänzt (Cloudflare-Tool-Cache soll nicht ins Repo)
   - **Git:** Commit `79152db`
