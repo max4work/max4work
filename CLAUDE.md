@@ -277,7 +277,19 @@ Produkte → Auswertung → Einstellungen (Design | Firma | Funktionen | Daten &
 
 ## Letzter Stand (2026-06-21)
 
-- Sessions 1–43 abgeschlossen
+- Sessions 1–44 abgeschlossen
+- **21.06.2026 Session 44 – DATEV-Schnittstelle als zuschaltbarer Toggle:**
+  - **einstellungen.html + js/einstellungen.js:** Toggle „DATEV-Schnittstelle" in Funktionen → App-Funktionen; `datevSchnittstelle: false` in `TOGGLE_DEFAULTS`; `toggleDatevButtons(on)` zeigt/versteckt die Buttons auf anderen Seiten
+  - **rechnungen.html + js/rechnungen.js:** `id="datevBtnRechnungen"` + `style="display:none"` default; `applyDatevVisibility()` liest Feature + steuert Sichtbarkeit beim Start + bei `storage`-Event
+  - **belege.html + js/belege.js:** `id="datevBtnBelege"` + `style="display:none"` default; `_applyDatevVisibilityBelege()` gleiche Logik
+  - **tests/test_max4work.py:** 8 neue Tests `TestDatevSchnittstelle` — 45/45 grün
+  - **tests/simulation.html:** `datevSchnittstelle: true` in FEATURES; neu in Git (create mode)
+  - **service-worker.js:** `max4work-v9` → `max4work-v10`
+  - **GitHub Push:** Commit `de93141`
+  - **Backup:** `Backups/backup_2026-06-21_session44/`
+
+  **Playwright-Erkenntnis:** Toggle-Input CSS-versteckt → `label.toggle:has(#id)` für Tests. `#unsavedBar` überlagert Seite nach `markUnsaved()` → `button[onclick='saveAllChanges()']` klicken, nicht `button[onclick='speichern()']`.
+
 - **21.06.2026 Session 43 – Login-Bugfix + Notfall-Admin-Credentials:**
   - **login.html – Bugfix `doUnlock()`:** `localStorage.removeItem('max4work_auth')` entfernt — `doUnlock()` löscht jetzt nur noch `max4work_login_fail` (den Brute-Force-Zähler), nicht mehr die gespeicherten Zugangsdaten. Vorher führte `doUnlock()` dazu, dass geänderte Credentials verloren gingen und der Login auf den Fallback-Hash zurückfiel.
   - **login.html + js/einstellungen.js – Neuer Admin-Fallback-Hash:** `_H0` + `_ACC_H0` auf neuen Hash aktualisiert (entspricht den Wunsch-Credentials des Betreibers). Gilt als Notfall-Zugang wenn localStorage leer ist.
