@@ -28,14 +28,14 @@
   .ytab:hover:not(.on) { background: var(--soft); color: var(--text); }
 
   /* ════════════════════════════════════════
-     COCKPIT – WISO-Mein-Büro-Design
+     COCKPIT – 4-Spalten-Kachel-Layout
   ════════════════════════════════════════ */
-  .main { overflow: hidden; }
+  .main { overflow: auto; }
   .content {
     display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 8px !important;
-    padding: 10px 16px !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 10px !important;
+    padding: 12px 16px !important;
     align-items: stretch !important;
     height: calc(100vh - 53px);
     box-sizing: border-box;
@@ -43,7 +43,6 @@
     background: var(--bg);
   }
   .content > * { min-width: 0; min-height: 0; }
-  #chartMonatPanel { overflow: hidden; }
 
   /* ── Panels: individuelle WISO-Karten ── */
   .panel {
@@ -83,30 +82,13 @@
     box-shadow: 0 2px 6px rgba(0,0,0,.05);
   }
   .kpi-label { font-size: 10.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 6px; }
-  .kpi-value { font-size: 26px; font-weight: 800; letter-spacing: -1px; line-height: 1.1; }
+  .kpi-value { font-size: clamp(16px, 1.6vw, 24px); font-weight: 800; letter-spacing: -1px; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .kpi-value.green { color: var(--green); }
   .kpi-value.red { color: var(--red); }
   .kpi-sub { font-size: 10.5px; color: var(--muted); margin-top: 4px; }
 
-  /* ── Monatschart-Bereich (charts-grid als einzelne WISO-Karte) ── */
-  #chartMonatPanel {
-    background: var(--surface);
-    border-radius: 10px;
-    border: 1px solid var(--border);
-    border-top: 3px solid var(--accent);
-    box-shadow: 0 2px 8px rgba(0,0,0,.06);
-    display: grid;
-    grid-template-columns: 1.45fr 0.55fr;
-  }
-  #chartMonatPanel > .panel {
-    border-radius: 0 !important;
-    border: none !important;
-    box-shadow: none !important;
-  }
-  #chartMonatPanel > .panel > .panel-head { border-top: none; }
-  #chartMonatPanel > .panel:first-child { border-right: 1px solid var(--border) !important; }
-  .panel-body .chart-wrap { position: relative; height: 100% !important; min-height: 40px; }
-  #chartVergleichPanel .chart-wrap { height: 100% !important; min-height: 40px; }
+  .panel-body .chart-wrap { position: relative; }
+  #chartVergleichPanel .chart-wrap { height: 200px; }
 
   /* ── Monatsdetails ── */
   .monat-row { display: flex; align-items: center; padding: 8px 14px; border-bottom: 1px solid var(--border); gap: 10px; }
@@ -222,9 +204,8 @@
   .ku-stats { grid-template-columns: 1fr !important; }
   .ar-summary { grid-template-columns: 1fr !important; }
   .bank-summary { grid-template-columns: 1fr !important; }
-  #chartMonatPanel { display: flex !important; flex-direction: column !important; border-radius: 10px !important; }
-  #chartMonatPanel > .panel:first-child { border-right: none !important; }
-  .panel-body .chart-wrap, #chartVergleichPanel .chart-wrap { height: 220px !important; }
+  .panel-body .chart-wrap { height: 220px !important; }
+  #chartVergleichPanel .chart-wrap { height: 180px !important; }
   #monatListe, #top5Content, #arContent { overflow-y: visible !important; }
   .ar-table-wrap { overflow-x: auto; }
   .topbar-right .btn { display: none !important; }
@@ -317,25 +298,24 @@
       <div id="arContent"></div>
     </div>
 
-    <!-- Zeile 4: Monatschart + Monatsdetails – volle Breite -->
-    <div class="charts-grid" id="chartMonatPanel">
-      <div class="panel">
-        <div class="panel-head"><span class="panel-head-title">Umsatz pro Monat</span></div>
-        <div class="panel-body"><div class="chart-wrap" style="height:260px"><canvas id="chartMonat"></canvas></div></div>
-      </div>
-      <div class="panel">
-        <div class="panel-head"><span class="panel-head-title">Monatsdetails</span></div>
-        <div id="monatListe"></div>
-      </div>
+    <!-- Zeile 3: Monatschart (3 Spalten) -->
+    <div class="panel" id="chartMonatPanel">
+      <div class="panel-head"><span class="panel-head-title">Umsatz pro Monat</span></div>
+      <div class="panel-body"><div class="chart-wrap" style="height:260px"><canvas id="chartMonat"></canvas></div></div>
     </div>
 
-    <!-- Zeile 5: Einnahmen vs. Ausgaben – volle Breite -->
+    <!-- Zeile 4: Einnahmen vs. Ausgaben (2 Spalten) | Monatsdetails (2 Spalten) -->
     <div class="panel" id="chartVergleichPanel">
       <div class="panel-head"><span class="panel-head-title">Einnahmen vs. Ausgaben</span></div>
       <div class="panel-body"><div class="chart-wrap" style="height:200px"><canvas id="chartVergleich"></canvas></div></div>
     </div>
 
-    <!-- Zeile 6: Quartalsübersicht – volle Breite -->
+    <div class="panel" id="monatPanel">
+      <div class="panel-head"><span class="panel-head-title">Monatsdetails</span></div>
+      <div id="monatListe"></div>
+    </div>
+
+    <!-- Zeile 5: Quartalsübersicht – volle Breite -->
     <div class="panel" id="quartalPanel">
       <div class="panel-head">
         <span class="panel-head-title">Quartalsübersicht</span>

@@ -3,15 +3,15 @@
   // Neue Panels: Eintrag hier ergänzen + Toggle in einstellungen.html.
   // allowHalf: Darf das Panel in halber Breite (50 %) dargestellt werden?
   const PANEL_CONFIG = [
-    { key: 'panel_kpiGrid',          elId: 'kpiGridWrap',         label: 'Kennzahlen (KPI-Übersicht)',     allowHalf: false },
-    { key: 'panel_bank',             elId: 'bankPanel',           label: 'Meine Bank',                    allowHalf: true  },
-    { key: 'panel_top5',             elId: 'top5Panel',           label: 'Top 5 Kunden',                  allowHalf: true  },
-    { key: 'panel_kleinunternehmer', elId: 'kuPanel',             label: 'Kleinunternehmergrenze §19 UStG', allowHalf: true },
-    { key: 'panel_ausstehend',       elId: 'arPanel',             label: 'Ausstehende Rechnungen',        allowHalf: false },
-    { key: 'panel_chartMonat',       elId: 'chartMonatPanel',     label: 'Umsatz pro Monat',              allowHalf: false },
-    { key: 'panel_chartVergleich',   elId: 'chartVergleichPanel', label: 'Einnahmen vs. Ausgaben',        allowHalf: true  },
-    { key: 'panel_quartal',          elId: 'quartalPanel',        label: 'Quartalsübersicht',             allowHalf: false },
-    { key: 'panel_steuern',          elId: 'steuerPanel',         label: 'Steuerübersicht',               allowHalf: false },
+    { key: 'panel_kpiGrid',          elId: 'kpiGridWrap',         label: 'Kennzahlen (KPI-Übersicht)',       allowHalf: false },
+    { key: 'panel_bank',             elId: 'bankPanel',           label: 'Meine Bank',                      allowHalf: false },
+    { key: 'panel_top5',             elId: 'top5Panel',           label: 'Top 5 Kunden',                    allowHalf: false },
+    { key: 'panel_kleinunternehmer', elId: 'kuPanel',             label: 'Kleinunternehmergrenze §19 UStG', allowHalf: false },
+    { key: 'panel_chartMonat',       elId: 'chartMonatPanel',     label: 'Umsatz pro Monat',                allowHalf: false },
+    { key: 'panel_ausstehend',       elId: 'arPanel',             label: 'Ausstehende Rechnungen',          allowHalf: false },
+    { key: 'panel_chartVergleich',   elId: 'chartVergleichPanel', label: 'Einnahmen vs. Ausgaben',          allowHalf: false },
+    { key: 'panel_quartal',          elId: 'quartalPanel',        label: 'Quartalsübersicht',               allowHalf: false },
+    { key: 'panel_steuern',          elId: 'steuerPanel',         label: 'Steuerübersicht',                 allowHalf: false },
   ];
   const PANEL_DEFAULTS = Object.fromEntries(PANEL_CONFIG.map(p => [p.key, true]));
 
@@ -39,13 +39,24 @@
     return PANEL_CONFIG.map(cfg => ({ key: cfg.key, size: 'full' }));
   }
 
+  // Feste Grid-Column-Spans im 4-Spalten-Layout
+  const PANEL_SPANS = {
+    panel_kpiGrid:          '1 / -1',
+    panel_bank:             'span 1',
+    panel_top5:             'span 1',
+    panel_kleinunternehmer: 'span 2',
+    panel_chartMonat:       'span 3',
+    panel_ausstehend:       'span 1',
+    panel_chartVergleich:   'span 2',
+    panel_quartal:          '1 / -1',
+    panel_steuern:          '1 / -1',
+  };
+
   function applyPanelLayout() {
     const layout = getPanelLayout();
     const content = document.querySelector('.content');
 
-    // Reihenfolge anwenden + Sichtbarkeit setzen
-    const visible = [];
-    layout.forEach(({ key, size }) => {
+    layout.forEach(({ key }) => {
       const cfg = PANEL_CONFIG.find(p => p.key === key);
       if (!cfg) return;
       const el = document.getElementById(cfg.elId);
@@ -53,30 +64,19 @@
       const on = _isFeatureOn(key);
       el.style.display = on ? '' : 'none';
       content.appendChild(el);
-      if (on) visible.push({ el, cfg, size });
-    });
+      if (on) el.style.gridColumn = PANEL_SPANS[key] || '1 / -1';
 
-    // Half-Panels paarweise setzen; einzelne ohne Paar → volle Breite
-    let i = 0;
-    while (i < visible.length) {
-      const cur = visible[i];
-      const isHalf = cur.size === 'half' && cur.cfg.allowHalf;
-      if (isHalf) {
-        const nxt = visible[i + 1];
-        const nxtIsHalf = nxt && nxt.size === 'half' && nxt.cfg.allowHalf;
-        if (nxtIsHalf) {
-          cur.el.style.gridColumn = 'span 1';
-          nxt.el.style.gridColumn = 'span 1';
-          i += 2;
-        } else {
-          cur.el.style.gridColumn = '1 / -1';
-          i++;
+      // monatPanel direkt nach chartVergleichPanel einordnen
+      if (key === 'panel_chartVergleich') {
+        const monatPanel = document.getElementById('monatPanel');
+        if (monatPanel) {
+          const chartOn = _isFeatureOn('panel_chartMonat');
+          monatPanel.style.display = chartOn ? '' : 'none';
+          content.appendChild(monatPanel);
+          if (chartOn) monatPanel.style.gridColumn = 'span 2';
         }
-      } else {
-        cur.el.style.gridColumn = '1 / -1';
-        i++;
       }
-    }
+    });
   }
 
   const MONATE = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
