@@ -10,6 +10,7 @@
     { key: 'panel_chartMonat',       elId: 'chartMonatPanel',     label: 'Umsatz pro Monat',                allowHalf: false },
     { key: 'panel_ausstehend',       elId: 'arPanel',             label: 'Ausstehende Rechnungen',          allowHalf: false },
     { key: 'panel_chartVergleich',   elId: 'chartVergleichPanel', label: 'Einnahmen vs. Ausgaben',          allowHalf: false },
+    { key: 'panel_monat',            elId: 'monatPanel',          label: 'Monatsdetails',                   allowHalf: false },
     { key: 'panel_quartal',          elId: 'quartalPanel',        label: 'Quartalsübersicht',               allowHalf: false },
     { key: 'panel_steuern',          elId: 'steuerPanel',         label: 'Steuerübersicht',                 allowHalf: false },
   ];
@@ -26,20 +27,7 @@
     } catch(e) { return true; }
   }
 
-  function getPanelLayout() {
-    try {
-      const saved = JSON.parse(localStorage.getItem('max4work_panel_layout') || 'null');
-      if (saved && Array.isArray(saved) && saved.length) {
-        // Fehlende Panels (neue Panels) ans Ende anhängen
-        const keys = new Set(saved.map(p => p.key));
-        PANEL_CONFIG.forEach(cfg => { if (!keys.has(cfg.key)) saved.push({ key: cfg.key, size: 'full' }); });
-        return saved;
-      }
-    } catch(e) {}
-    return PANEL_CONFIG.map(cfg => ({ key: cfg.key, size: 'full' }));
-  }
-
-  // Feste Grid-Column-Spans im 4-Spalten-Layout
+  // Feste Standard-Spans (Zahl) und CSS-Strings im 4-Spalten-Layout
   const PANEL_SPANS = {
     panel_kpiGrid:          '1 / -1',
     panel_bank:             'span 1',
@@ -48,34 +36,55 @@
     panel_chartMonat:       'span 3',
     panel_ausstehend:       'span 1',
     panel_chartVergleich:   'span 2',
+    panel_monat:            'span 2',
     panel_quartal:          '1 / -1',
     panel_steuern:          '1 / -1',
   };
 
-  function applyPanelLayout() {
-    const layout = getPanelLayout();
-    const content = document.querySelector('.content');
+  const DEFAULT_SPANS_NUM = {
+    panel_kpiGrid: 4, panel_bank: 1, panel_top5: 1, panel_kleinunternehmer: 2,
+    panel_chartMonat: 3, panel_ausstehend: 1, panel_chartVergleich: 2,
+    panel_monat: 2, panel_quartal: 4, panel_steuern: 4,
+  };
 
-    layout.forEach(({ key }) => {
-      const cfg = PANEL_CONFIG.find(p => p.key === key);
-      if (!cfg) return;
-      const el = document.getElementById(cfg.elId);
-      if (!el) return;
-      const on = _isFeatureOn(key);
-      el.style.display = on ? '' : 'none';
-      content.appendChild(el);
-      if (on) el.style.gridColumn = PANEL_SPANS[key] || '1 / -1';
+  const DEFAULT_LAYOUT_ORDER = [
+    'panel_kpiGrid','panel_bank','panel_top5','panel_kleinunternehmer',
+    'panel_chartMonat','panel_ausstehend','panel_chartVergleich','panel_monat',
+    'panel_quartal','panel_steuern',
+  ];
 
-      // monatPanel direkt nach chartVergleichPanel einordnen
-      if (key === 'panel_chartVergleich') {
-        const monatPanel = document.getElementById('monatPanel');
-        if (monatPanel) {
-          const chartOn = _isFeatureOn('panel_chartMonat');
-          monatPanel.style.display = chartOn ? '' : 'none';
-          content.appendChild(monatPanel);
-          if (chartOn) monatPanel.style.gridColumn = 'span 2';
-        }
+  function getLayoutConfig() {
+    try {
+      const saved = JSON.parse(localStorage.getItem('max4work_layout_config') || 'null');
+      if (saved && saved.order && saved.order.length) {
+        const keys = new Set(saved.order);
+        DEFAULT_LAYOUT_ORDER.forEach(k => { if (!keys.has(k)) saved.order.push(k); });
+        return saved;
       }
+    } catch(e) {}
+    return { order: [...DEFAULT_LAYOUT_ORDER], spans: {}, heights: {} };
+  }
+
+  function saveLayoutConfig(cfg) {
+    localStorage.setItem('max4work_layout_config', JSON.stringify(cfg));
+  }
+
+  function applyPanelLayout() {
+    const config = getLayoutConfig();
+    const content = document.querySelector('.content');
+    config.order.forEach(key => {
+      const wrap = content.querySelector(`.tile-wrap[data-key="${key}"]`);
+      if (!wrap) return;
+      const on = _isFeatureOn(key);
+      wrap.style.display = on ? '' : 'none';
+      content.appendChild(wrap);
+      if (!on) return;
+      const span = config.spans?.[key] ?? DEFAULT_SPANS_NUM[key] ?? 4;
+      wrap.style.gridColumn = span >= 4 ? '1 / -1' : `span ${span}`;
+      const h = config.heights?.[key];
+      const panelEl = wrap.querySelector('.panel');
+      if (panelEl) panelEl.style.height = h ? h + 'px' : '';
+      wrap.style.alignSelf = h ? 'start' : '';
     });
   }
 
@@ -867,6 +876,116 @@
           </div>
         </div>
       </div>`;
+  }
+
+  /* ════════════════════════════════════════
+     Layout-Editor
+  ════════════════════════════════════════ */
+  let _editConfig = null;
+
+  function enterEditMode() {
+    _editConfig = JSON.parse(JSON.stringify(getLayoutConfig()));
+    document.querySelector('.content').classList.add('layout-editing');
+    document.getElementById('btnLayoutEdit').style.display = 'none';
+    document.getElementById('btnLayoutSave').style.display = '';
+    document.getElementById('btnLayoutCancel').style.display = '';
+    _injectEditBars();
+  }
+
+  function exitEditMode(save) {
+    removeEditBars();
+    if (save) {
+      saveLayoutConfig(_editConfig);
+    }
+    _editConfig = null;
+    document.querySelector('.content').classList.remove('layout-editing');
+    document.getElementById('btnLayoutEdit').style.display = '';
+    document.getElementById('btnLayoutSave').style.display = 'none';
+    document.getElementById('btnLayoutCancel').style.display = 'none';
+    applyPanelLayout();
+  }
+
+  function _injectEditBars() {
+    const config = _editConfig;
+    document.querySelectorAll('.content > .tile-wrap').forEach(wrap => {
+      if (wrap.style.display === 'none') return;
+      const key = wrap.dataset.key;
+      const cfg = PANEL_CONFIG.find(p => p.key === key);
+      const label = cfg?.label || key;
+      const span = config.spans?.[key] ?? DEFAULT_SPANS_NUM[key] ?? 4;
+      const h = config.heights?.[key] ?? 220;
+      const isKpi = key === 'panel_kpiGrid';
+      const safeId = key.replace(/[^a-z0-9]/gi, '_');
+
+      const bar = document.createElement('div');
+      bar.className = 'layout-bar';
+      bar.innerHTML = `
+        <div style="display:flex;gap:2px">
+          <button class="le-move-btn" onclick="leMoveLeft('${key}')">◀</button>
+          <button class="le-move-btn" onclick="leMoveRight('${key}')">▶</button>
+        </div>
+        <span class="le-sep"></span>
+        <span class="le-name">${label}</span>
+        ${isKpi ? '<span class="le-h-label" style="margin-left:4px">· volle Breite</span>' : `
+        <span class="le-sep"></span>
+        <div class="le-span-btns">${[1,2,3,4].map(n=>`<button class="le-span-btn${span===n?' on':''}" onclick="leSetSpan('${key}',${n})">${n}</button>`).join('')}</div>
+        <span class="le-sep"></span>
+        <span class="le-h-label">H:</span>
+        <input class="le-h-slider" type="range" min="100" max="600" step="10" value="${h}" oninput="leSetHeight('${key}',+this.value)">
+        <span class="le-h-val" id="le_h_${safeId}">${h}px</span>`}`;
+      wrap.prepend(bar);
+    });
+  }
+
+  function removeEditBars() {
+    document.querySelectorAll('.layout-bar').forEach(b => b.remove());
+  }
+
+  function leMoveLeft(key) {
+    const content = document.querySelector('.content');
+    const wraps = [...content.querySelectorAll('.tile-wrap')];
+    const wrap = content.querySelector(`.tile-wrap[data-key="${key}"]`);
+    const idx = wraps.indexOf(wrap);
+    if (idx <= 0) return;
+    wraps[idx - 1].before(wrap);
+    const order = _editConfig.order;
+    const oi = order.indexOf(key);
+    if (oi > 0) [order[oi - 1], order[oi]] = [order[oi], order[oi - 1]];
+  }
+
+  function leMoveRight(key) {
+    const content = document.querySelector('.content');
+    const wraps = [...content.querySelectorAll('.tile-wrap')];
+    const wrap = content.querySelector(`.tile-wrap[data-key="${key}"]`);
+    const idx = wraps.indexOf(wrap);
+    if (idx < 0 || idx >= wraps.length - 1) return;
+    wraps[idx + 1].after(wrap);
+    const order = _editConfig.order;
+    const oi = order.indexOf(key);
+    if (oi >= 0 && oi < order.length - 1) [order[oi], order[oi + 1]] = [order[oi + 1], order[oi]];
+  }
+
+  function leSetSpan(key, n) {
+    if (!_editConfig.spans) _editConfig.spans = {};
+    _editConfig.spans[key] = n;
+    const wrap = document.querySelector(`.content > .tile-wrap[data-key="${key}"]`);
+    if (!wrap) return;
+    wrap.style.gridColumn = n >= 4 ? '1 / -1' : `span ${n}`;
+    wrap.querySelectorAll('.le-span-btn').forEach((btn, i) => btn.classList.toggle('on', i + 1 === n));
+    setTimeout(() => { chartMonat?.resize(); chartVergleich?.resize(); }, 60);
+  }
+
+  function leSetHeight(key, val) {
+    if (!_editConfig.heights) _editConfig.heights = {};
+    _editConfig.heights[key] = val;
+    const wrap = document.querySelector(`.content > .tile-wrap[data-key="${key}"]`);
+    if (!wrap) return;
+    const panelEl = wrap.querySelector('.panel');
+    if (panelEl) panelEl.style.height = val + 'px';
+    wrap.style.alignSelf = 'start';
+    const valEl = document.getElementById('le_h_' + key.replace(/[^a-z0-9]/gi, '_'));
+    if (valEl) valEl.textContent = val + 'px';
+    setTimeout(() => { chartMonat?.resize(); chartVergleich?.resize(); }, 60);
   }
 
   function exportCSV() {

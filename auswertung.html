@@ -185,6 +185,53 @@
   .top5-empty { padding: 36px 16px; text-align: center; color: var(--muted); font-size: 12px; }
   .top5-head-row { display: flex; align-items: center; gap: 10px; padding: 6px 16px; background: var(--soft); border-bottom: 1px solid var(--border); flex-shrink: 0; }
   .top5-head-cell { font-size: 9.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+
+  /* ── Kachel-Wrapper für Layout-Editor ── */
+  .tile-wrap { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+  .tile-wrap > .panel { flex: 1; min-height: 0; }
+  .tile-wrap > #kpiGridWrap { flex: 1; }
+
+  /* ── Layout-Editor Kontrollleiste ── */
+  .layout-bar {
+    display: none; align-items: center; gap: 5px;
+    background: var(--dark); border-radius: 8px 8px 0 0;
+    padding: 5px 10px; flex-shrink: 0; user-select: none;
+  }
+  .layout-editing .layout-bar { display: flex; }
+  .layout-editing .tile-wrap > .panel {
+    border-top-left-radius: 0 !important; border-top-right-radius: 0 !important;
+  }
+  .le-move-btn {
+    background: rgba(255,255,255,.14); color: #fff; border: none;
+    border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 700;
+    cursor: pointer; font-family: inherit; line-height: 1.2;
+  }
+  .le-move-btn:hover { background: rgba(255,255,255,.28); }
+  .le-sep { width: 1px; height: 14px; background: rgba(255,255,255,.18); flex-shrink: 0; }
+  .le-name {
+    font-size: 9px; font-weight: 700; color: rgba(255,255,255,.5);
+    min-width: 80px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .le-span-btns { display: flex; gap: 2px; }
+  .le-span-btn {
+    background: rgba(255,255,255,.12); color: #fff; border: none;
+    border-radius: 4px; padding: 2px 6px; font-size: 9px; font-weight: 700;
+    cursor: pointer; font-family: inherit;
+  }
+  .le-span-btn.on { background: var(--accent); color: var(--dark); }
+  .le-span-btn:hover:not(.on) { background: rgba(255,255,255,.22); }
+  .le-h-label { font-size: 9px; color: rgba(255,255,255,.4); flex-shrink: 0; }
+  .le-h-val { font-size: 9px; font-weight: 700; color: var(--accent); min-width: 38px; flex-shrink: 0; }
+  input.le-h-slider {
+    -webkit-appearance: none; height: 3px; border-radius: 2px;
+    background: rgba(255,255,255,.2); outline: none; cursor: pointer;
+    width: 80px; flex-shrink: 0;
+  }
+  input.le-h-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 13px; height: 13px;
+    border-radius: 50%; background: var(--accent); cursor: pointer;
+  }
+  .btn-layout-active { background: var(--accent) !important; color: var(--dark) !important; }
 </style>
 
 <!-- mob-only-injected -->
@@ -253,84 +300,100 @@
     <div class="page-name">Auswertung</div>
     <div class="topbar-right">
       <div class="year-tabs" id="yearTabs"></div>
-<button type="button" class="btn btn-ghost" onclick="exportCSV()">↓ CSV</button>
+<button type="button" id="btnLayoutEdit" class="btn btn-ghost" onclick="enterEditMode()">⊞ Layout</button>
+      <button type="button" id="btnLayoutSave" class="btn btn-blue" onclick="exitEditMode(true)" style="display:none">✓ Speichern</button>
+      <button type="button" id="btnLayoutCancel" class="btn btn-ghost" onclick="exitEditMode(false)" style="display:none">✕ Abbrechen</button>
+      <button type="button" class="btn btn-ghost" onclick="exportCSV()">↓ CSV</button>
       <button type="button" class="btn btn-blue" onclick="window.open('eur.html?year='+currentYear,'_blank')">EÜR erstellen</button>
     </div>
   </div>
   <div class="content">
 
-    <!-- Zeile 1: KPIs – volle Breite -->
-    <div id="kpiGridWrap"><div class="kpi-grid" id="kpiGrid"></div></div>
-
-    <!-- Zeile 2: Bank (links) | Top 5 Kunden (rechts) -->
-    <div class="panel" id="bankPanel">
-      <div class="panel-head">
-        <span class="panel-head-title">Meine Bank</span>
-        <a href="einstellungen.html" onclick="localStorage.setItem('max4work_settings_tab','firma')" style="font-size:12px;color:var(--muted);text-decoration:none;font-weight:500;">Bank verwalten →</a>
-      </div>
-      <div class="panel-body" id="bankCard"></div>
+    <div class="tile-wrap" data-key="panel_kpiGrid">
+      <div id="kpiGridWrap"><div class="kpi-grid" id="kpiGrid"></div></div>
     </div>
 
-    <div class="panel" id="top5Panel">
-      <div class="panel-head">
-        <span class="panel-head-title" id="top5Title">Top 5 Kunden</span>
-        <a href="kunden.html" style="font-size:12px;color:var(--muted);text-decoration:none;font-weight:500;">Alle Kunden →</a>
-      </div>
-      <div id="top5Content"></div>
-    </div>
-
-    <!-- Zeile 3: KU-Grenze (links) | Ausstehende Rechnungen (rechts) -->
-    <div class="panel" id="kuPanel">
-      <div class="panel-head">
-        <span class="panel-head-title" id="kuTitle">Kleinunternehmergrenze §19 UStG</span>
-        <span style="font-size:12px;color:var(--muted)">Aktuelles Jahr</span>
-      </div>
-      <div class="panel-body">
-        <div class="ku-card" id="kuCard"></div>
+    <div class="tile-wrap" data-key="panel_bank">
+      <div class="panel" id="bankPanel">
+        <div class="panel-head">
+          <span class="panel-head-title">Meine Bank</span>
+          <a href="einstellungen.html" onclick="localStorage.setItem('max4work_settings_tab','firma')" style="font-size:12px;color:var(--muted);text-decoration:none;font-weight:500;">Bank verwalten →</a>
+        </div>
+        <div class="panel-body" id="bankCard"></div>
       </div>
     </div>
 
-    <div class="panel" id="arPanel">
-      <div class="panel-head">
-        <span class="panel-head-title">Ausstehende Rechnungen</span>
-        <a href="rechnungen.html" style="font-size:12px;color:var(--muted);text-decoration:none;font-weight:500;">Alle anzeigen →</a>
+    <div class="tile-wrap" data-key="panel_top5">
+      <div class="panel" id="top5Panel">
+        <div class="panel-head">
+          <span class="panel-head-title" id="top5Title">Top 5 Kunden</span>
+          <a href="kunden.html" style="font-size:12px;color:var(--muted);text-decoration:none;font-weight:500;">Alle Kunden →</a>
+        </div>
+        <div id="top5Content"></div>
       </div>
-      <div id="arContent"></div>
     </div>
 
-    <!-- Zeile 3: Monatschart (3 Spalten) -->
-    <div class="panel" id="chartMonatPanel">
-      <div class="panel-head"><span class="panel-head-title">Umsatz pro Monat</span></div>
-      <div class="panel-body"><div class="chart-wrap" style="height:260px"><canvas id="chartMonat"></canvas></div></div>
-    </div>
-
-    <!-- Zeile 4: Einnahmen vs. Ausgaben (2 Spalten) | Monatsdetails (2 Spalten) -->
-    <div class="panel" id="chartVergleichPanel">
-      <div class="panel-head"><span class="panel-head-title">Einnahmen vs. Ausgaben</span></div>
-      <div class="panel-body"><div class="chart-wrap" style="height:200px"><canvas id="chartVergleich"></canvas></div></div>
-    </div>
-
-    <div class="panel" id="monatPanel">
-      <div class="panel-head"><span class="panel-head-title">Monatsdetails</span></div>
-      <div id="monatListe"></div>
-    </div>
-
-    <!-- Zeile 5: Quartalsübersicht – volle Breite -->
-    <div class="panel" id="quartalPanel">
-      <div class="panel-head">
-        <span class="panel-head-title">Quartalsübersicht</span>
-        <a href="javascript:void(0)" onclick="window.open('eur.html?year='+currentYear,'_blank')" style="font-size:12px;color:var(--muted);text-decoration:none;font-weight:500;">EÜR erstellen →</a>
+    <div class="tile-wrap" data-key="panel_kleinunternehmer">
+      <div class="panel" id="kuPanel">
+        <div class="panel-head">
+          <span class="panel-head-title" id="kuTitle">Kleinunternehmergrenze §19 UStG</span>
+          <span style="font-size:12px;color:var(--muted)">Aktuelles Jahr</span>
+        </div>
+        <div class="panel-body">
+          <div class="ku-card" id="kuCard"></div>
+        </div>
       </div>
-      <div id="quartalContent"></div>
     </div>
 
-    <!-- Zeile 7: Steuerübersicht – volle Breite -->
-    <div class="panel" id="steuerPanel">
-      <div class="panel-head">
-        <span class="panel-head-title">Steuerübersicht</span>
-        <a href="javascript:void(0)" onclick="window.open('eur.html?year='+currentYear,'_blank')" style="font-size:12px;color:var(--muted);text-decoration:none;font-weight:500;">Vollständige EÜR →</a>
+    <div class="tile-wrap" data-key="panel_ausstehend">
+      <div class="panel" id="arPanel">
+        <div class="panel-head">
+          <span class="panel-head-title">Ausstehende Rechnungen</span>
+          <a href="rechnungen.html" style="font-size:12px;color:var(--muted);text-decoration:none;font-weight:500;">Alle anzeigen →</a>
+        </div>
+        <div id="arContent"></div>
       </div>
-      <div id="steuerContent"></div>
+    </div>
+
+    <div class="tile-wrap" data-key="panel_chartMonat">
+      <div class="panel" id="chartMonatPanel">
+        <div class="panel-head"><span class="panel-head-title">Umsatz pro Monat</span></div>
+        <div class="panel-body"><div class="chart-wrap" style="height:260px"><canvas id="chartMonat"></canvas></div></div>
+      </div>
+    </div>
+
+    <div class="tile-wrap" data-key="panel_chartVergleich">
+      <div class="panel" id="chartVergleichPanel">
+        <div class="panel-head"><span class="panel-head-title">Einnahmen vs. Ausgaben</span></div>
+        <div class="panel-body"><div class="chart-wrap" style="height:200px"><canvas id="chartVergleich"></canvas></div></div>
+      </div>
+    </div>
+
+    <div class="tile-wrap" data-key="panel_monat">
+      <div class="panel" id="monatPanel">
+        <div class="panel-head"><span class="panel-head-title">Monatsdetails</span></div>
+        <div id="monatListe"></div>
+      </div>
+    </div>
+
+    <div class="tile-wrap" data-key="panel_quartal">
+      <div class="panel" id="quartalPanel">
+        <div class="panel-head">
+          <span class="panel-head-title">Quartalsübersicht</span>
+          <a href="javascript:void(0)" onclick="window.open('eur.html?year='+currentYear,'_blank')" style="font-size:12px;color:var(--muted);text-decoration:none;font-weight:500;">EÜR erstellen →</a>
+        </div>
+        <div id="quartalContent"></div>
+      </div>
+    </div>
+
+    <div class="tile-wrap" data-key="panel_steuern">
+      <div class="panel" id="steuerPanel">
+        <div class="panel-head">
+          <span class="panel-head-title">Steuerübersicht</span>
+          <a href="javascript:void(0)" onclick="window.open('eur.html?year='+currentYear,'_blank')" style="font-size:12px;color:var(--muted);text-decoration:none;font-weight:500;">Vollständige EÜR →</a>
+        </div>
+        <div id="steuerContent"></div>
+      </div>
     </div>
 
   </div>
