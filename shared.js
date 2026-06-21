@@ -46,36 +46,45 @@ const APP_DESIGNS = {
     },
     font: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif",
     extraCSS: `
-      /* Sidebar – Frosted Glass, hauchdünner Rand */
-      .sidebar { background: rgba(242,242,247,0.97); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); border-right: 0.5px solid rgba(0,0,0,0.18); box-shadow: none; }
-      .brand { border-bottom: 0.5px solid rgba(0,0,0,0.1); padding-bottom: 20px; }
-      .brand-name { font-size: 17px; font-weight: 700; letter-spacing: -0.4px; }
-      .brand-dot { width: 7px; height: 7px; border-radius: 3px; }
+      /* Sidebar – echtes iOS Frosted Glass, kompakt */
+      .sidebar { background: rgba(249,249,249,0.94) !important; backdrop-filter: blur(30px) saturate(200%) !important; -webkit-backdrop-filter: blur(30px) saturate(200%) !important; border-right: 0.5px solid rgba(60,60,67,0.29) !important; box-shadow: none !important; }
+      .brand { border-bottom: 0.5px solid rgba(60,60,67,0.18) !important; padding: 14px 12px !important; margin-bottom: 4px !important; }
+      .brand-name { font-size: 15px !important; font-weight: 700 !important; letter-spacing: -0.5px !important; }
+      .brand-dot { width: 8px !important; height: 8px !important; border-radius: 4px !important; }
 
-      /* Nav – iOS Sidebar-Style (keine linke Border, abgerundete Pill) */
-      .nav-link { font-size: 14px; letter-spacing: -0.1px; border-radius: 10px; }
-      .nav-link:hover { background: rgba(0,0,0,0.05); color: #000; }
-      .nav-link.on { border-left: none !important; border-radius: 10px !important; background: rgba(0,122,255,0.12) !important; color: #007AFF !important; padding-left: 10px !important; font-weight: 600 !important; }
-      .nav-group-label { font-size: 11px; font-weight: 600; letter-spacing: 0.3px; color: #8E8E93; }
+      /* Nav – iOS Sidebar, abgerundete Selektion, UPPERCASE Labels */
+      .nav-link { font-size: 15px !important; font-weight: 400 !important; letter-spacing: -0.2px !important; border-radius: 8px !important; padding: 8px 10px !important; margin: 1px 6px !important; }
+      .nav-link:hover { background: rgba(60,60,67,0.06) !important; color: #000 !important; }
+      .nav-link.on { border-left: none !important; border-radius: 8px !important; background: rgba(0,122,255,0.15) !important; color: #007AFF !important; font-weight: 600 !important; padding-left: 10px !important; }
+      .nav-group-label { font-size: 10px !important; font-weight: 700 !important; letter-spacing: 0.6px !important; color: #8E8E93 !important; text-transform: uppercase !important; padding: 12px 16px 4px !important; }
 
-      /* Topbar – Ultra-Thin Frosted Glass, fetter Titel */
-      .topbar { height: 56px !important; background: rgba(242,242,247,0.92) !important; backdrop-filter: blur(24px) saturate(180%) !important; -webkit-backdrop-filter: blur(24px) saturate(180%) !important; border-bottom: 0.5px solid rgba(0,0,0,0.18) !important; }
-      .page-name { font-size: 19px !important; font-weight: 700 !important; letter-spacing: -0.5px !important; }
+      /* Topbar – iOS Navigation Bar, Frosted Glass */
+      .topbar { height: 52px !important; background: rgba(249,249,249,0.94) !important; backdrop-filter: blur(20px) saturate(180%) !important; -webkit-backdrop-filter: blur(20px) saturate(180%) !important; border-bottom: 0.5px solid rgba(60,60,67,0.29) !important; box-shadow: none !important; }
+      /* Large Title – iOS typografisch: fett, negatives Tracking */
+      .page-name { font-size: 22px !important; font-weight: 700 !important; letter-spacing: -0.4px !important; }
 
-      /* Panels – kein harter Rand, stattdessen weicher Schatten */
-      .panel { border-radius: 13px !important; border: none !important; box-shadow: 0 1px 4px rgba(0,0,0,0.1), 0 0 0 0.5px rgba(0,0,0,0.06) !important; }
-      .panel-head { border-bottom: 0.5px solid rgba(0,0,0,0.12) !important; font-size: 13px !important; font-weight: 600 !important; letter-spacing: -0.1px !important; }
+      /* Panels – iOS Grouped Inset List (weißer Block, hairline border) */
+      .panel { border-radius: 10px !important; border: 0.5px solid rgba(60,60,67,0.18) !important; background: #ffffff !important; box-shadow: none !important; }
+      .panel-head { border-bottom: 0.5px solid rgba(60,60,67,0.18) !important; font-size: 13px !important; font-weight: 600 !important; letter-spacing: -0.1px !important; background: transparent !important; padding: 10px 16px !important; }
 
-      /* Buttons – SF Pro Style */
-      .btn { letter-spacing: -0.1px !important; }
-      .btn-blue { border-radius: 12px !important; font-weight: 600 !important; }
-      .btn-ghost { border-radius: 12px !important; border: 1px solid #C6C6C8 !important; background: rgba(255,255,255,0.8) !important; }
+      /* Buttons – SF Pro, leicht abgerundet */
+      .btn { letter-spacing: -0.1px !important; font-weight: 500 !important; }
+      .btn-blue { border-radius: 12px !important; font-weight: 600 !important; background: #007AFF !important; }
+      .btn-ghost { border-radius: 12px !important; border: 1.5px solid rgba(60,60,67,0.29) !important; background: rgba(255,255,255,0.9) !important; color: #007AFF !important; }
 
       /* Avatar – iOS Squircle */
       .av { border-radius: 22% !important; width: 30px !important; height: 30px !important; }
 
-      /* KPI */
-      .kpi { border-radius: 13px !important; box-shadow: 0 1px 4px rgba(0,0,0,0.08), 0 0 0 0.5px rgba(0,0,0,0.06) !important; border: none !important; }
+      /* KPI – weiß, nur hairline border */
+      .kpi { border-radius: 10px !important; background: #ffffff !important; border: 0.5px solid rgba(60,60,67,0.18) !important; box-shadow: none !important; }
+
+      /* Inputs – iOS rounded, volle Umrandung */
+      .field input, .field select, .field textarea { border-radius: 8px !important; border: 0.5px solid rgba(60,60,67,0.36) !important; background: rgba(255,255,255,1) !important; box-shadow: none !important; }
+      .field input:focus, .field textarea:focus { border-color: #007AFF !important; outline: none !important; box-shadow: 0 0 0 3px rgba(0,122,255,0.2) !important; }
+
+      /* Tabs */
+      .ftab, .ltab { border-radius: 8px !important; }
+      .ftab.on, .ltab.on { background: rgba(0,122,255,0.15) !important; color: #007AFF !important; border-color: transparent !important; font-weight: 600 !important; }
     `
   },
   win98: {
@@ -148,38 +157,52 @@ const APP_DESIGNS = {
     },
     font: "'Roboto', 'Google Sans', sans-serif",
     extraCSS: `
-      /* Sidebar – M3 Navigation Drawer, getöntes Surface */
-      .sidebar { background: #ECE6F0; border-right: none; box-shadow: 1px 0 2px rgba(0,0,0,0.15), 4px 0 10px rgba(0,0,0,0.1); }
-      .brand { padding-bottom: 16px; }
-      .brand-name { font-size: 14px; font-weight: 500; letter-spacing: 0.1px; color: #49454F; }
-      .brand-dot { background: #6750A4; border-radius: 3px; width: 6px; height: 6px; }
+      /* Navigation Drawer – M3 distinctly lila getönt */
+      .sidebar { background: #ECE6F0 !important; border-right: none !important; box-shadow: 2px 0 4px rgba(0,0,0,0.15), 6px 0 16px rgba(0,0,0,0.08) !important; }
+      .brand { padding-bottom: 12px !important; border-bottom: 1px solid rgba(103,80,164,0.2) !important; margin-bottom: 8px !important; }
+      .brand-name { font-size: 14px !important; font-weight: 500 !important; letter-spacing: 0.1px !important; color: #49454F !important; }
+      .brand-dot { background: #6750A4 !important; border-radius: 3px !important; width: 6px !important; height: 6px !important; }
 
-      /* Nav – M3 vollständig abgerundete Navigation Rail Items */
-      .nav-link { border-radius: 100px !important; letter-spacing: 0.1px; font-size: 14px; font-weight: 500; }
-      .nav-link:hover { border-radius: 100px !important; background: rgba(103,80,164,0.08); }
-      .nav-link.on { border-left: none !important; border-radius: 100px !important; background: #EADDFF !important; color: #21005D !important; font-weight: 600 !important; padding-left: 12px !important; }
-      .nav-group-label { font-size: 11px; font-weight: 500; letter-spacing: 0.5px; }
+      /* Nav – M3 Indicator Container, stark lila aktiv */
+      .nav-link { border-radius: 100px !important; letter-spacing: 0.1px !important; font-size: 14px !important; font-weight: 500 !important; margin: 2px 8px !important; padding: 8px 12px !important; }
+      .nav-link:hover { background: rgba(103,80,164,0.12) !important; }
+      .nav-link.on { border-left: none !important; border-radius: 100px !important; background: #D0BCFF !important; color: #21005D !important; font-weight: 700 !important; padding-left: 16px !important; }
+      .nav-group-label { font-size: 11px !important; font-weight: 600 !important; letter-spacing: 0.5px !important; color: #6750A4 !important; text-transform: uppercase !important; padding: 12px 16px 4px !important; }
 
-      /* Top App Bar – M3 64dp, Elevation statt Border */
-      .topbar { height: 64px !important; border-bottom: none !important; box-shadow: 0 1px 2px rgba(0,0,0,0.15), 0 2px 6px rgba(0,0,0,0.1) !important; background: #FFFBFE !important; }
-      /* M3 Headline Small – LEICHT, nicht fett */
-      .page-name { font-size: 22px !important; font-weight: 400 !important; letter-spacing: 0 !important; }
+      /* Top App Bar – M3 Surface Tint, lila Border */
+      .topbar { height: 64px !important; background: #FEF7FF !important; border-bottom: 1px solid #E8DEF8 !important; box-shadow: none !important; }
+      /* M3 Headline Medium – GROSS, LEICHT (weight 400) – anders als iOS! */
+      .page-name { font-size: 28px !important; font-weight: 400 !important; letter-spacing: 0 !important; color: #1C1B1F !important; }
 
-      /* Panels – M3 Elevated Card (getöntes Surface, Elevation Shadow) */
-      .panel { border-radius: 12px !important; border: none !important; background: #F7F2FA !important; box-shadow: 0 1px 2px rgba(103,80,164,0.2), 0 2px 8px rgba(103,80,164,0.12) !important; }
-      .panel-head { border-bottom: none !important; background: rgba(103,80,164,0.06) !important; font-weight: 500 !important; letter-spacing: 0.1px !important; }
+      /* M3 Elevated Cards – lila Tint + deutlicher Schatten */
+      .panel { border-radius: 16px !important; border: none !important; background: #FFFBFE !important; box-shadow: 0 2px 6px rgba(103,80,164,0.18), 0 6px 16px rgba(103,80,164,0.12) !important; }
+      /* Panel-Head – lila Text, keine Trennlinie */
+      .panel-head { border-bottom: 1px solid #E8DEF8 !important; background: transparent !important; font-weight: 500 !important; letter-spacing: 0.15px !important; font-size: 14px !important; color: #6750A4 !important; }
 
-      /* Buttons – M3 Filled/Outlined, immer Pill */
+      /* Buttons – M3 Filled/Outlined, immer echte Pill */
       .btn { border-radius: 100px !important; letter-spacing: 0.1px !important; font-weight: 500 !important; }
-      .btn-blue { border-radius: 100px !important; background: #6750A4 !important; color: #fff !important; box-shadow: 0 1px 2px rgba(0,0,0,0.3) !important; }
+      .btn-blue { border-radius: 100px !important; background: #6750A4 !important; color: #fff !important; box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 2px 6px rgba(103,80,164,0.25) !important; }
       .btn-blue:hover { background: #7965AF !important; }
-      .btn-ghost { border-radius: 100px !important; border: 1px solid #CAC4D0 !important; background: transparent !important; }
+      .btn-ghost { border-radius: 100px !important; border: 1px solid #CAC4D0 !important; background: transparent !important; color: #6750A4 !important; }
 
-      /* Avatar – M3 rund, lila */
+      /* Avatar – M3 Kreis, lila */
       .av { background: #6750A4 !important; border-radius: 50% !important; }
 
-      /* KPI – M3 Surface Variant */
-      .kpi { border-radius: 12px !important; border: none !important; background: #ECE6F0 !important; box-shadow: 0 1px 2px rgba(103,80,164,0.15) !important; }
+      /* KPI – M3 Tonal Container */
+      .kpi { border-radius: 16px !important; border: none !important; background: #ECE6F0 !important; box-shadow: none !important; }
+
+      /* M3 Filled Text Field – DAS ist das unverwechselbare M3-Merkmal! */
+      /* Farbiger Hintergrund + NUR untere Linie, keine Seitenränder */
+      .field input, .field select, .field textarea { border-radius: 4px 4px 0 0 !important; border: none !important; border-bottom: 1px solid #79747E !important; background: #ECE6F0 !important; box-shadow: none !important; padding: 12px 14px 8px !important; }
+      .field input:focus, .field textarea:focus, .field select:focus { border-bottom: 2px solid #6750A4 !important; background: #E8DEF8 !important; outline: none !important; box-shadow: none !important; }
+
+      /* Filter Tabs – Chip-Style */
+      .ftab, .ltab { border-radius: 100px !important; }
+      .ftab.on, .ltab.on { background: #EADDFF !important; color: #21005D !important; border-color: #EADDFF !important; font-weight: 600 !important; }
+
+      /* Modals */
+      .modal { border-radius: 28px !important; }
+      .modal-head { border-radius: 28px 28px 0 0 !important; background: #F3EDF7 !important; color: #1C1B1F !important; }
     `
   }
 };
