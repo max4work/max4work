@@ -109,6 +109,35 @@
   .size-btn:disabled { opacity: .35; cursor: not-allowed; }
   .layout-hint { font-size: 11.5px; color: var(--muted); margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); line-height: 1.6; }
 
+  /* ── Inv-Panel Layout-Editor ── */
+  .inv-panel-wrap { display: flex; flex-direction: column; }
+  .inv-layout-bar {
+    display: none; align-items: center; gap: 5px;
+    background: var(--dark); border-radius: 8px 8px 0 0;
+    padding: 5px 10px; flex-shrink: 0; user-select: none;
+  }
+  .inv-layout-editing .inv-layout-bar { display: flex; }
+  .inv-layout-editing .inv-panel-wrap > .panel {
+    border-top-left-radius: 0 !important; border-top-right-radius: 0 !important;
+  }
+  .inv-layout-editing .inv-panel-wrap { opacity: 1; transition: opacity .15s; }
+  .inv-layout-editing .inv-panel-wrap.inv-hidden { opacity: .35; }
+  .le-move-btn {
+    background: rgba(255,255,255,.14); color: #fff; border: none;
+    border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 700;
+    cursor: pointer; font-family: inherit; line-height: 1.2;
+  }
+  .le-move-btn:hover { background: rgba(255,255,255,.28); }
+  .le-sep { width: 1px; height: 14px; background: rgba(255,255,255,.18); flex-shrink: 0; }
+  .le-name { font-size: 9px; font-weight: 700; color: rgba(255,255,255,.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .le-vis-btn {
+    font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px;
+    white-space: nowrap; flex-shrink: 0; cursor: pointer; border: none;
+    font-family: inherit; transition: all .12s; margin-left: auto;
+  }
+  .le-vis-on  { background: rgba(209,242,224,.9); color: #1A7A3C; }
+  .le-vis-off { background: rgba(255,255,255,.12); color: rgba(255,255,255,.6); }
+
   /* Kompakte Typografie-/Farb-Controls im Blatt-Design */
   .inv-chip { padding: 5px 11px; border: 1.5px solid var(--border); border-radius: 20px; font-size: 12px; font-weight: 500; cursor: pointer; color: var(--muted); transition: all .12s; white-space: nowrap; background: var(--surface); }
   .inv-chip:hover { border-color: var(--accent); color: var(--text); }
@@ -353,6 +382,7 @@
       <a class="nav-link" href="angebote.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span> Angebote</a>
       <a class="nav-link" href="belege.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg></span> Belege</a>
       <a class="nav-link" href="kassenbuch.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg></span> Kassenbuch</a>
+      <a class="nav-link" href="ustva.html"><span class="nav-icon"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg></span> USt-Voranmeldung</a>
     </div>
     <div class="nav-group">
       <div class="nav-group-label">Stammdaten</div>
@@ -376,6 +406,11 @@
 <main class="main">
   <div class="topbar">
     <div class="page-name" id="topbarTitle">Einstellungen – Design</div>
+    <div id="invLayoutBtnArea" style="display:none;align-items:center;gap:6px;">
+      <button id="btnInvLayout" class="btn btn-ghost btn-sm" onclick="enterInvEditMode()">⊞ Layout</button>
+      <button id="btnInvLayoutSave" class="btn btn-blue btn-sm" onclick="exitInvEditMode(true)" style="display:none">✓ Speichern</button>
+      <button id="btnInvLayoutCancel" class="btn btn-ghost btn-sm" onclick="exitInvEditMode(false)" style="display:none">✕ Abbrechen</button>
+    </div>
   </div>
   <div class="content">
 
@@ -756,6 +791,16 @@ Bitte überweisen Sie den Rechnungsbetrag unter Angabe der Rechnungsnummer auf d
           </div>
           <label class="toggle">
             <input type="checkbox" id="datevSchnittstelle" onchange="updateToggle('datevSchnittstelle', this.checked); toggleDatevButtons(this.checked)">
+            <div class="toggle-track"></div>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">% USt-Voranmeldung</div>
+            <div class="toggle-desc">Zeigt die USt-Voranmeldung (UStVA) im Navigationsmenü unter Buchhaltung an. Für Unternehmer mit Umsatzsteuerpflicht (§ 18 UStG).</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="showUStVA" checked onchange="updateToggle('showUStVA', this.checked); toggleUStVANav(this.checked)">
             <div class="toggle-track"></div>
           </label>
         </div>
@@ -1417,6 +1462,7 @@ Bitte überweisen Sie den Rechnungsbetrag unter Angabe der Rechnungsnummer auf d
     <div class="inv-controls-col">
 
       <!-- Meine Blattvorlagen -->
+      <div class="inv-panel-wrap" data-ikey="inv_blattvorlagen">
       <div class="panel">
         <div class="panel-head">Meine Blattvorlagen</div>
         <div class="panel-body">
@@ -1426,7 +1472,10 @@ Bitte überweisen Sie den Rechnungsbetrag unter Angabe der Rechnungsnummer auf d
         </div>
       </div>
 
+      </div>
+
       <!-- Dokument-Typ -->
+      <div class="inv-panel-wrap" data-ikey="inv_doctype">
       <div class="panel">
         <div class="panel-head">Dokument-Typ</div>
         <div class="panel-body">
@@ -1446,7 +1495,10 @@ Bitte überweisen Sie den Rechnungsbetrag unter Angabe der Rechnungsnummer auf d
         </div>
       </div>
 
+      </div>
+
       <!-- Design-Layout -->
+      <div class="inv-panel-wrap" data-ikey="inv_design">
       <div class="panel">
         <div class="panel-head">Design-Vorlage</div>
         <div class="panel-body">
@@ -1455,7 +1507,10 @@ Bitte überweisen Sie den Rechnungsbetrag unter Angabe der Rechnungsnummer auf d
         </div>
       </div>
 
+      </div>
+
       <!-- Schrift & Farbe -->
+      <div class="inv-panel-wrap" data-ikey="inv_schrift">
       <div class="panel">
         <div class="panel-head">Schrift &amp; Farbe</div>
         <div class="panel-body" style="gap:13px;">
@@ -1483,7 +1538,10 @@ Bitte überweisen Sie den Rechnungsbetrag unter Angabe der Rechnungsnummer auf d
         </div>
       </div>
 
+      </div>
+
       <!-- Rechnungsvorlage -->
+      <div class="inv-panel-wrap" data-ikey="inv_inhalt">
       <div class="panel">
         <div class="panel-head">Inhalt-Vorlage</div>
         <div class="panel-body">
@@ -1492,7 +1550,10 @@ Bitte überweisen Sie den Rechnungsbetrag unter Angabe der Rechnungsnummer auf d
         </div>
       </div>
 
+      </div>
+
       <!-- Logo -->
+      <div class="inv-panel-wrap" data-ikey="inv_logo">
       <div class="panel">
         <div class="panel-head">Logo</div>
         <div class="panel-body">
@@ -1521,7 +1582,10 @@ Bitte überweisen Sie den Rechnungsbetrag unter Angabe der Rechnungsnummer auf d
         </div>
       </div>
 
+      </div>
+
       <!-- Zahlungsbedingungen -->
+      <div class="inv-panel-wrap" data-ikey="inv_zahlung">
       <div class="panel">
         <div class="panel-head">Zahlungsbedingungen</div>
         <div class="panel-body" style="gap:13px;">
@@ -1533,7 +1597,10 @@ Bitte überweisen Sie den Rechnungsbetrag unter Angabe der Rechnungsnummer auf d
         </div>
       </div>
 
+      </div>
+
       <!-- Logo-Position -->
+      <div class="inv-panel-wrap" data-ikey="inv_logopos">
       <div class="panel">
         <div class="panel-head">Logo-Position &amp; Größe</div>
         <div class="panel-body" style="gap:14px;">
@@ -1552,7 +1619,10 @@ Bitte überweisen Sie den Rechnungsbetrag unter Angabe der Rechnungsnummer auf d
         </div>
       </div>
 
+      </div>
+
       <!-- Sichtbare Felder -->
+      <div class="inv-panel-wrap" data-ikey="inv_felder">
       <div class="panel">
         <div class="panel-head">Sichtbare Felder</div>
         <div class="panel-body">
@@ -1561,7 +1631,10 @@ Bitte überweisen Sie den Rechnungsbetrag unter Angabe der Rechnungsnummer auf d
         </div>
       </div>
 
+      </div>
+
       <!-- Individuelle Texte -->
+      <div class="inv-panel-wrap" data-ikey="inv_texte">
       <div class="panel">
         <div class="panel-head">Individuelle Texte</div>
         <div class="panel-body">
@@ -1591,6 +1664,8 @@ Bitte überweisen Sie den Rechnungsbetrag unter Angabe der Rechnungsnummer auf d
           </div>
 
         </div>
+      </div>
+
       </div>
 
       <!-- Speichern -->

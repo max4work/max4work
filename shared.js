@@ -1256,11 +1256,22 @@ function _checkIOSTip() {
   setTimeout(() => tip.remove(), 10000);
 }
 
+function applyNavFeatureVisibility() {
+  try {
+    const f = JSON.parse(localStorage.getItem('max4work_features') || '{}');
+    const show = f.showUStVA !== undefined ? f.showUStVA : true;
+    document.querySelectorAll('a.nav-link[href="ustva.html"]').forEach(el => {
+      el.style.display = show ? '' : 'none';
+    });
+  } catch(e) {}
+}
+
 /* ── Init ── */
 document.addEventListener('DOMContentLoaded', () => {
   initAppLogo();
   initAvatar();
   initNavLinks();
+  applyNavFeatureVisibility();
   updatePill();
   initSidebarSubNav();
   initMobileNav();

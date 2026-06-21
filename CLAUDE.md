@@ -281,7 +281,16 @@ Produkte → Auswertung → Einstellungen (Design | Firma | Funktionen | Daten &
 
 ## Letzter Stand (2026-06-21)
 
-- Sessions 1–52 abgeschlossen
+- Sessions 1–53 abgeschlossen
+- **21.06.2026 Session 53 – UStVA + UStVA-Toggle + Rechnungsblatt Layout-Editor:**
+  - **ustva.html (NEU):** Vollständige UStVA-Seite (§ 18 UStG); Topbar mit Q/M-Modus-Toggle, Periode-Tabs, Jahr-Tabs, Drucken-Button; 4 Panels: Ausgangsumsätze, Vorsteuer, USt-Zahllast/Erstattung, ELSTER-Übersicht; §19-KU-Banner wenn Kleinunternehmer aktiv
+  - **js/ustva.js (NEU):** ELSTER-Kennzahlen Kz 81/83/86/85/66; `calcPeriod()` — Quartal + Monat; Fallback auf 19% wenn keine positions-History; ELSTER copy-to-clipboard `copyVal()`
+  - **12 HTML-Dateien (Navigation):** UStVA-Link nach Kassenbuch in Buchhaltungs-Sektion eingefügt (% SVG-Icon)
+  - **shared.js:** `applyNavFeatureVisibility()` — blendet/zeigt `a.nav-link[href="ustva.html"]` anhand Feature-Toggle `showUStVA`
+  - **einstellungen.html:** Toggle „% USt-Voranmeldung" in Funktionen → App-Funktionen; Topbar-Buttons `#invLayoutBtnArea` (nur beim Rechnungsblatt-Design-Tab sichtbar); 10 Panels in `section-rechnung` mit `<div class="inv-panel-wrap" data-ikey="...">` gewrapped; CSS für `.inv-layout-bar`, `.le-move-btn`, `.le-sep`, `.le-name`, `.le-vis-btn/.le-vis-on/.le-vis-off`
+  - **js/einstellungen.js:** `showUStVA: true` in `TOGGLE_DEFAULTS`; `toggleUStVANav(on)`; `showSection()` zeigt/versteckt `#invLayoutBtnArea`; INV Panel Layout Editor: `INV_PANEL_CONFIG` (10 Panels), `INV_LAYOUT_KEY = 'max4work_inv_panel_layout'`, `getInvLayout()`, `saveInvLayout()`, `applyInvPanelLayout()`, `enterInvEditMode()`, `exitInvEditMode(save)`, `_injectInvEditBars()`, `_removeInvEditBars()`, `invPanelMove(key, dir)`, `invPanelToggleVis(key, btn)`
+  - **Simulation UStVA:** 7 Rechnungen + 10 Belege in `/tmp/ustva-sim.html` — Q1/Q2 2026 korrekt berechnet ✅
+
 - **21.06.2026 Session 52 – iOS + Android M3: markante Form-Unterschiede:**
   - **shared.js – iOS extraCSS:** Grouped-Inset-List-Stil (Panels weiß, 0.5px hairline border, kein Schatten, border-radius 10px); Topbar 52px, echtes Frosted Glass (blur 30px saturate 200%); Seitentitel 22px/700/−0.4px Tracking; Nav-Labels UPPERCASE/10px/grau; Inputs weiß mit voller Umrandung + blauer Focus-Ring (box-shadow 3px); KPI-Kacheln weiß mit hairline border; Tabs abgerundet (8px)
   - **shared.js – Android M3 extraCSS:** Filled Text Field (lila Hintergrund #ECE6F0 + nur Unterstrich, border-radius 4px 4px 0 0 — stärkstes Designmerkmal!); Topbar 64px/#FEF7FF + lila Border (#E8DEF8); Seitentitel 28px/weight 400 (deutlich größer UND leichter als iOS); Panel-Header lila Text (#6750A4); KPI lila getönt (#ECE6F0); Buttons echte Pills (100px); Nav aktiv #D0BCFF Hintergrund, #21005D Text; Modals 28px Radius

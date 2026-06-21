@@ -198,12 +198,15 @@
     try { localStorage.setItem('max4work_settings_tab', id); } catch(e) {}
     if (id === 'account' && typeof _loadAccountTab === 'function') _loadAccountTab();
     if (typeof refreshSubNav === 'function') refreshSubNav();
+    const lba = document.getElementById('invLayoutBtnArea');
+    if (lba) lba.style.display = id === 'rechnung' ? 'flex' : 'none';
+    if (id === 'rechnung') applyInvPanelLayout();
   }
 
   /* ── Feature-Toggles ── */
   const TOGGLE_DEFAULTS = {
     autoSuggestInvoice: false, livePreview: false, highlightOverdue: false,
-    bankAbgleich: false, datevSchnittstelle: false,
+    bankAbgleich: false, datevSchnittstelle: false, showUStVA: true,
     // Auswertungs-Panels – neue Panels hier ergänzen (Key + true/false)
     panel_kpiGrid: false, panel_bank: false, panel_top5: false,
     panel_kleinunternehmer: false, panel_ausstehend: false,
@@ -219,6 +222,7 @@
         if (el) el.checked = val;
       });
       toggleBankPanel(getFeature('bankAbgleich'));
+      toggleUStVANav(getFeature('showUStVA') !== false);
     } catch(e) {}
   }
 
@@ -2672,6 +2676,12 @@ function toggleDatevButtons(on) {
   });
 }
 
+function toggleUStVANav(on) {
+  document.querySelectorAll('a.nav-link[href="ustva.html"]').forEach(el => {
+    el.style.display = on ? '' : 'none';
+  });
+}
+
 // MT940-Parser – liest nur Kreditbuchungen (Geldeingänge)
 function _parseMT940(text) {
   const txs = [];
@@ -2853,4 +2863,134 @@ function _showBankResult({ auto, suggest, unmatched, total }) {
 
   el.style.display = '';
   el.innerHTML = html;
+}
+
+/* ════════════════════════════════════════
+   Rechnungsblatt-Design – Panel Layout-Editor
+   (analog zum Layout-Editor in auswertung.html)
+════════════════════════════════════════ */
+const INV_PANEL_CONFIG = [
+  { key: 'inv_blattvorlagen', label: 'Meine Blattvorlagen' },
+  { key: 'inv_doctype',       label: 'Dokument-Typ' },
+  { key: 'inv_design',        label: 'Design-Vorlage' },
+  { key: 'inv_schrift',       label: 'Schrift & Farbe' },
+  { key: 'inv_inhalt',        label: 'Inhalt-Vorlage' },
+  { key: 'inv_logo',          label: 'Logo' },
+  { key: 'inv_zahlung',       label: 'Zahlungsbedingungen' },
+  { key: 'inv_logopos',       label: 'Logo-Position & Größe' },
+  { key: 'inv_felder',        label: 'Sichtbare Felder' },
+  { key: 'inv_texte',         label: 'Individuelle Texte' },
+];
+const INV_LAYOUT_KEY    = 'max4work_inv_panel_layout';
+const INV_DEFAULT_ORDER = INV_PANEL_CONFIG.map(p => p.key);
+
+function getInvLayout() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(INV_LAYOUT_KEY) || 'null');
+    if (saved && saved.order && saved.order.length) {
+      const keys = new Set(saved.order);
+      INV_DEFAULT_ORDER.forEach(k => { if (!keys.has(k)) saved.order.push(k); });
+      return saved;
+    }
+  } catch(e) {}
+  return { order: [...INV_DEFAULT_ORDER], hidden: {} };
+}
+
+function saveInvLayout(cfg) {
+  try { localStorage.setItem(INV_LAYOUT_KEY, JSON.stringify(cfg)); } catch(e) {}
+}
+
+function applyInvPanelLayout() {
+  const col = document.querySelector('.inv-controls-col');
+  if (!col) return;
+  const cfg    = getInvLayout();
+  const savBar = col.querySelector('.save-bar');
+  cfg.order.forEach(key => {
+    const wrap = col.querySelector(`.inv-panel-wrap[data-ikey="${key}"]`);
+    if (!wrap) return;
+    const hidden = !!(cfg.hidden?.[key]);
+    wrap.style.display = hidden ? 'none' : '';
+    col.insertBefore(wrap, savBar);
+  });
+}
+
+let _invEditCfg = null;
+
+function enterInvEditMode() {
+  _invEditCfg = JSON.parse(JSON.stringify(getInvLayout()));
+  const col = document.querySelector('.inv-controls-col');
+  col.classList.add('inv-layout-editing');
+  document.getElementById('btnInvLayout').style.display       = 'none';
+  document.getElementById('btnInvLayoutSave').style.display   = '';
+  document.getElementById('btnInvLayoutCancel').style.display = '';
+  col.querySelectorAll('.inv-panel-wrap').forEach(w => {
+    w.style.display = '';
+    if (_invEditCfg.hidden?.[w.dataset.ikey]) w.classList.add('inv-hidden');
+  });
+  _injectInvEditBars();
+}
+
+function exitInvEditMode(save) {
+  _removeInvEditBars();
+  if (save) saveInvLayout(_invEditCfg);
+  _invEditCfg = null;
+  document.querySelector('.inv-controls-col').classList.remove('inv-layout-editing');
+  document.getElementById('btnInvLayout').style.display       = '';
+  document.getElementById('btnInvLayoutSave').style.display   = 'none';
+  document.getElementById('btnInvLayoutCancel').style.display = 'none';
+  document.querySelectorAll('.inv-panel-wrap').forEach(w => w.classList.remove('inv-hidden'));
+  applyInvPanelLayout();
+}
+
+function _injectInvEditBars() {
+  const col = document.querySelector('.inv-controls-col');
+  col.querySelectorAll('.inv-panel-wrap').forEach(wrap => {
+    const key   = wrap.dataset.ikey;
+    const label = INV_PANEL_CONFIG.find(p => p.key === key)?.label || key;
+    const hidden = !!(_invEditCfg.hidden?.[key]);
+    const bar = document.createElement('div');
+    bar.className = 'inv-layout-bar';
+    bar.innerHTML = `
+      <div style="display:flex;gap:2px">
+        <button class="le-move-btn" onclick="invPanelMove('${key}',-1)">▲</button>
+        <button class="le-move-btn" onclick="invPanelMove('${key}',1)">▼</button>
+      </div>
+      <span class="le-sep"></span>
+      <span class="le-name">${label}</span>
+      <button class="le-vis-btn ${hidden ? 'le-vis-off' : 'le-vis-on'}"
+        onclick="invPanelToggleVis('${key}',this)">${hidden ? 'Ausgeblendet' : 'Sichtbar'}</button>`;
+    wrap.prepend(bar);
+  });
+}
+
+function _removeInvEditBars() {
+  document.querySelectorAll('.inv-controls-col .inv-layout-bar').forEach(b => b.remove());
+}
+
+function invPanelMove(key, dir) {
+  const col    = document.querySelector('.inv-controls-col');
+  const wraps  = [...col.querySelectorAll('.inv-panel-wrap')];
+  const wrap   = col.querySelector(`.inv-panel-wrap[data-ikey="${key}"]`);
+  const idx    = wraps.indexOf(wrap);
+  const savBar = col.querySelector('.save-bar');
+  if (dir === -1 && idx <= 0) return;
+  if (dir ===  1 && idx >= wraps.length - 1) return;
+  if (dir === -1) wraps[idx - 1].before(wrap);
+  else            wraps[idx + 1].after(wrap);
+  if (savBar && !savBar.previousElementSibling?.classList.contains('inv-panel-wrap'))
+    col.insertBefore(savBar, null);
+  const order = _invEditCfg.order;
+  const oi    = order.indexOf(key);
+  if (dir === -1 && oi > 0)              [order[oi-1], order[oi]]   = [order[oi],   order[oi-1]];
+  if (dir ===  1 && oi < order.length-1) [order[oi],   order[oi+1]] = [order[oi+1], order[oi]  ];
+}
+
+function invPanelToggleVis(key, btn) {
+  if (!_invEditCfg.hidden) _invEditCfg.hidden = {};
+  const nowHidden = !(_invEditCfg.hidden[key] || false);
+  _invEditCfg.hidden[key] = nowHidden;
+  btn.textContent = nowHidden ? 'Ausgeblendet' : 'Sichtbar';
+  btn.classList.toggle('le-vis-on',  !nowHidden);
+  btn.classList.toggle('le-vis-off',  nowHidden);
+  btn.closest('.inv-panel-wrap')?.classList.toggle('inv-hidden', nowHidden);
 }
