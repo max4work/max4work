@@ -275,6 +275,16 @@ python3 -m http.server 8080
 Dashboard → Rechnungen (Rechnungen | Zahlungen) → Kunden (Liste | Karte) → Belege → Termine →
 Produkte → Auswertung → Einstellungen (Design | Firma | Funktionen | Daten & Sync | Portale | Handbuch | Blatt-Design | E-Mail | Datentransfer | Account) → Werkzeuge (Angebot | m² | Kamera | MwSt | Stundensatz) → **Fahrtenbuch** (ganz unten)
 
+## Letzter Stand (2026-06-21)
+
+- Sessions 1–43 abgeschlossen
+- **21.06.2026 Session 43 – Login-Bugfix + Notfall-Admin-Credentials:**
+  - **login.html – Bugfix `doUnlock()`:** `localStorage.removeItem('max4work_auth')` entfernt — `doUnlock()` löscht jetzt nur noch `max4work_login_fail` (den Brute-Force-Zähler), nicht mehr die gespeicherten Zugangsdaten. Vorher führte `doUnlock()` dazu, dass geänderte Credentials verloren gingen und der Login auf den Fallback-Hash zurückfiel.
+  - **login.html + js/einstellungen.js – Neuer Admin-Fallback-Hash:** `_H0` + `_ACC_H0` auf neuen Hash aktualisiert (entspricht den Wunsch-Credentials des Betreibers). Gilt als Notfall-Zugang wenn localStorage leer ist.
+  - **Logik:** localStorage hat Vorrang → normaler Betrieb nutzt gespeicherten Hash. Nur wenn localStorage leer (neues Gerät, Daten gelöscht) → Fallback auf `_H0`/`_ACC_H0` im Code.
+  - **service-worker.js:** `max4work-v8` → `max4work-v9`
+  - **Backup:** `Backups/backup_2026-06-21_session43/`
+
 ## Letzter Stand (2026-06-20)
 
 - Sessions 1–42 abgeschlossen
