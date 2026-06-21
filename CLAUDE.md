@@ -280,7 +280,18 @@ Produkte → Auswertung → Einstellungen (Design | Firma | Funktionen | Daten &
 
 ## Letzter Stand (2026-06-21)
 
-- Sessions 1–46 abgeschlossen
+- Sessions 1–48 abgeschlossen
+- **21.06.2026 Session 48 – Auswertung Redesign (4-Spalten-Layout):**
+  - **auswertung.html:** `.content` von `1fr 1fr` auf `repeat(4, 1fr)` umgestellt; `#chartMonatPanel` vereinfacht (chart-only); neues `#monatPanel` für Monatsdetails als separates Panel
+  - **auswertung.html – KPI-Fix:** `font-size: clamp(16px, 1.6vw, 24px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis` (Jahresausgaben-Kachel war abgeschnitten)
+  - **js/auswertung.js:** Neues `PANEL_SPANS`-Objekt mit fixen `gridColumn`-Werten pro Panel-Key; `applyPanelLayout()` komplett neu (span-basiert, kein half/full-Pairing); `panel_chartMonat` vor `panel_ausstehend` verschoben; alle `allowHalf: false`
+  - **Backup:** `Backups/backup_2026-06-21_session48/` · **Git:** Commit `c1761c2`
+
+- **21.06.2026 Session 47 – Layout-Editor Fix:**
+  - **einstellungen.html:** `.layout-vis-off` Durchstrich entfernt; `.layout-vis-badge` mit `cursor: pointer; border: none`
+  - **js/einstellungen.js:** Badge `<span>` → `<button onclick="togglePanelVisibility(idx)">` ; `renderLayoutEditor()` berücksichtigt `_pendingToggles`; neue Funktion `togglePanelVisibility(idx)`
+  - **Backup:** `Backups/backup_2026-06-21_session47/`
+
 - **21.06.2026 Session 46 – Simulation + Bug-Fixes:**
   - Node.js-Simulation 43 Tests → **43 ✅ 0 ❌**
   - **js/rechnungen.js:** GoBD-Log `confirmTeilzahlung()` + `confirmBezahlt()` — `von:` las `r.status` NACH Zuweisung → immer `bezahlt→bezahlt`. Fix: `const vonStatus = r.status` VOR Zuweisung.
