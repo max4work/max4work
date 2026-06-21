@@ -96,7 +96,7 @@
     list.innerHTML = layout.map((item, i) => {
       const def = PANEL_DEFS.find(d => d.key === item.key);
       if (!def) return '';
-      const vis = isVisible(item.key);
+      const vis = (_pendingToggles && _pendingToggles[item.key] !== undefined) ? _pendingToggles[item.key] : isVisible(item.key);
       const isHalf = item.size === 'half';
       return `<div class="layout-item" id="li-${i}"
           draggable="true"
@@ -107,7 +107,7 @@
           ondragend="layoutDragEnd()">
         <span class="drag-handle" title="Ziehen zum Verschieben">⠿⠿</span>
         <span class="layout-item-name">${def.label}</span>
-        <span class="layout-vis-badge ${vis ? 'layout-vis-on' : 'layout-vis-off'}">${vis ? 'Sichtbar' : 'Ausgeblendet'}</span>
+        <button class="layout-vis-badge ${vis ? 'layout-vis-on' : 'layout-vis-off'}" onclick="togglePanelVisibility(${i})" title="Klicken zum Ein-/Ausblenden">${vis ? 'Sichtbar' : 'Ausgeblendet'}</button>
         <div class="size-toggle">
           <button class="size-btn${!isHalf ? ' on' : ''}" onclick="setSize(${i},'full')">Voll</button>
           <button class="size-btn${isHalf ? ' on' : ''}" onclick="setSize(${i},'half')"
@@ -123,6 +123,19 @@
     layout[idx].size = size;
     _pendingLayout = layout;
     renderLayoutEditor(layout);
+    markUnsaved();
+  }
+
+  function togglePanelVisibility(idx) {
+    const layout = _pendingLayout || loadPanelLayout();
+    if (!layout[idx]) return;
+    const key = layout[idx].key;
+    const curVis = (_pendingToggles && _pendingToggles[key] !== undefined)
+      ? _pendingToggles[key]
+      : isVisible(key);
+    if (!_pendingToggles) _pendingToggles = {};
+    _pendingToggles[key] = !curVis;
+    renderLayoutEditor(_pendingLayout || loadPanelLayout());
     markUnsaved();
   }
 
