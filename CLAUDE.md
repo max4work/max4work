@@ -281,7 +281,11 @@ Produkte → Auswertung → Einstellungen (Design | Firma | Funktionen | Daten &
 
 ## Letzter Stand (2026-06-21)
 
-- Sessions 1–49 abgeschlossen
+- Sessions 1–50 abgeschlossen
+- **21.06.2026 Session 50 – Housekeeping:**
+  - **.gitignore:** `.wrangler/` ergänzt (Cloudflare-Tool-Cache soll nicht ins Repo)
+  - **Git:** Commit `79152db`
+
 - **21.06.2026 Session 49 – Auswertung Layout-Editor:**
   - **auswertung.html:** Alle 10 Panels in `.tile-wrap[data-key="panel_..."]` gewrapped; CSS für Edit-Mode (`.layout-bar`, `.le-*`); 3 Topbar-Buttons `#btnLayoutEdit / #btnLayoutSave / #btnLayoutCancel`
   - **js/auswertung.js:** `panel_monat` zu PANEL_CONFIG + PANEL_SPANS; `getPanelLayout()` → `getLayoutConfig()` / `saveLayoutConfig()` (Key: `max4work_layout_config`); `applyPanelLayout()` neu (Wrapper-basiert); Edit-Mode: `enterEditMode()`, `exitEditMode()`, `_injectEditBars()`, `leMoveLeft/Right()`, `leSetSpan()`, `leSetHeight()`
