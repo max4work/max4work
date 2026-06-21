@@ -734,6 +734,16 @@ Bitte überweisen Sie den Rechnungsbetrag unter Angabe der Rechnungsnummer auf d
             <div class="toggle-track"></div>
           </label>
         </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">DATEV-Schnittstelle</div>
+            <div class="toggle-desc">Blendet den DATEV EXTF-Export-Button in Rechnungen und Belegen ein. Für die Übergabe an den Steuerberater im DATEV-Format.</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="datevSchnittstelle" onchange="updateToggle('datevSchnittstelle', this.checked); toggleDatevButtons(this.checked)">
+            <div class="toggle-track"></div>
+          </label>
+        </div>
       </div>
     </div>
 

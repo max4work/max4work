@@ -11,7 +11,7 @@ import http.server
 import functools
 from playwright.sync_api import sync_playwright, Page, expect
 
-APP_DIR  = "/Users/Juergen/Library/Mobile Documents/com~apple~CloudDocs/Desktop/max4work"
+APP_DIR  = "/Users/jurgenstupar/Library/Mobile Documents/com~apple~CloudDocs/Desktop/max4work"
 PORT     = 8765
 BASE_URL = f"http://localhost:{PORT}"
 
@@ -59,6 +59,7 @@ _BASE = {
     "max4work_last_backup": _NOW_MS,
     "max4work_features": json.dumps({
         "autoSuggestInvoice": True, "livePreview": True, "highlightOverdue": True,
+        "datevSchnittstelle": True,
         "panel_kpiGrid": True, "panel_bank": True, "panel_top5": True,
         "panel_kleinunternehmer": True, "panel_ausstehend": True,
         "panel_chartMonat": True, "panel_chartVergleich": True, "panel_quartal": True,
@@ -441,7 +442,98 @@ class TestEinstellungen:
 
 
 # ═══════════════════════════════════════════════════
-# 10 – WERKZEUGE
+# 10 – DATEV-SCHNITTSTELLE
+# ═══════════════════════════════════════════════════
+class TestDatevSchnittstelle:
+
+    def test_toggle_sichtbar_in_einstellungen(self, page):
+        """Toggle-Label DATEV-Schnittstelle ist im Funktionen-Tab sichtbar."""
+        go(page, "einstellungen.html")
+        page.click("button.stab[data-section='funktionen']")
+        page.wait_for_timeout(300)
+        # Das Input ist CSS-versteckt (opacity:0) – Label/Track prüfen
+        expect(page.locator("label.toggle:has(#datevSchnittstelle)")).to_be_visible(timeout=4000)
+
+    def test_toggle_aktivieren_speichert_feature(self, page):
+        """Toggle aktivieren + Speichern schreibt datevSchnittstelle=true in max4work_features."""
+        features_ohne = json.dumps({
+            "autoSuggestInvoice": False, "livePreview": False,
+            "highlightOverdue": False, "datevSchnittstelle": False,
+        })
+        go(page, "einstellungen.html", {"max4work_features": features_ohne})
+        # Funktionen-Tab: Toggle aktivieren (_pendingToggles bleibt im Speicher)
+        page.click("button.stab[data-section='funktionen']")
+        page.wait_for_timeout(300)
+        page.locator("label.toggle:has(#datevSchnittstelle)").click()
+        page.wait_for_timeout(200)
+        # unsavedBar erscheint nach markUnsaved() und enthält saveAllChanges()-Button
+        page.wait_for_selector("#unsavedBar", timeout=3000)
+        page.click("button[onclick='saveAllChanges()']")
+        page.wait_for_timeout(400)
+        val = page.evaluate(
+            "JSON.parse(localStorage.getItem('max4work_features') || '{}').datevSchnittstelle"
+        )
+        assert val is True, f"datevSchnittstelle sollte true sein, ist: {val}"
+
+    def test_datev_button_sichtbar_in_rechnungen_wenn_aktiv(self, page):
+        """Mit aktivem Toggle ist der DATEV-Button in rechnungen.html sichtbar."""
+        go(page, "rechnungen.html", {"max4work_rechnungen": json.dumps(_RECHNUNGEN())})
+        btn = page.locator("#datevBtnRechnungen")
+        expect(btn).to_be_visible(timeout=5000)
+
+    def test_datev_button_versteckt_in_rechnungen_wenn_inaktiv(self, page):
+        """Ohne Toggle ist der DATEV-Button in rechnungen.html verborgen."""
+        features_aus = json.dumps({**{
+            "autoSuggestInvoice": False, "livePreview": False,
+            "highlightOverdue": False, "datevSchnittstelle": False,
+        }})
+        go(page, "rechnungen.html", {
+            "max4work_rechnungen": json.dumps(_RECHNUNGEN()),
+            "max4work_features": features_aus,
+        })
+        btn = page.locator("#datevBtnRechnungen")
+        expect(btn).to_be_hidden(timeout=3000)
+
+    def test_datev_button_sichtbar_in_belegen_wenn_aktiv(self, page):
+        """Mit aktivem Toggle ist der DATEV-Button in belege.html sichtbar."""
+        go(page, "belege.html", {"max4work_belege": json.dumps(_BELEGE())})
+        btn = page.locator("#datevBtnBelege")
+        expect(btn).to_be_visible(timeout=5000)
+
+    def test_datev_button_versteckt_in_belegen_wenn_inaktiv(self, page):
+        """Ohne Toggle ist der DATEV-Button in belege.html verborgen."""
+        features_aus = json.dumps({**{
+            "autoSuggestInvoice": False, "livePreview": False,
+            "highlightOverdue": False, "datevSchnittstelle": False,
+        }})
+        go(page, "belege.html", {
+            "max4work_belege": json.dumps(_BELEGE()),
+            "max4work_features": features_aus,
+        })
+        btn = page.locator("#datevBtnBelege")
+        expect(btn).to_be_hidden(timeout=3000)
+
+    def test_datev_export_rechnungen_loest_download_aus(self, page):
+        """Klick auf DATEV-Button in Rechnungen löst einen Datei-Download aus."""
+        go(page, "rechnungen.html", {"max4work_rechnungen": json.dumps(_RECHNUNGEN())})
+        with page.expect_download(timeout=6000) as dl_info:
+            page.click("#datevBtnRechnungen")
+        dl = dl_info.value
+        assert dl.suggested_filename.startswith("DATEV_"), \
+            f"Unerwarteter Dateiname: {dl.suggested_filename}"
+
+    def test_datev_export_belege_loest_download_aus(self, page):
+        """Klick auf DATEV-Button in Belegen löst einen Datei-Download aus."""
+        go(page, "belege.html", {"max4work_belege": json.dumps(_BELEGE())})
+        with page.expect_download(timeout=6000) as dl_info:
+            page.click("#datevBtnBelege")
+        dl = dl_info.value
+        assert dl.suggested_filename.startswith("DATEV_"), \
+            f"Unerwarteter Dateiname: {dl.suggested_filename}"
+
+
+# ═══════════════════════════════════════════════════
+# 11 – WERKZEUGE
 # ═══════════════════════════════════════════════════
 class TestWerkzeuge:
 

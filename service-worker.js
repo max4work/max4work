@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE = 'max4work-v9';
+const CACHE = 'max4work-v10';
 const OFFLINE = 'offline.html';
 
 const SHELL = [

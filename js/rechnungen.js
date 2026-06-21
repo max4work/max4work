@@ -1995,10 +1995,16 @@ ${lineItems}
     content.style.gridTemplateColumns = on ? '400px 595px' : '400px';
   }
 
+  function applyDatevVisibility() {
+    const on = _isFeatureOn('datevSchnittstelle');
+    const btn = document.getElementById('datevBtnRechnungen');
+    if (btn) btn.style.display = on ? '' : 'none';
+  }
+
   // Blatt-Design live synchronisieren wenn in einem anderen Tab gespeichert wird
   window.addEventListener('storage', e => {
     if (e.key === 'max4work_rechnung_config') rp();
-    if (e.key === 'max4work_features') applyLivePreview();
+    if (e.key === 'max4work_features') { applyLivePreview(); applyDatevVisibility(); }
   });
 
   /* ═══ Mahnwesen ═══ */
@@ -2490,6 +2496,7 @@ ${lineItems}
     renderListe();
     loadDraft();
     applyLivePreview();
+    applyDatevVisibility();
     _wiederCheckFaellig();
     _updateParkenBtn();
     // xmlBtn: nur sichtbar wenn XRechnung aktiv

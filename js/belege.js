@@ -867,11 +867,28 @@ function downloadFile(name, mime, content) {
   URL.revokeObjectURL(url);
 }
 
+function _isBelegeFeatureOn(id) {
+  try {
+    const saved = JSON.parse(localStorage.getItem('max4work_features') || '{}');
+    return saved[id] !== undefined ? saved[id] : false;
+  } catch(e) { return false; }
+}
+
+function _applyDatevVisibilityBelege() {
+  const btn = document.getElementById('datevBtnBelege');
+  if (btn) btn.style.display = _isBelegeFeatureOn('datevSchnittstelle') ? '' : 'none';
+}
+
 /* ═══ Init ═══ */
 function load() {
   try { const r = localStorage.getItem(SAVE_KEY); if (r) belege = JSON.parse(r); } catch(e) {}
   document.getElementById('bDatum').value = new Date().toISOString().split('T')[0];
   fillKennzeichenList();
   render();
+  _applyDatevVisibilityBelege();
 }
 load();
+
+window.addEventListener('storage', e => {
+  if (e.key === 'max4work_features') _applyDatevVisibilityBelege();
+});

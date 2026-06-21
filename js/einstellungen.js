@@ -190,7 +190,7 @@
   /* ── Feature-Toggles ── */
   const TOGGLE_DEFAULTS = {
     autoSuggestInvoice: false, livePreview: false, highlightOverdue: false,
-    bankAbgleich: false,
+    bankAbgleich: false, datevSchnittstelle: false,
     // Auswertungs-Panels – neue Panels hier ergänzen (Key + true/false)
     panel_kpiGrid: false, panel_bank: false, panel_top5: false,
     panel_kleinunternehmer: false, panel_ausstehend: false,
@@ -2650,6 +2650,13 @@ function accSetAutoLogout(mins) {
 function toggleBankPanel(on) {
   const panel = document.getElementById('bankAbgleichPanel');
   if (panel) panel.style.display = on ? '' : 'none';
+}
+
+function toggleDatevButtons(on) {
+  ['datevBtnRechnungen', 'datevBtnBelege'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = on ? '' : 'none';
+  });
 }
 
 // MT940-Parser – liest nur Kreditbuchungen (Geldeingänge)

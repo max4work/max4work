@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>max4work – Daten-Simulation</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, sans-serif;
+      background: #F2F3F0;
+      color: #1A1C18;
+      min-height: 100dvh;
+      padding: 32px 24px;
+    }
+    .container { max-width: 800px; margin: 0 auto; }
+    h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+    .subtitle { color: #7B8278; font-size: 14px; margin-bottom: 28px; }
+    .card {
+      background: #fff;
+      border: 1px solid #E4E6E2;
+      border-radius: 14px;
+      padding: 20px 24px;
+      margin-bottom: 16px;
+    }
+    .card h2 { font-size: 15px; font-weight: 600; margin-bottom: 12px; color: #1A1C18; }
+    .modules-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 10px;
+    }
+    .mod-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: #F2F3F0;
+      border-radius: 8px;
+      font-size: 13px;
+      border: 1px solid #E4E6E2;
+    }
+    .mod-badge .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #C8D93A;
+      flex-shrink: 0;
+    }
+    .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background .12s;
+    }
+    .btn-primary { background: #C8D93A; color: #1A1C18; }
+    .btn-primary:hover { background: #b8c930; }
+    .btn-danger { background: #FEE2E2; color: #DC2626; }
+    .btn-danger:hover { background: #FECACA; }
+    .btn-secondary { background: #F2F3F0; color: #1A1C18; border: 1px solid #E4E6E2; }
+    .btn-secondary:hover { background: #e4e6e2; }
+    .btn:disabled { opacity: .5; cursor: default; }
+    .log {
+      background: #0F1117;
+      color: #A6E22E;
+      border-radius: 10px;
+      padding: 16px;
+      font-family: 'Menlo', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      height: 240px;
+      overflow-y: auto;
+      margin-top: 16px;
+    }
+    .log .info  { color: #66D9EF; }
+    .log .ok    { color: #A6E22E; }
+    .log .warn  { color: #FD971F; }
+    .log .err   { color: #F92672; }
+    .progress-wrap { margin-top: 14px; }
+    .progress-bar {
+      height: 6px;
+      background: #E4E6E2;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: #C8D93A;
+      width: 0%;
+      transition: width .3s ease;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .stat-card {
+      text-align: center;
+      padding: 12px;
+      background: #F2F3F0;
+      border-radius: 10px;
+      border: 1px solid #E4E6E2;
+    }
+    .stat-card .val { font-size: 22px; font-weight: 700; color: #1A1C18; }
+    .stat-card .lbl { font-size: 11px; color: #7B8278; margin-top: 2px; }
+    .link-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .link-btn {
+      display: block;
+      padding: 10px 14px;
+      background: #F2F3F0;
+      border: 1px solid #E4E6E2;
+      border-radius: 8px;
+      text-decoration: none;
+      color: #1A1C18;
+      font-size: 13px;
+      font-weight: 500;
+      text-align: center;
+      transition: background .12s;
+    }
+    .link-btn:hover { background: #E4E6E2; }
+    #statusLabel { font-size: 13px; color: #7B8278; margin-top: 6px; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <h1>max4work · Daten-Simulation</h1>
+  <p class="subtitle">Realistische Testdaten für alle Module laden, prüfen oder zurücksetzen.</p>
+
+  <div class="card">
+    <h2>Enthaltene Module</h2>
+    <div class="modules-grid">
+      <div class="mod-badge"><span class="dot"></span> Einstellungen / Firma</div>
+      <div class="mod-badge"><span class="dot"></span> 6 Kunden</div>
+      <div class="mod-badge"><span class="dot"></span> 5 Produkte</div>
+      <div class="mod-badge"><span class="dot"></span> 16 Rechnungen</div>
+      <div class="mod-badge"><span class="dot"></span> Zahlungen</div>
+      <div class="mod-badge"><span class="dot"></span> 22 Kassenbuch</div>
+      <div class="mod-badge"><span class="dot"></span> 8 Belege</div>
+      <div class="mod-badge"><span class="dot"></span> 10 Termine</div>
+      <div class="mod-badge"><span class="dot"></span> 8 Fahrten</div>
+      <div class="mod-badge"><span class="dot"></span> 1 Fahrzeug</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Simulation starten</h2>
+    <div class="btn-group">
+      <button class="btn btn-primary" id="btnLoad" onclick="runSimulation()">Daten laden</button>
+      <button class="btn btn-secondary" id="btnCheck" onclick="checkData()">Status prüfen</button>
+      <button class="btn btn-danger" id="btnReset" onclick="resetData()">Alle Daten löschen</button>
+    </div>
+    <div id="statusLabel">Bereit.</div>
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+    </div>
+    <div class="log" id="log"></div>
+  </div>
+
+  <div class="card" id="statsCard" style="display:none">
+    <h2>Geladene Daten</h2>
+    <div class="stats-grid" id="statsGrid"></div>
+  </div>
+
+  <div class="card">
+    <h2>Module öffnen</h2>
+    <div class="link-grid">
+      <a class="link-btn" href="../index.html">Dashboard</a>
+      <a class="link-btn" href="../rechnungen.html">Rechnungen</a>
+      <a class="link-btn" href="../kunden.html">Kunden</a>
+      <a class="link-btn" href="../termine.html">Termine</a>
+      <a class="link-btn" href="../kassenbuch.html">Kassenbuch</a>
+      <a class="link-btn" href="../belege.html">Belege</a>
+      <a class="link-btn" href="../fahrtenbuch.html">Fahrtenbuch</a>
+      <a class="link-btn" href="../auswertung.html">Auswertung</a>
+      <a class="link-btn" href="../produkte.html">Produkte</a>
+      <a class="link-btn" href="../werkzeuge.html">Werkzeuge</a>
+      <a class="link-btn" href="../eur.html">EÜR</a>
+      <a class="link-btn" href="../einstellungen.html">Einstellungen</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════
+   LOGGING
+═══════════════════════════════════════════════════ */
+const logEl = document.getElementById('log');
+const prog  = document.getElementById('progress');
+let step = 0, totalSteps = 12;
+
+function log(msg, cls = 'ok') {
+  const line = document.createElement('div');
+  line.className = cls;
+  line.textContent = msg;
+  logEl.appendChild(line);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+function setProgress(n) {
+  prog.style.width = Math.round((n / totalSteps) * 100) + '%';
+}
+function setStatus(txt) {
+  document.getElementById('statusLabel').textContent = txt;
+}
+
+/* ═══════════════════════════════════════════════════
+   SIMULATION DATA
+═══════════════════════════════════════════════════ */
+
+const EINSTELLUNGEN = {
+  sName:    'Stupar Dienstleistungen',
+  sContact: 'Jürgen Stupar',
+  sStreet:  'Hauptstraße 12',
+  sPlz:     '70173',
+  sCity:    'Stuttgart',
+  sTel:     '0711 123456',
+  sEmail:   'info@max4work.com',
+  sWeb:     'www.max4work.com',
+  sStNr:    '99/123/45678',
+  sIBAN:    'DE12 3456 7890 1234 5678 90',
+  sBIC:     'DEUTDEDB',
+  sBank:    'Deutsche Bank Stuttgart',
+  sZahlungsziel: 14,
+  sWaehrung: 'EUR',
+  sLand:    'Deutschland',
+  kleinunternehmer: true,
+};
+
+const FEATURES = {
+  autoSuggestInvoice: true,
+  livePreview: true,
+  highlightOverdue: true,
+  datevSchnittstelle: true,
+  kartenAnbieter: 'osm',
+  panel_kpiGrid: true,
+  panel_bank: true,
+  panel_top5: true,
+  panel_kleinunternehmer: true,
+  panel_ausstehend: true,
+  panel_chartMonat: true,
+  panel_chartVergleich: true,
+  panel_quartal: true,
+};
+
+const KUNDEN = [
+  { id: 1001, name: 'Weber Bau GmbH',         plz: '70374', ort: 'Stuttgart', strasse: 'Bauhofstr. 8',     tel: '0711 445566', email: 'weber.bau@example.de',    turnus: 'monatlich',   status: 'aktiv',  notiz: 'Stammkunde seit 2023', km: '12' },
+  { id: 1002, name: 'TechStart Solutions AG',  plz: '70190', ort: 'Stuttgart', strasse: 'Industriepark 3', tel: '0711 778899', email: 'info@techstart.de',        turnus: 'monatlich',   status: 'aktiv',  notiz: 'Monatliche IT-Betreuung', km: '8' },
+  { id: 1003, name: 'Bäckerei Hofmann',        plz: '70597', ort: 'Stuttgart', strasse: 'Möhringer Str. 22', tel: '0711 334455', email: 'hofmann@baeckerei.de',  turnus: 'quartalsweise', status: 'aktiv', notiz: '',      km: '5' },
+  { id: 1004, name: 'Klaus Breitner',          plz: '70435', ort: 'Stuttgart', strasse: 'Gartenweg 7',     tel: '0172 1122334', email: 'k.breitner@gmail.com',   turnus: '',            status: 'aktiv',  notiz: 'Privatkunde',    km: '3' },
+  { id: 1005, name: 'Sabine Krause',           plz: '70563', ort: 'Stuttgart', strasse: 'Waldblick 15',   tel: '0176 9988776', email: 'sabine.krause@web.de',    turnus: '',            status: 'aktiv',  notiz: 'Website-Pflege', km: '7' },
+  { id: 1006, name: 'Renovierung Koch GmbH',   plz: '71063', ort: 'Sindelfingen', strasse: 'Gewerbestr. 4', tel: '07031 556677', email: 'info@reno-koch.de',    turnus: '',            status: 'inaktiv', notiz: 'Projekt abgeschlossen 2025', km: '25' },
+];
+
+const PRODUKTE = [
+  { id: 2001, name: 'IT-Beratung',          artnr: 'DL-001', kategorie: 'dienstleistung', ek_netto: 0,   vk_netto: 85,  vk_brutto: 85,  ust: 0,  einheit: 'Std' },
+  { id: 2002, name: 'Website-Pflege',        artnr: 'DL-002', kategorie: 'dienstleistung', ek_netto: 0,   vk_netto: 65,  vk_brutto: 65,  ust: 0,  einheit: 'Std' },
+  { id: 2003, name: 'Softwareinstallation',  artnr: 'DL-003', kategorie: 'dienstleistung', ek_netto: 0,   vk_netto: 120, vk_brutto: 120, ust: 0,  einheit: 'Psch' },
+  { id: 2004, name: 'USB-Hub 7-Port',        artnr: 'HW-001', kategorie: 'artikel',        ek_netto: 22,  vk_netto: 38,  vk_brutto: 38,  ust: 0,  einheit: 'Stk' },
+  { id: 2005, name: 'Backup-Festplatte 2TB', artnr: 'HW-002', kategorie: 'artikel',        ek_netto: 65,  vk_netto: 95,  vk_brutto: 95,  ust: 0,  einheit: 'Stk' },
+];
+
+const RECHNUNGEN = [
+  /* Januar */
+  { id:3001, nr:'RE-2026-001', kunde:'Weber Bau GmbH',         betrag:1020, datum:'2026-01-08', faellig:'2026-01-22', status:'bezahlt',   zahlungsart:'Überweisung', typ:'rechnung', kundentyp:'firma',  locked:true, lockedAt:'2026-01-08T09:00:00.000Z' },
+  { id:3002, nr:'RE-2026-002', kunde:'TechStart Solutions AG', betrag:680,  datum:'2026-01-15', faellig:'2026-01-29', status:'bezahlt',   zahlungsart:'Überweisung', typ:'rechnung', kundentyp:'firma',  locked:true, lockedAt:'2026-01-15T10:30:00.000Z' },
+  { id:3003, nr:'RE-2026-003', kunde:'Klaus Breitner',         betrag:255,  datum:'2026-01-22', faellig:'2026-02-05', status:'bezahlt',   zahlungsart:'Bar',         typ:'rechnung', kundentyp:'privat', locked:true, lockedAt:'2026-01-22T14:00:00.000Z' },
+  /* Februar */
+  { id:3004, nr:'RE-2026-004', kunde:'Weber Bau GmbH',         betrag:1020, datum:'2026-02-05', faellig:'2026-02-19', status:'bezahlt',   zahlungsart:'Überweisung', typ:'rechnung', kundentyp:'firma',  locked:true, lockedAt:'2026-02-05T09:00:00.000Z' },
+  { id:3005, nr:'RE-2026-005', kunde:'Bäckerei Hofmann',       betrag:390,  datum:'2026-02-12', faellig:'2026-02-26', status:'bezahlt',   zahlungsart:'Überweisung', typ:'rechnung', kundentyp:'firma',  locked:true, lockedAt:'2026-02-12T11:00:00.000Z' },
+  { id:3006, nr:'RE-2026-006', kunde:'Sabine Krause',          betrag:195,  datum:'2026-02-20', faellig:'2026-03-06', status:'bezahlt',   zahlungsart:'Paypal',      typ:'rechnung', kundentyp:'privat', locked:true, lockedAt:'2026-02-20T16:00:00.000Z' },
+  /* März */
+  { id:3007, nr:'RE-2026-007', kunde:'Weber Bau GmbH',         betrag:1105, datum:'2026-03-04', faellig:'2026-03-18', status:'bezahlt',   zahlungsart:'Überweisung', typ:'rechnung', kundentyp:'firma',  locked:true, lockedAt:'2026-03-04T09:00:00.000Z' },
+  { id:3008, nr:'RE-2026-008', kunde:'TechStart Solutions AG', betrag:765,  datum:'2026-03-11', faellig:'2026-03-25', status:'bezahlt',   zahlungsart:'Überweisung', typ:'rechnung', kundentyp:'firma',  locked:true, lockedAt:'2026-03-11T10:00:00.000Z' },
+  { id:3009, nr:'RE-2026-009', kunde:'Klaus Breitner',         betrag:120,  datum:'2026-03-20', faellig:'2026-04-03', status:'bezahlt',   zahlungsart:'Bar',         typ:'rechnung', kundentyp:'privat', locked:true, lockedAt:'2026-03-20T13:00:00.000Z' },
+  /* April */
+  { id:3010, nr:'RE-2026-010', kunde:'Weber Bau GmbH',         betrag:1020, datum:'2026-04-03', faellig:'2026-04-17', status:'bezahlt',   zahlungsart:'Überweisung', typ:'rechnung', kundentyp:'firma',  locked:true, lockedAt:'2026-04-03T09:00:00.000Z' },
+  { id:3011, nr:'RE-2026-011', kunde:'Bäckerei Hofmann',       betrag:455,  datum:'2026-04-10', faellig:'2026-04-24', status:'bezahlt',   zahlungsart:'Überweisung', typ:'rechnung', kundentyp:'firma',  locked:true, lockedAt:'2026-04-10T11:00:00.000Z' },
+  { id:3012, nr:'RE-2026-012', kunde:'Sabine Krause',          betrag:260,  datum:'2026-04-22', faellig:'2026-05-06', status:'offen',     zahlungsart:'',            typ:'rechnung', kundentyp:'privat', locked:true, lockedAt:'2026-04-22T15:00:00.000Z' },
+  /* Mai */
+  { id:3013, nr:'RE-2026-013', kunde:'Weber Bau GmbH',         betrag:1105, datum:'2026-05-06', faellig:'2026-05-20', status:'bezahlt',   zahlungsart:'Überweisung', typ:'rechnung', kundentyp:'firma',  locked:true, lockedAt:'2026-05-06T09:00:00.000Z' },
+  { id:3014, nr:'RE-2026-014', kunde:'TechStart Solutions AG', betrag:595,  datum:'2026-05-14', faellig:'2026-05-28', status:'ueberfaellig', zahlungsart:'',         typ:'rechnung', kundentyp:'firma',  locked:true, lockedAt:'2026-05-14T10:00:00.000Z' },
+  /* Juni */
+  { id:3015, nr:'RE-2026-015', kunde:'Weber Bau GmbH',         betrag:1020, datum:'2026-06-03', faellig:'2026-06-17', status:'bezahlt',   zahlungsart:'Überweisung', typ:'rechnung', kundentyp:'firma',  locked:true, lockedAt:'2026-06-03T09:00:00.000Z' },
+  { id:3016, nr:'RE-2026-016', kunde:'Bäckerei Hofmann',       betrag:325,  datum:'2026-06-10', faellig:'2026-06-24', status:'offen',     zahlungsart:'',            typ:'rechnung', kundentyp:'firma',  locked:true, lockedAt:'2026-06-10T11:00:00.000Z' },
+];
+
+const ZAHLUNGEN = [
+  { id:9001, rechnungId:3001, nr:'RE-2026-001', betrag:1020, datum:'2026-01-21', art:'Überweisung', notiz:'' },
+  { id:9002, rechnungId:3002, nr:'RE-2026-002', betrag:680,  datum:'2026-01-28', art:'Überweisung', notiz:'' },
+  { id:9003, rechnungId:3003, nr:'RE-2026-003', betrag:255,  datum:'2026-01-22', art:'Bar', notiz:'Barzahlung vor Ort' },
+  { id:9004, rechnungId:3004, nr:'RE-2026-004', betrag:1020, datum:'2026-02-18', art:'Überweisung', notiz:'' },
+  { id:9005, rechnungId:3005, nr:'RE-2026-005', betrag:390,  datum:'2026-02-25', art:'Überweisung', notiz:'' },
+  { id:9006, rechnungId:3006, nr:'RE-2026-006', betrag:195,  datum:'2026-03-04', art:'Paypal', notiz:'' },
+  { id:9007, rechnungId:3007, nr:'RE-2026-007', betrag:1105, datum:'2026-03-17', art:'Überweisung', notiz:'' },
+  { id:9008, rechnungId:3008, nr:'RE-2026-008', betrag:765,  datum:'2026-03-24', art:'Überweisung', notiz:'' },
+  { id:9009, rechnungId:3009, nr:'RE-2026-009', betrag:120,  datum:'2026-03-20', art:'Bar', notiz:'' },
+  { id:9010, rechnungId:3010, nr:'RE-2026-010', betrag:1020, datum:'2026-04-16', art:'Überweisung', notiz:'' },
+  { id:9011, rechnungId:3011, nr:'RE-2026-011', betrag:455,  datum:'2026-04-23', art:'Überweisung', notiz:'' },
+  { id:9012, rechnungId:3013, nr:'RE-2026-013', betrag:1105, datum:'2026-05-19', art:'Überweisung', notiz:'' },
+  { id:9013, rechnungId:3015, nr:'RE-2026-015', betrag:1020, datum:'2026-06-16', art:'Überweisung', notiz:'' },
+];
+
+const KASSENBUCH = [
+  /* Januar */
+  { id:8001, datum:'2026-01-03', art:'ausgabe', betrag:38.50,  kat:'Büro',      notiz:'Briefmarken & Porto' },
+  { id:8002, datum:'2026-01-07', art:'ausgabe', betrag:124.90, kat:'Material',  notiz:'USB-Kabel & Adapter' },
+  { id:8003, datum:'2026-01-22', art:'einnahme',betrag:255.00, kat:'Bar',       notiz:'RE-2026-003 Klaus Breitner' },
+  /* Februar */
+  { id:8004, datum:'2026-02-04', art:'ausgabe', betrag:62.00,  kat:'Büro',      notiz:'Druckerpatronen' },
+  { id:8005, datum:'2026-02-11', art:'ausgabe', betrag:210.00, kat:'Sonstiges', notiz:'Fortbildung Online-Kurs IT-Security' },
+  { id:8006, datum:'2026-02-18', art:'ausgabe', betrag:28.40,  kat:'Büro',      notiz:'Papier A4 5 Pakete' },
+  /* März */
+  { id:8007, datum:'2026-03-03', art:'ausgabe', betrag:89.00,  kat:'Werkzeug',  notiz:'Schraubendreher-Set' },
+  { id:8008, datum:'2026-03-10', art:'ausgabe', betrag:45.60,  kat:'Fahrzeug',  notiz:'Parkgebühren Kundentermine' },
+  { id:8009, datum:'2026-03-20', art:'einnahme',betrag:120.00, kat:'Bar',       notiz:'RE-2026-009 Klaus Breitner' },
+  { id:8010, datum:'2026-03-25', art:'ausgabe', betrag:15.80,  kat:'Büro',      notiz:'Versandmaterial' },
+  /* April */
+  { id:8011, datum:'2026-04-02', art:'ausgabe', betrag:74.90,  kat:'Material',  notiz:'HDMI-Kabel & Switches' },
+  { id:8012, datum:'2026-04-15', art:'ausgabe', betrag:320.00, kat:'Sonstiges', notiz:'Software-Lizenz (Antivirus Jahreslizenz)' },
+  { id:8013, datum:'2026-04-22', art:'ausgabe', betrag:33.00,  kat:'Büro',      notiz:'Toner Nachfüllset' },
+  /* Mai */
+  { id:8014, datum:'2026-05-06', art:'ausgabe', betrag:51.20,  kat:'Fahrzeug',  notiz:'Tanken VW Passat' },
+  { id:8015, datum:'2026-05-13', art:'ausgabe', betrag:19.90,  kat:'Büro',      notiz:'Stempel nachbestellt' },
+  { id:8016, datum:'2026-05-20', art:'ausgabe', betrag:140.00, kat:'Sonstiges', notiz:'Mitgliedsbeitrag IHK' },
+  { id:8017, datum:'2026-05-27', art:'ausgabe', betrag:67.50,  kat:'Material',  notiz:'Netzwerkkabel 10m x5' },
+  /* Juni */
+  { id:8018, datum:'2026-06-02', art:'ausgabe', betrag:44.80,  kat:'Fahrzeug',  notiz:'Tanken' },
+  { id:8019, datum:'2026-06-10', art:'ausgabe', betrag:88.00,  kat:'Werkzeug',  notiz:'Multimeter digital' },
+  { id:8020, datum:'2026-06-16', art:'ausgabe', betrag:26.40,  kat:'Büro',      notiz:'Notizbücher 3 Stk' },
+  { id:8021, datum:'2026-06-18', art:'ausgabe', betrag:59.90,  kat:'Material',  notiz:'Raspberry Pi 4B' },
+  { id:8022, datum:'2026-06-20', art:'ausgabe', betrag:32.00,  kat:'Sonstiges', notiz:'Bewirtungsbeleg Kundentreffen' },
+];
+
+const BELEGE = [
+  { id:6001, datum:'2026-02-04', betrag:62.00,  kat:'Büro',      notiz:'Druckerpatronen Canon',      steuer:true,  dateiname:'', data:'' },
+  { id:6002, datum:'2026-02-11', betrag:210.00, kat:'Sonstiges', notiz:'Online-Kurs IT-Security',    steuer:true,  dateiname:'', data:'' },
+  { id:6003, datum:'2026-03-08', betrag:89.00,  kat:'Werkzeug',  notiz:'Schraubendreher Wera Set',   steuer:true,  dateiname:'', data:'' },
+  { id:6004, datum:'2026-04-12', betrag:320.00, kat:'Sonstiges', notiz:'Avast Antivirus Jahreslizenz', steuer:true, dateiname:'', data:'' },
+  { id:6005, datum:'2026-04-22', betrag:33.00,  kat:'Büro',      notiz:'Toner Samsung',              steuer:true,  dateiname:'', data:'' },
+  { id:6006, datum:'2026-05-20', betrag:140.00, kat:'Sonstiges', notiz:'IHK Jahresbeitrag',          steuer:false, dateiname:'', data:'' },
+  { id:6007, datum:'2026-06-10', betrag:88.00,  kat:'Werkzeug',  notiz:'Multimeter Fluke 115',       steuer:true,  dateiname:'', data:'' },
+  { id:6008, datum:'2026-06-20', betrag:32.00,  kat:'Sonstiges', notiz:'Restaurantbeleg Kundentreffen Weber', steuer:true, dateiname:'', data:'' },
+];
+
+const TERMINE = [
+  { id:7001, datum:'2026-06-09', von:'09:00', bis:'10:30', titel:'Ersttermin TechStart – Jahresplanung IT', notiz:'Raum: Konferenz 2', farbe:'#C8D93A', wiederholung:'keine' },
+  { id:7002, datum:'2026-06-12', von:'14:00', bis:'15:00', titel:'Wartung Server Weber Bau',                notiz:'Admin-Zugang mitbringen', farbe:'#34D399', wiederholung:'keine' },
+  { id:7003, datum:'2026-06-16', von:'10:00', bis:'11:00', titel:'Telefonkonferenz Bäckerei Hofmann',       notiz:'Neues Kassensystem besprechen', farbe:'#60A5FA', wiederholung:'keine' },
+  { id:7004, datum:'2026-06-18', von:'16:00', bis:'17:00', titel:'Kundentreffen Weber Bau – Feedback',      notiz:'Restaurant Schlossgarten', farbe:'#F59E0B', wiederholung:'keine' },
+  { id:7005, datum:'2026-06-23', von:'09:00', bis:'12:00', titel:'Installation Netzwerk TechStart AG',      notiz:'Switches + Patchpanel', farbe:'#C8D93A', wiederholung:'keine' },
+  { id:7006, datum:'2026-06-25', von:'13:00', bis:'14:00', titel:'Beratungsgespräch Sabine Krause',         notiz:'Website-Redesign', farbe:'#34D399', wiederholung:'keine' },
+  { id:7007, datum:'2026-06-27', von:'10:00', bis:'11:00', titel:'Angebot Weber Bau – Juli',                notiz:'Neue Firewall besprechen', farbe:'#C8D93A', wiederholung:'keine' },
+  { id:7008, datum:'2026-06-30', von:'08:30', bis:'09:30', titel:'Buchhaltung – Monatsabschluss Juni',      notiz:'max4work EÜR prüfen', farbe:'#F87171', wiederholung:'keine' },
+  { id:7009, datum:'2026-07-03', von:'10:00', bis:'12:00', titel:'Netzwerkausbau Bäckerei Hofmann',         notiz:'2 neue Arbeitsplätze', farbe:'#60A5FA', wiederholung:'keine' },
+  { id:7010, datum:'2026-07-07', von:'09:00', bis:'10:00', titel:'Monatsgespräch TechStart AG',             notiz:'Remote per Video', farbe:'#C8D93A', wiederholung:'monatlich' },
+];
+
+const FAHRZEUGE = [
+  { id:5001, name:'VW Passat 2.0 TDI', kz:'S-JS 4742', typ:'PKW', erstzulassung:'2021-03' },
+];
+
+const FAHRTEN = [
+  { id:4001, datum:'2026-06-02', fahrzeug:'S-JS 4742', startKm:48200, endKm:48212, distanz:12, startOrt:'Stuttgart Büro',    zielOrt:'Weber Bau GmbH Bauhofstr.', abfahrt:'07:45', ankunft:'08:15', zweck:'dienstlich', kunde:'Weber Bau GmbH', notiz:'' },
+  { id:4002, datum:'2026-06-06', fahrzeug:'S-JS 4742', startKm:48212, endKm:48228, distanz:16, startOrt:'Stuttgart Büro',    zielOrt:'TechStart AG Industriepark', abfahrt:'09:00', ankunft:'09:35', zweck:'dienstlich', kunde:'TechStart Solutions AG', notiz:'Routerprobleme' },
+  { id:4003, datum:'2026-06-09', fahrzeug:'S-JS 4742', startKm:48228, endKm:48244, distanz:16, startOrt:'Stuttgart Büro',    zielOrt:'TechStart AG Industriepark', abfahrt:'08:45', ankunft:'09:20', zweck:'dienstlich', kunde:'TechStart Solutions AG', notiz:'Ersttermin Jahresplanung' },
+  { id:4004, datum:'2026-06-12', fahrzeug:'S-JS 4742', startKm:48244, endKm:48256, distanz:12, startOrt:'Stuttgart Büro',    zielOrt:'Weber Bau GmbH',             abfahrt:'13:45', ankunft:'14:15', zweck:'dienstlich', kunde:'Weber Bau GmbH', notiz:'Server-Wartung' },
+  { id:4005, datum:'2026-06-16', fahrzeug:'S-JS 4742', startKm:48256, endKm:48261, distanz:5,  startOrt:'Stuttgart Büro',    zielOrt:'Bäckerei Hofmann',           abfahrt:'10:00', ankunft:'10:15', zweck:'dienstlich', kunde:'Bäckerei Hofmann', notiz:'' },
+  { id:4006, datum:'2026-06-18', fahrzeug:'S-JS 4742', startKm:48261, endKm:48273, distanz:12, startOrt:'Stuttgart Büro',    zielOrt:'Restaurant Schlossgarten',   abfahrt:'15:45', ankunft:'16:15', zweck:'dienstlich', kunde:'Weber Bau GmbH', notiz:'Kundentreffen' },
+  { id:4007, datum:'2026-06-20', fahrzeug:'S-JS 4742', startKm:48273, endKm:48280, distanz:7,  startOrt:'Stuttgart Büro',    zielOrt:'Sabine Krause Waldblick',    abfahrt:'09:00', ankunft:'09:20', zweck:'dienstlich', kunde:'Sabine Krause', notiz:'Website' },
+  { id:4008, datum:'2026-06-23', fahrzeug:'S-JS 4742', startKm:48280, endKm:48296, distanz:16, startOrt:'Stuttgart Büro',    zielOrt:'TechStart AG Industriepark', abfahrt:'08:30', ankunft:'09:05', zweck:'dienstlich', kunde:'TechStart Solutions AG', notiz:'Netzwerkinstallation' },
+];
+
+/* ═══════════════════════════════════════════════════
+   SIMULATION RUNNER
+═══════════════════════════════════════════════════ */
+async function runSimulation() {
+  logEl.innerHTML = '';
+  step = 0;
+  setProgress(0);
+  document.getElementById('btnLoad').disabled = true;
+  setStatus('Simulation läuft...');
+
+  const delay = ms => new Promise(r => setTimeout(r, ms));
+
+  try {
+    log('▶ Starte Simulation – max4work Daten laden', 'info');
+    await delay(200);
+
+    // Auth-Session setzen (damit App-Seiten zugänglich sind)
+    localStorage.setItem('m4w_sess', '1');
+    localStorage.setItem('max4work_last_backup', String(Date.now()));
+    log('✓ Session & Auth gesetzt', 'ok'); step++; setProgress(step); await delay(150);
+
+    // Einstellungen
+    localStorage.setItem('max4work_einstellungen', JSON.stringify(EINSTELLUNGEN));
+    log(`✓ Einstellungen: "${EINSTELLUNGEN.sName}" – ${EINSTELLUNGEN.sEmail}`, 'ok'); step++; setProgress(step); await delay(150);
+
+    // Features
+    localStorage.setItem('max4work_features', JSON.stringify(FEATURES));
+    log('✓ Features / Toggles aktiviert', 'ok'); step++; setProgress(step); await delay(150);
+
+    // Kunden
+    localStorage.setItem('max4work_kunden', JSON.stringify(KUNDEN));
+    log(`✓ ${KUNDEN.length} Kunden geladen (3 Firma, 2 Privat, 1 inaktiv)`, 'ok'); step++; setProgress(step); await delay(150);
+
+    // Produkte
+    localStorage.setItem('max4work_produkte', JSON.stringify(PRODUKTE));
+    log(`✓ ${PRODUKTE.length} Produkte / Dienstleistungen geladen`, 'ok'); step++; setProgress(step); await delay(150);
+
+    // Rechnungen
+    localStorage.setItem('max4work_rechnungen', JSON.stringify(RECHNUNGEN));
+    const bezahlt = RECHNUNGEN.filter(r => r.status === 'bezahlt').length;
+    const offen   = RECHNUNGEN.filter(r => r.status === 'offen').length;
+    const ueberf  = RECHNUNGEN.filter(r => r.status === 'ueberfaellig').length;
+    const umsatz  = RECHNUNGEN.reduce((s,r) => s+r.betrag, 0);
+    log(`✓ ${RECHNUNGEN.length} Rechnungen: ${bezahlt} bezahlt, ${offen} offen, ${ueberf} überfällig`, 'ok');
+    log(`  Gesamtumsatz Jan–Jun 2026: ${umsatz.toLocaleString('de-DE')} €`, 'info');
+    step++; setProgress(step); await delay(150);
+
+    // Zahlungen
+    localStorage.setItem('max4work_zahlungen', JSON.stringify(ZAHLUNGEN));
+    log(`✓ ${ZAHLUNGEN.length} Zahlungseingänge geladen`, 'ok'); step++; setProgress(step); await delay(150);
+
+    // Kassenbuch
+    localStorage.setItem('max4work_kassenbuch', JSON.stringify(KASSENBUCH));
+    localStorage.setItem('max4work_kassenbuch_anfangsbestand', '500');
+    const einnahmen = KASSENBUCH.filter(e => e.art === 'einnahme').reduce((s,e) => s+e.betrag, 0);
+    const ausgaben  = KASSENBUCH.filter(e => e.art === 'ausgabe').reduce((s,e) => s+e.betrag, 0);
+    log(`✓ ${KASSENBUCH.length} Kassenbucheinträge: +${einnahmen.toLocaleString('de-DE')} € / −${ausgaben.toLocaleString('de-DE')} €`, 'ok'); step++; setProgress(step); await delay(150);
+
+    // Belege
+    localStorage.setItem('max4work_belege', JSON.stringify(BELEGE));
+    const belegeSum = BELEGE.reduce((s,b) => s+b.betrag, 0);
+    log(`✓ ${BELEGE.length} Belege (${belegeSum.toLocaleString('de-DE')} € Ausgaben)`, 'ok'); step++; setProgress(step); await delay(150);
+
+    // Termine
+    localStorage.setItem('max4work_termine', JSON.stringify(TERMINE));
+    log(`✓ ${TERMINE.length} Termine (Jun/Jul 2026, 1x monatlich wiederkehrend)`, 'ok'); step++; setProgress(step); await delay(150);
+
+    // Fahrzeuge & Fahrtenbuch
+    localStorage.setItem('max4work_fahrzeuge',   JSON.stringify(FAHRZEUGE));
+    localStorage.setItem('max4work_fahrtenbuch', JSON.stringify(FAHRTEN));
+    const km = FAHRTEN.reduce((s,f) => s+f.distanz, 0);
+    log(`✓ ${FAHRTEN.length} Fahrten (${km} km), Fahrzeug: ${FAHRZEUGE[0].name}`, 'ok'); step++; setProgress(step); await delay(150);
+
+    step = totalSteps; setProgress(step);
+    log('', 'ok');
+    log('══════════════════════════════════════════', 'info');
+    log('✓ Simulation abgeschlossen – alle Daten geladen!', 'ok');
+    log(`  Zeitraum: Januar – Juni 2026`, 'info');
+    log(`  Szenario: IT-Dienstleister / Freelancer`, 'info');
+    log(`  Umsatz gesamt: ${umsatz.toLocaleString('de-DE')} €`, 'info');
+    setStatus('Fertig! Alle Daten geladen.');
+    showStats();
+
+  } catch(e) {
+    log('✗ Fehler: ' + e.message, 'err');
+    setStatus('Fehler aufgetreten.');
+  }
+
+  document.getElementById('btnLoad').disabled = false;
+}
+
+function checkData() {
+  logEl.innerHTML = '';
+  log('▶ Prüfe vorhandene localStorage-Daten...', 'info');
+  const keys = [
+    ['max4work_einstellungen', 'Einstellungen'],
+    ['max4work_kunden',        'Kunden'],
+    ['max4work_produkte',      'Produkte'],
+    ['max4work_rechnungen',    'Rechnungen'],
+    ['max4work_zahlungen',     'Zahlungen'],
+    ['max4work_kassenbuch',    'Kassenbuch'],
+    ['max4work_belege',        'Belege'],
+    ['max4work_termine',       'Termine'],
+    ['max4work_fahrtenbuch',   'Fahrtenbuch'],
+    ['max4work_fahrzeuge',     'Fahrzeuge'],
+    ['max4work_features',      'Features'],
+  ];
+  let found = 0;
+  keys.forEach(([key, label]) => {
+    const raw = localStorage.getItem(key);
+    if (!raw) {
+      log(`✗ ${label}: (leer)`, 'warn');
+    } else {
+      try {
+        const val = JSON.parse(raw);
+        const cnt = Array.isArray(val) ? ` – ${val.length} Einträge` : '';
+        log(`✓ ${label}${cnt}`, 'ok');
+        found++;
+      } catch {
+        log(`? ${label}: ungültiges JSON`, 'err');
+      }
+    }
+  });
+  log(`──────────────────────`, 'info');
+  log(`${found}/${keys.length} Schlüssel vorhanden`, found === keys.length ? 'ok' : 'warn');
+  showStats();
+}
+
+function resetData() {
+  if (!confirm('Wirklich ALLE max4work-Daten löschen? Diese Aktion kann nicht rückgängig gemacht werden.')) return;
+  const prefix = 'max4work_';
+  const toDelete = Object.keys(localStorage).filter(k => k.startsWith(prefix) || k === 'm4w_sess');
+  logEl.innerHTML = '';
+  log('▶ Lösche alle Daten...', 'warn');
+  toDelete.forEach(k => {
+    localStorage.removeItem(k);
+    log(`  ✗ ${k} entfernt`, 'err');
+  });
+  log(`──────────────────────`, 'info');
+  log(`${toDelete.length} Einträge gelöscht.`, 'warn');
+  setStatus(`${toDelete.length} Einträge gelöscht.`);
+  document.getElementById('statsCard').style.display = 'none';
+  setProgress(0);
+}
+
+function showStats() {
+  const card = document.getElementById('statsCard');
+  const grid = document.getElementById('statsGrid');
+  const rec  = JSON.parse(localStorage.getItem('max4work_rechnungen') || '[]');
+  const knd  = JSON.parse(localStorage.getItem('max4work_kunden') || '[]');
+  const kb   = JSON.parse(localStorage.getItem('max4work_kassenbuch') || '[]');
+  const trm  = JSON.parse(localStorage.getItem('max4work_termine') || '[]');
+  const fhr  = JSON.parse(localStorage.getItem('max4work_fahrtenbuch') || '[]');
+  const blg  = JSON.parse(localStorage.getItem('max4work_belege') || '[]');
+  const umsatz = rec.reduce((s,r) => s+r.betrag, 0);
+
+  grid.innerHTML = [
+    { val: rec.length,  lbl: 'Rechnungen' },
+    { val: knd.length,  lbl: 'Kunden' },
+    { val: kb.length,   lbl: 'Kassenbuch' },
+    { val: trm.length,  lbl: 'Termine' },
+    { val: fhr.length,  lbl: 'Fahrten' },
+    { val: blg.length,  lbl: 'Belege' },
+    { val: umsatz.toLocaleString('de-DE') + ' €', lbl: 'Umsatz Gesamt' },
+    { val: rec.filter(r=>r.status==='offen'||r.status==='ueberfaellig').reduce((s,r)=>s+r.betrag,0).toLocaleString('de-DE') + ' €', lbl: 'Offen / Überfällig' },
+  ].map(s => `<div class="stat-card"><div class="val">${s.val}</div><div class="lbl">${s.lbl}</div></div>`).join('');
+
+  card.style.display = 'block';
+}
+
+// Beim Laden automatisch Status prüfen
+window.addEventListener('load', () => { setTimeout(checkData, 300); });
+</script>
+</body>
+</html>
