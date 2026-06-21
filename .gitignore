@@ -12,3 +12,6 @@ backups/
 # Editor
 .vscode/
 .idea/
+
+# Cloudflare Wrangler
+.wrangler/
