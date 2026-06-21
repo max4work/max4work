@@ -143,6 +143,7 @@ max4work/
 | `max4work_logo` | Firmenlogo als Base64 |
 | `max4work_last_backup` | Timestamp letztes Backup |
 | `max4work_backup_interval` | Backup-Erinnerungsintervall (Tage) |
+| `max4work_layout_config` | Auswertung Layout `{ order: string[], spans: {key:number}, heights: {key:number} }` |
 | `max4work_geocache` | Geocoding-Cache (Adressen → Koordinaten) |
 | `max4work_kunden_view` | `'liste'\|'karte'` |
 | `max4work_portale` | Behörden-Zugangsdaten |
@@ -280,7 +281,13 @@ Produkte → Auswertung → Einstellungen (Design | Firma | Funktionen | Daten &
 
 ## Letzter Stand (2026-06-21)
 
-- Sessions 1–48 abgeschlossen
+- Sessions 1–49 abgeschlossen
+- **21.06.2026 Session 49 – Auswertung Layout-Editor:**
+  - **auswertung.html:** Alle 10 Panels in `.tile-wrap[data-key="panel_..."]` gewrapped; CSS für Edit-Mode (`.layout-bar`, `.le-*`); 3 Topbar-Buttons `#btnLayoutEdit / #btnLayoutSave / #btnLayoutCancel`
+  - **js/auswertung.js:** `panel_monat` zu PANEL_CONFIG + PANEL_SPANS; `getPanelLayout()` → `getLayoutConfig()` / `saveLayoutConfig()` (Key: `max4work_layout_config`); `applyPanelLayout()` neu (Wrapper-basiert); Edit-Mode: `enterEditMode()`, `exitEditMode()`, `_injectEditBars()`, `leMoveLeft/Right()`, `leSetSpan()`, `leSetHeight()`
+  - **UX:** ⊞-Button → Edit-Modus → Kacheln live verschieben (◀▶), Breite 1–4 Spalten, Höhe 100–600px → ✓ Speichern in localStorage → bleibt dauerhaft
+  - **Backup:** kein separates Backup (direkt gepusht) · **Git:** Commit `61440f0`
+
 - **21.06.2026 Session 48 – Auswertung Redesign (4-Spalten-Layout):**
   - **auswertung.html:** `.content` von `1fr 1fr` auf `repeat(4, 1fr)` umgestellt; `#chartMonatPanel` vereinfacht (chart-only); neues `#monatPanel` für Monatsdetails als separates Panel
   - **auswertung.html – KPI-Fix:** `font-size: clamp(16px, 1.6vw, 24px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis` (Jahresausgaben-Kachel war abgeschnitten)
