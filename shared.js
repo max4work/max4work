@@ -78,6 +78,64 @@ const APP_DESIGNS = {
       .kpi { border-radius: 13px !important; box-shadow: 0 1px 4px rgba(0,0,0,0.08), 0 0 0 0.5px rgba(0,0,0,0.06) !important; border: none !important; }
     `
   },
+  win98: {
+    label: 'Windows 98',
+    icon: '⊞',
+    desc: 'Retro Classic',
+    vars: {
+      '--bg':'#C0C0C0','--surface':'#C0C0C0','--border':'#808080',
+      '--text':'#000000','--muted':'#444444','--soft':'#D4D0C8',
+      '--accent':'#000080','--accent-pale':'#C0C0FF','--dark':'#000080',
+      '--green':'#008000','--red':'#CC0000','--r':'0px'
+    },
+    font: "'Tahoma', 'MS Sans Serif', 'Arial', sans-serif",
+    extraCSS: `
+      /* Sidebar – klassisches Silber-Grau, Navy-Titelleiste */
+      .sidebar { background: #C0C0C0 !important; border-right: 2px solid #808080 !important; box-shadow: none !important; }
+      .brand { background: linear-gradient(90deg, #000080 0%, #1084D0 100%) !important; padding: 7px 12px !important; margin-bottom: 4px !important; }
+      .brand-name { color: #fff !important; font-size: 12px !important; font-weight: 700 !important; letter-spacing: 0 !important; }
+      .brand-dot { display: none !important; }
+
+      /* Nav – klassische Windows-Listenauswahl */
+      .nav-link { font-size: 12px !important; letter-spacing: 0 !important; border-radius: 0 !important; padding: 6px 10px !important; }
+      .nav-link:hover { background: #000080 !important; color: #fff !important; border-radius: 0 !important; }
+      .nav-link.on { border-left: none !important; background: #000080 !important; color: #fff !important; border-radius: 0 !important; padding-left: 10px !important; font-weight: 400 !important; }
+      .nav-group-label { font-size: 10px !important; font-weight: 700 !important; letter-spacing: 0 !important; }
+
+      /* Topbar – Win98 Window Chrome */
+      .topbar { background: #C0C0C0 !important; border-bottom: 2px solid #808080 !important; box-shadow: inset 0 -1px 0 #fff !important; height: 52px !important; }
+      .page-name { font-size: 13px !important; font-weight: 700 !important; letter-spacing: 0 !important; }
+
+      /* Panels – Win98 GroupBox (eingedrückt) mit Navy-Titelleiste */
+      .panel { background: #C0C0C0 !important; border: 1px solid #000 !important; border-radius: 0 !important; box-shadow: inset 1px 1px 0 #808080, inset -1px -1px 0 #fff !important; }
+      .panel-head { background: linear-gradient(90deg, #000080 0%, #1084D0 100%) !important; color: #fff !important; border-bottom: none !important; border-radius: 0 !important; font-size: 12px !important; font-weight: 700 !important; letter-spacing: 0 !important; padding: 6px 12px !important; }
+
+      /* Buttons – Win98 3D erhaben */
+      .btn { background: #C0C0C0 !important; color: #000 !important; border: 1px solid #000 !important; border-radius: 0 !important; box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #808080 !important; font-size: 12px !important; letter-spacing: 0 !important; font-weight: 400 !important; min-height: auto !important; padding: 5px 16px !important; }
+      .btn-blue { font-weight: 700 !important; }
+      .btn-ghost { background: #C0C0C0 !important; border: 1px solid #000 !important; color: #000 !important; box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #808080 !important; }
+      .btn:hover { background: #d4d0c8 !important; }
+      .btn:active { box-shadow: inset 1px 1px 0 #808080, inset -1px -1px 0 #fff !important; }
+
+      /* KPI-Kacheln – eingedrückt */
+      .kpi { background: #C0C0C0 !important; border: 1px solid #000 !important; border-radius: 0 !important; box-shadow: inset 1px 1px 0 #808080, inset -1px -1px 0 #fff !important; }
+
+      /* Avatar – Navy-Quadrat */
+      .av { background: #000080 !important; border-radius: 0 !important; }
+
+      /* Inputs/Selects – sunken (entgegengesetzt zum Button) */
+      .field input, .field select, .field textarea { background: #fff !important; border: 1px solid #000 !important; border-radius: 0 !important; box-shadow: inset 1px 1px 0 #808080, inset -1px -1px 0 #fff !important; }
+      .field input:focus, .field textarea:focus { border-color: #000 !important; outline: 1px dotted #000080 !important; }
+
+      /* Filter-Tabs – flache Knöpfe */
+      .ftab, .ltab { border-radius: 0 !important; }
+      .ftab.on, .ltab.on { background: #000080 !important; color: #fff !important; border-color: #000080 !important; }
+
+      /* Modal */
+      .modal { border-radius: 0 !important; border: 2px solid #000 !important; box-shadow: 4px 4px 0 #000 !important; }
+      .modal-head { background: linear-gradient(90deg, #000080 0%, #1084D0 100%) !important; color: #fff !important; border-radius: 0 !important; }
+    `
+  },
   android: {
     label: 'Android',
     icon: '▲',
@@ -131,7 +189,8 @@ const SCHEME_KEY = 'max4work_color_scheme';
 const DARK_VARS = {
   standard: {'--bg':'#111312','--surface':'#1C1F1B','--border':'#2C2F2A','--text':'#E4E6E0','--muted':'#8A8D86','--soft':'#232622','--accent-pale':'#263010'},
   ios:      {'--bg':'#000000','--surface':'#1C1C1E','--border':'#38383A','--text':'#FFFFFF','--muted':'#8E8E93','--soft':'#2C2C2E','--accent-pale':'#0B2E5C'},
-  android:  {'--bg':'#1C1B1F','--surface':'#28252C','--border':'#49454F','--text':'#E6E1E5','--muted':'#938F99','--soft':'#2D2B32','--accent-pale':'#21005D'}
+  android:  {'--bg':'#1C1B1F','--surface':'#28252C','--border':'#49454F','--text':'#E6E1E5','--muted':'#938F99','--soft':'#2D2B32','--accent-pale':'#21005D'},
+  win98:    {'--bg':'#C0C0C0','--surface':'#C0C0C0','--border':'#808080','--text':'#000000','--muted':'#444444','--soft':'#D4D0C8','--accent-pale':'#C0C0FF'}
 };
 let _schemeMQ = null;
 function _sysMQCb() { applyColorScheme(localStorage.getItem(SCHEME_KEY)||'light'); }

@@ -61,7 +61,7 @@
   .toggle input:checked + .toggle-track::after { transform: translateX(18px); }
 
   /* App-Design-Auswahl */
-  .app-design-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .app-design-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
   .app-design-card { border: 2px solid var(--border); border-radius: 12px; padding: 14px 12px 12px; cursor: pointer; transition: all .15s; text-align: center; user-select: none; background: var(--surface); }
   .app-design-card:hover { border-color: var(--accent); }
   .app-design-card.on { border-color: var(--accent); background: var(--accent-pale); box-shadow: 0 0 0 1px var(--accent); }
@@ -323,7 +323,7 @@
   .stab { flex: 0 0 auto; min-height: 44px; }
   .field-row { grid-template-columns: 1fr !important; }
   .scheme-grid { grid-template-columns: repeat(2, 1fr) !important; }
-  .app-design-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .app-design-grid { grid-template-columns: repeat(2, 1fr) !important; } /* 4 Designs = 2×2 auf Mobile */
   .inv-tpl-grid { grid-template-columns: 1fr !important; }
   .inv-layout-grid { grid-template-columns: repeat(3, 1fr) !important; }
   .map-provider-grid { grid-template-columns: repeat(2, 1fr) !important; }
@@ -548,6 +548,20 @@
               </div>
               <div class="app-design-name">Android</div>
               <div class="app-design-desc">Material Design 3</div>
+            </div>
+
+            <!-- Windows 98 -->
+            <div class="app-design-card" id="adcard-win98" onclick="selectAppDesign('win98')">
+              <div class="app-design-preview" style="background:#C0C0C0;border-radius:0;gap:0;padding:0;">
+                <div class="adp-sidebar" style="background:#000080;border-radius:0;width:22px;flex-shrink:0;"></div>
+                <div class="adp-content" style="padding:4px 4px 4px 5px;gap:3px;">
+                  <div class="adp-bar" style="background:linear-gradient(90deg,#000080,#1084D0);border-radius:0;width:100%;height:8px;margin-bottom:2px;"></div>
+                  <div class="adp-card" style="background:#C0C0C0;border:1px solid #808080;box-shadow:inset 1px 1px 0 #808080,inset -1px -1px 0 #fff;border-radius:0;height:11px;"></div>
+                  <div class="adp-card" style="background:#C0C0C0;border:1px solid #000;box-shadow:inset 1px 1px 0 #fff,inset -1px -1px 0 #808080;border-radius:0;width:55%;height:9px;"></div>
+                </div>
+              </div>
+              <div class="app-design-name">Windows 98</div>
+              <div class="app-design-desc">Retro Classic</div>
             </div>
 
           </div>
