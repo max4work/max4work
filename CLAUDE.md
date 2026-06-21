@@ -281,7 +281,12 @@ Produkte → Auswertung → Einstellungen (Design | Firma | Funktionen | Daten &
 
 ## Letzter Stand (2026-06-21)
 
-- Sessions 1–51 abgeschlossen
+- Sessions 1–52 abgeschlossen
+- **21.06.2026 Session 52 – iOS + Android M3: markante Form-Unterschiede:**
+  - **shared.js – iOS extraCSS:** Grouped-Inset-List-Stil (Panels weiß, 0.5px hairline border, kein Schatten, border-radius 10px); Topbar 52px, echtes Frosted Glass (blur 30px saturate 200%); Seitentitel 22px/700/−0.4px Tracking; Nav-Labels UPPERCASE/10px/grau; Inputs weiß mit voller Umrandung + blauer Focus-Ring (box-shadow 3px); KPI-Kacheln weiß mit hairline border; Tabs abgerundet (8px)
+  - **shared.js – Android M3 extraCSS:** Filled Text Field (lila Hintergrund #ECE6F0 + nur Unterstrich, border-radius 4px 4px 0 0 — stärkstes Designmerkmal!); Topbar 64px/#FEF7FF + lila Border (#E8DEF8); Seitentitel 28px/weight 400 (deutlich größer UND leichter als iOS); Panel-Header lila Text (#6750A4); KPI lila getönt (#ECE6F0); Buttons echte Pills (100px); Nav aktiv #D0BCFF Hintergrund, #21005D Text; Modals 28px Radius
+  - **Backup:** `Backups/backup_2026-06-21_session52/` · **Git:** Commit `42b0ad1`
+
 - **21.06.2026 Session 51 – Design-Überarbeitung + Windows 98:**
   - **shared.js – iOS extraCSS komplett neu:** Seitentitel 19px/700/−0.5px Tracking, Topbar 56px + echter Frosted-Glass (blur+saturate), Panels ohne harten Rand (0.5px rgba-Ring + Schatten), Avatar Squircle (22% border-radius), Buttons Letter-Spacing −0.1px, Nav-Links kein Border-left (blaue Pill)
   - **shared.js – Android M3 extraCSS komplett neu:** Seitentitel 22px/weight 400 (leicht, größter Form-Unterschied), Topbar 64px + Elevation-Schatten statt Border, alle Nav-Links + Buttons `border-radius:100px` (Pill), Panels getönt (#F7F2FA) mit lila Schatten, Panel-Head ohne Separator
