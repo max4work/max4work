@@ -215,9 +215,39 @@
   .inv-field-chip.on .inv-field-check { color: var(--accent); }
   .inv-field-chip:not(.on) .inv-field-check { color: var(--border); }
 
-  /* Rechnungsblatt-Design: Zwei-Spalten-Layout */
-  #section-rechnung { grid-template-columns: 1fr 595px; gap: 22px; align-items: start; }
-  .inv-controls-col { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+  /* Rechnungsblatt-Design: Zwei-Spalten-Layout (Panel+Nav | Vorschau) */
+  #section-rechnung { grid-template-columns: 1fr 595px; gap: 18px; align-items: start; }
+  .inv-controls-col { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+
+  /* Nav-Leiste (horizontal, oberhalb der Kachel) */
+  .inv-nav-sidebar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 6px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .inv-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 12px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 12.5px;
+    color: var(--text);
+    white-space: nowrap;
+    transition: background .12s, color .12s;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .inv-nav-item:hover { background: var(--soft); }
+  .inv-nav-item.on { background: var(--accent-pale); color: var(--dark); font-weight: 600; }
+  .inv-nav-icon { flex-shrink: 0; opacity: .5; }
+  .inv-nav-item.on .inv-nav-icon { opacity: 1; }
 
   .inv-preview-sticky { position: sticky; top: 20px; display: flex; flex-direction: column; gap: 10px; }
   .inv-preview-label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; text-align: center; }
@@ -360,7 +390,10 @@
   .mapping-grid { grid-template-columns: 1fr !important; }
   .preview-table { min-width: 0 !important; }
   #section-rechnung { grid-template-columns: 1fr !important; }
-  #section-rechnung > *:not(.inv-controls-col) { display: none !important; }
+  #section-rechnung > .inv-controls-col > .inv-preview-col { display: none !important; }
+  .inv-nav-sidebar { overflow-x: auto; flex-wrap: nowrap !important; }
+  .inv-nav-icon { display: none !important; }
+  .inv-nav-item { font-size: 12px; padding: 6px 10px !important; }
   #unsavedBar { left: 0 !important; bottom: calc(56px + env(safe-area-inset-bottom, 0px)) !important; }
   .save-bar { flex-wrap: wrap; }
   .topbar-right .btn { display: none !important; }
@@ -1458,8 +1491,11 @@ Bitte überweisen Sie den Rechnungsbetrag unter Angabe der Rechnungsnummer auf d
     <!-- ══ RECHNUNG ══════════════════════════════════════════════════════ -->
     <div class="settings-section" id="section-rechnung" style="display:none">
 
-    <!-- ── Linke Spalte: Steuerung ── -->
+    <!-- ── Linke Spalte: Panel + Nav ── -->
     <div class="inv-controls-col">
+
+    <!-- ── Nav-Leiste (oberhalb der Kachel) ── -->
+    <nav class="inv-nav-sidebar" id="invNavSidebar"></nav>
 
       <!-- Meine Blattvorlagen -->
       <div class="inv-panel-wrap" data-ikey="inv_blattvorlagen">
@@ -1987,6 +2023,6 @@ Bitte überweisen Sie den Rechnungsbetrag unter Angabe der Rechnungsnummer auf d
 </div>
 
 <script src="js/datentransfer.js?v=202606210001"></script>
-<script src="js/einstellungen.js?v=202606210001"></script>
+<script src="js/einstellungen.js?v=202606220002"></script>
 </body>
 </html>

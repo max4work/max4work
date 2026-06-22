@@ -2,6 +2,35 @@
   const TOGGLE_KEY = 'max4work_features';
   const LAYOUT_KEY = 'max4work_panel_layout';
 
+  /* ── Rechnungsblatt-Design: Panel-Sidebar (muss vor load() stehen) ── */
+  let _activeInvPanelKey = 'inv_blattvorlagen';
+  const INV_PANEL_CONFIG = [
+    { key: 'inv_blattvorlagen', label: 'Meine Blattvorlagen' },
+    { key: 'inv_doctype',       label: 'Dokument-Typ' },
+    { key: 'inv_design',        label: 'Design-Vorlage' },
+    { key: 'inv_schrift',       label: 'Schrift & Farbe' },
+    { key: 'inv_inhalt',        label: 'Inhalt-Vorlage' },
+    { key: 'inv_logo',          label: 'Logo' },
+    { key: 'inv_zahlung',       label: 'Zahlungsbedingungen' },
+    { key: 'inv_logopos',       label: 'Logo-Position & Größe' },
+    { key: 'inv_felder',        label: 'Sichtbare Felder' },
+    { key: 'inv_texte',         label: 'Individuelle Texte' },
+  ];
+  const INV_LAYOUT_KEY    = 'max4work_inv_panel_layout';
+  const INV_DEFAULT_ORDER = INV_PANEL_CONFIG.map(p => p.key);
+  const _INV_NAV_IC = {
+    inv_blattvorlagen: `<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>`,
+    inv_doctype:       `<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`,
+    inv_design:        `<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>`,
+    inv_schrift:       `<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>`,
+    inv_inhalt:        `<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>`,
+    inv_logo:          `<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`,
+    inv_zahlung:       `<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>`,
+    inv_logopos:       `<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="5 9 2 12 5 15"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/></svg>`,
+    inv_felder:        `<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
+    inv_texte:         `<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`,
+  };
+
   /* ── Ungespeicherte Änderungen ── */
   let _pendingToggles = null;
   let _pendingTheme = null;
@@ -198,9 +227,7 @@
     try { localStorage.setItem('max4work_settings_tab', id); } catch(e) {}
     if (id === 'account' && typeof _loadAccountTab === 'function') _loadAccountTab();
     if (typeof refreshSubNav === 'function') refreshSubNav();
-    const lba = document.getElementById('invLayoutBtnArea');
-    if (lba) lba.style.display = id === 'rechnung' ? 'flex' : 'none';
-    if (id === 'rechnung') applyInvPanelLayout();
+    if (id === 'rechnung') { buildInvNavSidebar(); applyInvPanelLayout(); }
   }
 
   /* ── Feature-Toggles ── */
@@ -1548,6 +1575,8 @@
     renderTextFontSelects();
     _initLogoPos(cfg);
     renderBlattvorlagen();
+    buildInvNavSidebar();
+    applyInvPanelLayout();
   }
 
   function renderInvTplGrid() {
@@ -2869,20 +2898,31 @@ function _showBankResult({ auto, suggest, unmatched, total }) {
    Rechnungsblatt-Design – Panel Layout-Editor
    (analog zum Layout-Editor in auswertung.html)
 ════════════════════════════════════════ */
-const INV_PANEL_CONFIG = [
-  { key: 'inv_blattvorlagen', label: 'Meine Blattvorlagen' },
-  { key: 'inv_doctype',       label: 'Dokument-Typ' },
-  { key: 'inv_design',        label: 'Design-Vorlage' },
-  { key: 'inv_schrift',       label: 'Schrift & Farbe' },
-  { key: 'inv_inhalt',        label: 'Inhalt-Vorlage' },
-  { key: 'inv_logo',          label: 'Logo' },
-  { key: 'inv_zahlung',       label: 'Zahlungsbedingungen' },
-  { key: 'inv_logopos',       label: 'Logo-Position & Größe' },
-  { key: 'inv_felder',        label: 'Sichtbare Felder' },
-  { key: 'inv_texte',         label: 'Individuelle Texte' },
-];
-const INV_LAYOUT_KEY    = 'max4work_inv_panel_layout';
-const INV_DEFAULT_ORDER = INV_PANEL_CONFIG.map(p => p.key);
+
+function buildInvNavSidebar() {
+  const nav = document.getElementById('invNavSidebar');
+  if (!nav) return;
+  const cfg   = getInvLayout();
+  const items = cfg.order
+    .map(k => INV_PANEL_CONFIG.find(p => p.key === k))
+    .filter(p => p && !cfg.hidden?.[p.key]);
+  nav.innerHTML = items.map(p => `
+    <div class="inv-nav-item${p.key === _activeInvPanelKey ? ' on' : ''}"
+         data-ikey="${p.key}" onclick="selectInvNavItem('${p.key}')">
+      <span class="inv-nav-icon">${_INV_NAV_IC[p.key] || ''}</span>
+      <span>${p.label}</span>
+    </div>`).join('');
+}
+
+function selectInvNavItem(key) {
+  _activeInvPanelKey = key;
+  document.querySelectorAll('.inv-panel-wrap').forEach(w => {
+    w.style.display = w.dataset.ikey === key ? '' : 'none';
+  });
+  document.querySelectorAll('#invNavSidebar .inv-nav-item').forEach(el => {
+    el.classList.toggle('on', el.dataset.ikey === key);
+  });
+}
 
 function getInvLayout() {
   try {
@@ -2908,8 +2948,9 @@ function applyInvPanelLayout() {
   cfg.order.forEach(key => {
     const wrap = col.querySelector(`.inv-panel-wrap[data-ikey="${key}"]`);
     if (!wrap) return;
-    const hidden = !!(cfg.hidden?.[key]);
-    wrap.style.display = hidden ? 'none' : '';
+    // hidden = aus dem Layout dauerhaft ausgeblendet; sonst: nur aktives Panel zeigen
+    const layoutHidden = !!(cfg.hidden?.[key]);
+    wrap.style.display = layoutHidden ? 'none' : (key === _activeInvPanelKey ? '' : 'none');
     col.insertBefore(wrap, savBar);
   });
 }
