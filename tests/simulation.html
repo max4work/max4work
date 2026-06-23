@@ -398,6 +398,53 @@ const FAHRTEN = [
   { id:4008, datum:'2026-06-23', fahrzeug:'S-JS 4742', startKm:48280, endKm:48296, distanz:16, startOrt:'Stuttgart Büro',    zielOrt:'TechStart AG Industriepark', abfahrt:'08:30', ankunft:'09:05', zweck:'dienstlich', kunde:'TechStart Solutions AG', notiz:'Netzwerkinstallation' },
 ];
 
+const ANGEBOTE = [
+  {
+    id: 5101, nr: 'ANG-2026-001', datum: '2026-04-15', gueltig: '2026-05-15',
+    status: 'angenommen', kunde: 'Weber Bau GmbH', email: 'weber.bau@example.de',
+    betreff: 'Netzwerkausbau Büro – 3 neue Arbeitsplätze',
+    notiz: 'Auftrag erteilt 2026-04-22', betrag: 950,
+    positions: [
+      { desc: 'Netzwerk-Switch 24-Port managed', qty: 1, price: 280, vat: 0 },
+      { desc: 'Patchkabel CAT6 je 3m (10 Stk)', qty: 1, price: 85, vat: 0 },
+      { desc: 'Installation & Konfiguration', qty: 7, price: 85, vat: 0 },
+    ]
+  },
+  {
+    id: 5102, nr: 'ANG-2026-002', datum: '2026-05-10', gueltig: '2026-06-10',
+    status: 'offen', kunde: 'TechStart Solutions AG', email: 'info@techstart.de',
+    betreff: 'Server-Upgrade & Virtualisierung',
+    notiz: '', betrag: 2040,
+    positions: [
+      { desc: 'Beratung & Konzept', qty: 4, price: 85, vat: 0 },
+      { desc: 'Hypervisor-Einrichtung (VMware ESXi)', qty: 8, price: 85, vat: 0 },
+      { desc: 'RAM-Erweiterung 64 GB ECC', qty: 1, price: 320, vat: 0 },
+    ]
+  },
+  {
+    id: 5103, nr: 'ANG-2026-003', datum: '2026-05-22', gueltig: '2026-06-22',
+    status: 'offen', kunde: 'Bäckerei Hofmann', email: 'hofmann@baeckerei.de',
+    betreff: 'Einführung neues Kassensystem',
+    notiz: 'Rückfrage zu Kassenhardware ausstehend', betrag: 780,
+    positions: [
+      { desc: 'Softwareinstallation & Konfiguration', qty: 1, price: 120, vat: 0 },
+      { desc: 'Schulung Mitarbeiter (2 Std)', qty: 2, price: 85, vat: 0 },
+      { desc: 'Einrichtung Belegdrucker + TSE', qty: 1, price: 490, vat: 0 },
+    ]
+  },
+  {
+    id: 5104, nr: 'ANG-2026-004', datum: '2026-03-05', gueltig: '2026-04-05',
+    status: 'abgelehnt', kunde: 'Klaus Breitner', email: 'k.breitner@gmail.com',
+    betreff: 'Heimnetzwerk + Smart-Home-Einrichtung',
+    notiz: 'Kunde hat anderweitig beauftragt', betrag: 425,
+    positions: [
+      { desc: 'Fritzbox 7590 konfigurieren', qty: 1, price: 65, vat: 0 },
+      { desc: 'WLAN Mesh-Erweiterung (2 Repeater)', qty: 1, price: 210, vat: 0 },
+      { desc: 'Smart-Home-Zentrale einrichten', qty: 1, price: 150, vat: 0 },
+    ]
+  },
+];
+
 /* ═══════════════════════════════════════════════════
    SIMULATION RUNNER
 ═══════════════════════════════════════════════════ */
