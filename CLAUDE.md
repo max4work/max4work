@@ -281,7 +281,15 @@ Produkte → Auswertung → Einstellungen (Design | Firma | Funktionen | Daten &
 
 ## Letzter Stand (2026-06-23)
 
-- Sessions 1–55 abgeschlossen
+- Sessions 1–56 abgeschlossen
+- **23.06.2026 Session 56 – Simulation: Angebote + Mobile:**
+  - **tests/simulation.html** erweitert:
+    - 4 Angebote (`max4work_angebote`) hinzugefügt: ANG-2026-001 bis -004 (angenommen, offen, offen, abgelehnt) mit vollständigen `positions`-Arrays
+    - `checkData()`, `runSimulation()` und `showStats()` um Angebote-Key ergänzt; `totalSteps` 12→13
+    - Links „Module öffnen" um `angebote.html` und `ustva.html` ergänzt
+    - Mobile-CSS `@media (max-width: 600px)`: Buttons 100% Breite, 2-spaltige Grids, kleinere Schriften
+  - **Backup:** `Backups/backup_2026-06-23_session56/`
+
 - **23.06.2026 Session 55 – Blatt-Design Mobile-Fixes:**
   - **einstellungen.html `@media (max-width: 768px)`:**
     - **Bugfix:** Falscher Selektor `#section-rechnung > .inv-controls-col > .inv-preview-col` → korrigiert zu `#section-rechnung > .inv-preview-col` (A4-Vorschau wurde nie ausgeblendet → horizontaler Overflow auf Mobile)
