@@ -902,9 +902,12 @@ function _createMehrSheet() {
   const CHEVRON = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>`;
   const GROUPS = [
     { title: 'Auswertungen', items: [
-      { href: 'auswertung.html', label: 'Auswertung',   icon: _MEHR_IC.chart,  bg: '#007AFF' },
+      { href: 'auswertung.html', label: 'Auswertung',   icon: _MEHR_IC.chart,   bg: '#007AFF' },
+      { href: 'eur.html',        label: 'EÜR',          icon: _MEHR_IC.coins,   bg: '#10B981' },
+      { href: 'ustva.html',      label: 'USt-Voranm.',  icon: _MEHR_IC.percent, bg: '#FF6B35' },
     ]},
     { title: 'Buchhaltung', items: [
+      { href: 'angebote.html',   label: 'Angebote',     icon: _MEHR_IC.angebot, bg: '#0EA5E9' },
       { href: 'belege.html',     label: 'Belege',        icon: _MEHR_IC.clip,   bg: '#FF9500' },
       { href: 'kassenbuch.html', label: 'Kassenbuch',    icon: _MEHR_IC.wallet, bg: '#34C759' },
       { href: 'produkte.html',   label: 'Produkte',      icon: _MEHR_IC.box,    bg: '#FF3B30' },
