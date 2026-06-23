@@ -222,11 +222,40 @@
   }
 
   @media (max-width:768px) {
+    /* Topbar-Right: horizontal scrollbar für Tabs */
+    .topbar-right {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      flex-wrap: nowrap;
+      padding-bottom: 2px;
+    }
+    .topbar-right::-webkit-scrollbar { display: none; }
+    .topbar-right .btn-ghost { display: none; } /* Drucken-Button ausblenden */
+    .mode-toggle, .year-tabs, .period-tabs { flex-shrink: 0; }
+    .ytab, .ptab, .mtab { white-space: nowrap; }
+
+    /* Content: 1-spaltig */
     .content { grid-template-columns:1fr !important; }
+    .span2 { grid-column: 1 !important; }
+
+    /* Status-KPIs: gestapelt */
     .status-kpis { flex-direction:column; }
     .sk { border-right:none; border-bottom:1px solid var(--border); }
+
+    /* Steuer-Kennzahlen: gestapelt */
     .tax-kz-wrap { flex-direction:column; }
     .tax-arrow { transform:rotate(90deg); }
+
+    /* ELSTER-Zeilen: kompakter */
+    .ef-row { padding: 8px 10px; }
+    .ef-name { display: none; }
+    .ef-unit { display: none; }
+    .ef-val { min-width: 80px; }
+
+    /* Zahllast-Zeilen */
+    .zl-row { padding: 8px 12px; }
+    .zl-kz { min-width: 60px; }
+    .zl-val { min-width: 80px; }
   }
 </style>
 </head>
