@@ -279,6 +279,18 @@ python3 -m http.server 8080
 Dashboard → Rechnungen (Rechnungen | Zahlungen) → Kunden (Liste | Karte) → Belege → Termine →
 Produkte → Auswertung → Einstellungen (Design | Firma | Funktionen | Daten & Sync | Portale | Handbuch | Blatt-Design | E-Mail | Datentransfer | Account) → Werkzeuge (Angebot | m² | Kamera | MwSt | Stundensatz) → **Fahrtenbuch** (ganz unten)
 
+## Letzter Stand (2026-06-23)
+
+- Sessions 1–55 abgeschlossen
+- **23.06.2026 Session 55 – Blatt-Design Mobile-Fixes:**
+  - **einstellungen.html `@media (max-width: 768px)`:**
+    - **Bugfix:** Falscher Selektor `#section-rechnung > .inv-controls-col > .inv-preview-col` → korrigiert zu `#section-rechnung > .inv-preview-col` (A4-Vorschau wurde nie ausgeblendet → horizontaler Overflow auf Mobile)
+    - **Live-Vorschau auf Mobile eingeblendet:** `display: block !important` statt `none`; `position: static` für `.inv-preview-sticky`; A4-Rahmen mit `zoom: 0.62; width: calc(100% / 0.62)` → erscheint verkleinert aber proportional korrekt; `.inv-a4-scroll` max-height 520px
+    - **Design-Kacheln:** `.inv-layout-grid` auf 4 Spalten; Thumb-Höhe 36px; Name-Schrift 9px; Card-Padding reduziert; `zoom: 0.64; width: calc(100% / 0.64)` → 36% kleiner als Original
+    - **Inhalt-Vorlage-Kacheln:** `.inv-tpl-grid` auf 2 Spalten; Padding 9px; Icon 17px; Titel 11.5px; Beschreibung 10px; `zoom: 0.64; width: calc(100% / 0.64)`
+    - **Nav:** `-webkit-overflow-scrolling: touch` ergänzt; `.inv-chip-row { flex-wrap: wrap }`
+  - **Backup:** `Backups/backup_2026-06-23_session55/`
+
 ## Letzter Stand (2026-06-21)
 
 - Sessions 1–53 abgeschlossen
