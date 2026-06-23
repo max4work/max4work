@@ -555,6 +555,12 @@ Produkte → Auswertung → Einstellungen (Design | Firma | Funktionen | Daten &
   - Icons 27×27px, Tab-Item 58×48px, Labels ausgeblendet
   - Position: `bottom: calc(76px + ...)`, `.main` padding-bottom: `calc(88px + ...)`
   - Backup: `Backups/backup_2026-06-12/shared.css`
+- **22.06.2026 Session 54 – Sidebar-Navigation Rechnungsblatt-Design:**
+  - TDZ-Fix: `INV_PANEL_CONFIG`, `_INV_NAV_IC`, `_activeInvPanelKey`, `INV_LAYOUT_KEY`, `INV_DEFAULT_ORDER` an Dateianfang (js/einstellungen.js Zeile 6–32) verschoben — alle `const`/`let` müssen VOR `load()` (Zeile ~2060) stehen
+  - Layout: 3-spaltig (158px Sidebar | 1fr | 595px) → 2-spaltig (1fr | 595px)
+  - Nav jetzt horizontal als Tab-Leiste oberhalb der Bearbeitungs-Kachel (innerhalb `.inv-controls-col`)
+  - Mobile: `flex-wrap: nowrap; overflow-x: auto`, Icons ausgeblendet
+  - Backup: `Backups/backup_2026-06-22_session54/` · Git: `7ae5992`
 - **12.06.2026 Session 25 – GitHub Hosting:**
   - Git-Repository initialisiert und auf github.com/max4work/max4work gepusht (39 Dateien)
   - GitHub Pages aktiviert: https://max4work.github.io/max4work/ (getestet ✓)
