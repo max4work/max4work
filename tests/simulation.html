@@ -607,10 +607,12 @@ function showStats() {
   const trm  = JSON.parse(localStorage.getItem('max4work_termine') || '[]');
   const fhr  = JSON.parse(localStorage.getItem('max4work_fahrtenbuch') || '[]');
   const blg  = JSON.parse(localStorage.getItem('max4work_belege') || '[]');
+  const ang  = JSON.parse(localStorage.getItem('max4work_angebote') || '[]');
   const umsatz = rec.reduce((s,r) => s+r.betrag, 0);
 
   grid.innerHTML = [
     { val: rec.length,  lbl: 'Rechnungen' },
+    { val: ang.length,  lbl: 'Angebote' },
     { val: knd.length,  lbl: 'Kunden' },
     { val: kb.length,   lbl: 'Kassenbuch' },
     { val: trm.length,  lbl: 'Termine' },
