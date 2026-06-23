@@ -11,8 +11,8 @@
 <meta property="og:url" content="https://max4work.com/einstellungen.html">
 <title>max4work – Einstellungen</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/shared.css?v=202606230311">
-<script src="shared.js?v=202606230311"></script>
+<link rel="stylesheet" href="css/shared.css?v=202606230324">
+<script src="shared.js?v=202606230324"></script>
 <style>
     .content { padding: 28px 32px; max-width: 1221px; display: flex; flex-direction: column; gap: 20px; }
   .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
@@ -392,7 +392,8 @@
   #section-rechnung { grid-template-columns: 1fr !important; }
   #section-rechnung > .inv-preview-col { display: block !important; }
   .inv-preview-sticky { position: static !important; }
-  .inv-a4-scroll { max-height: 420px !important; }
+  .inv-a4-outer { zoom: 0.62; width: calc(100% / 0.62); }
+  .inv-a4-scroll { max-height: 520px !important; }
   .inv-nav-sidebar { overflow-x: auto; flex-wrap: nowrap !important; -webkit-overflow-scrolling: touch; }
   .inv-nav-icon { display: none !important; }
   .inv-nav-item { font-size: 12px; padding: 6px 10px !important; }
@@ -2026,7 +2027,7 @@ Bitte überweisen Sie den Rechnungsbetrag unter Angabe der Rechnungsnummer auf d
   </div>
 </div>
 
-<script src="js/datentransfer.js?v=202606230311"></script>
-<script src="js/einstellungen.js?v=202606230311"></script>
+<script src="js/datentransfer.js?v=202606230324"></script>
+<script src="js/einstellungen.js?v=202606230324"></script>
 </body>
 </html>
