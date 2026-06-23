@@ -482,6 +482,13 @@ async function runSimulation() {
     localStorage.setItem('max4work_produkte', JSON.stringify(PRODUKTE));
     log(`✓ ${PRODUKTE.length} Produkte / Dienstleistungen geladen`, 'ok'); step++; setProgress(step); await delay(150);
 
+    // Angebote
+    localStorage.setItem('max4work_angebote', JSON.stringify(ANGEBOTE));
+    const angAng  = ANGEBOTE.filter(a => a.status === 'angenommen').length;
+    const angOff  = ANGEBOTE.filter(a => a.status === 'offen').length;
+    const angAbl  = ANGEBOTE.filter(a => a.status === 'abgelehnt').length;
+    log(`✓ ${ANGEBOTE.length} Angebote: ${angAng} angenommen, ${angOff} offen, ${angAbl} abgelehnt`, 'ok'); step++; setProgress(step); await delay(150);
+
     // Rechnungen
     localStorage.setItem('max4work_rechnungen', JSON.stringify(RECHNUNGEN));
     const bezahlt = RECHNUNGEN.filter(r => r.status === 'bezahlt').length;
