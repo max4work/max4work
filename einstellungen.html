@@ -11,8 +11,8 @@
 <meta property="og:url" content="https://max4work.com/einstellungen.html">
 <title>max4work – Einstellungen</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/shared.css?v=202606230239">
-<script src="shared.js?v=202606230239"></script>
+<link rel="stylesheet" href="css/shared.css?v=202606230305">
+<script src="shared.js?v=202606230305"></script>
 <style>
     .content { padding: 28px 32px; max-width: 1221px; display: flex; flex-direction: column; gap: 20px; }
   .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
@@ -390,10 +390,12 @@
   .mapping-grid { grid-template-columns: 1fr !important; }
   .preview-table { min-width: 0 !important; }
   #section-rechnung { grid-template-columns: 1fr !important; }
-  #section-rechnung > .inv-controls-col > .inv-preview-col { display: none !important; }
-  .inv-nav-sidebar { overflow-x: auto; flex-wrap: nowrap !important; }
+  #section-rechnung > .inv-preview-col { display: none !important; }
+  .inv-nav-sidebar { overflow-x: auto; flex-wrap: nowrap !important; -webkit-overflow-scrolling: touch; }
   .inv-nav-icon { display: none !important; }
   .inv-nav-item { font-size: 12px; padding: 6px 10px !important; }
+  .inv-layout-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .inv-chip-row { flex-wrap: wrap !important; }
   #unsavedBar { left: 0 !important; bottom: calc(56px + env(safe-area-inset-bottom, 0px)) !important; }
   .save-bar { flex-wrap: wrap; }
   .topbar-right .btn { display: none !important; }
@@ -2022,7 +2024,7 @@ Bitte überweisen Sie den Rechnungsbetrag unter Angabe der Rechnungsnummer auf d
   </div>
 </div>
 
-<script src="js/datentransfer.js?v=202606230239"></script>
-<script src="js/einstellungen.js?v=202606230239"></script>
+<script src="js/datentransfer.js?v=202606230305"></script>
+<script src="js/einstellungen.js?v=202606230305"></script>
 </body>
 </html>
