@@ -873,7 +873,7 @@ function initMobileNav() {
 
 function _injectTabBar() {
   const page = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
-  const MEHR_PAGES = ['auswertung.html','belege.html','kassenbuch.html','produkte.html','werkzeuge.html','fahrtenbuch.html','einstellungen.html','eur.html'];
+  const MEHR_PAGES = ['auswertung.html','belege.html','kassenbuch.html','produkte.html','werkzeuge.html','fahrtenbuch.html','einstellungen.html','eur.html','angebote.html','ustva.html'];
   const inMehr = MEHR_PAGES.includes(page);
 
   const TABS = [
