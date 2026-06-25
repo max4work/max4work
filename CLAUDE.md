@@ -279,6 +279,34 @@ python3 -m http.server 8080
 Dashboard → Rechnungen (Rechnungen | Zahlungen) → Kunden (Liste | Karte) → Belege → Termine →
 Produkte → Auswertung → Einstellungen (Design | Firma | Funktionen | Daten & Sync | Portale | Handbuch | Blatt-Design | E-Mail | Datentransfer | Account) → Werkzeuge (Angebot | m² | Kamera | MwSt | Stundensatz) → **Fahrtenbuch** (ganz unten)
 
+## Letzter Stand (2026-06-26)
+
+- Sessions 1–58 abgeschlossen
+- **26.06.2026 Session 58 – Produkte Bearbeiten/Import/Export + Rechnungen Produkt-Picker:**
+
+  **produkte.html:**
+  - **Bearbeiten:** Tabellenzeile anklicken → `openEdit(id)` öffnet Modal vorausgefüllt; Titel „Produkt bearbeiten", Button „Speichern", „Erstellen und neu" ausgeblendet; `saveProduct()` mit Edit-Pfad (`products[idx] = {...p, id: editingId}`); `?? ''` statt `|| ''` für 0-Werte
+  - **CSV-Import:** `handleFile()` liest Datei wirklich ein; `parseCSV()` mit Delimiter-Erkennung (`;`/`,`); `splitCSVLine()` mit Quote-Handling; `importInfo`-Feedback grün/rot; Import-Button-Listener trägt Produkte ein
+  - **CSV-Export:** `exportCSV()` mit UTF-8-BOM (`﻿`); „Exportieren"-Button in Topbar; Semikolon-Trennzeichen; Dateiname mit Datum
+  - **Mobile-Tabelle:** Versteckte Spalten geändert: 2,3,4,5 → 2,4,5,7 → Mobile zeigt Name | Kategorie-Badge | VK Brutto | Löschen
+  - **SW:** v14 → v15
+
+  **tests/simulation.html:**
+  - PRODUKTE-Daten auf korrektes Format gebracht: alle Preise als Strings (`"85.00"`), `ust` als String (`"0"`), `ek_brutto`/`beschreibung`/`bemerkung` ergänzt, `'Psch'` → `'Pauschal'`
+
+  **rechnungen.html + js/rechnungen.js – Produkt-Picker:**
+  - CSS: `.pos-actions`, `.prod-pick-wrap`, `.prod-pick-dd`, `.prod-pick-search`, `.prod-pick-item`, `.prod-pick-price`, `.prod-pick-empty`
+  - HTML: `.pos-actions` mit „Aus Produkten wählen" zuerst, dann „+ Position hinzufügen"
+  - JS: `toggleProdPicker()`, `renderProdPicker(search)`, `insertProdukt(id)` (fügt name/vk_netto/ust ein), outside-click Listener; alle `window`-exposed wegen IIFE-Scope
+  - **SW:** v15 → v16
+
+  **rechnungen.html – Layout:**
+  - Formular-Spalte: `400px → 460px` (+15%)
+  - Mobile Inputs Standardgröße: `.field input/select/textarea { min-height: unset; padding: 8px 11px; font-size: 13px; border-radius: 8px }` (überschreibt shared.css 44px/16px)
+  - **SW:** v16 → v17 → v18 → v19
+
+  - **Backup:** `Backups/backup_2026-06-26_session58/`
+
 ## Letzter Stand (2026-06-25)
 
 - Sessions 1–57 abgeschlossen
