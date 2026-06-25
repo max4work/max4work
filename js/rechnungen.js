@@ -534,6 +534,7 @@
     document.getElementById('topbarActionsListe').style.display = 'none';
     document.getElementById('topbarActionsForm').style.display = 'flex';
     const _tL1 = document.getElementById('topbarLeft'); if (_tL1) _tL1.style.display = '';
+    const _pb = document.getElementById('pdfBtn'); if (_pb) { _pb.disabled = true; setTimeout(() => { _pb.disabled = false; }, 400); }
     const formTitles = { mahnungen: 'Neue Mahnung', gutschriften: 'Neue Gutschrift' };
     document.getElementById('topbarTitle').textContent = formTitles[currentListeTab] || 'Neue Rechnung';
     const tabToTyp = { mahnungen: 'mahnung', gutschriften: 'gutschrift' };
