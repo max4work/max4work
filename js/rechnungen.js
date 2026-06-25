@@ -666,6 +666,77 @@
     positions.push({ desc: '', qty: '1', price: 0, ust: _defaultUst() }); renderPos(); rp();
   });
 
+  /* ═══ Produkt-Picker ═══ */
+  function _escH(s) {
+    return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  window.toggleProdPicker = function(e) {
+    e.stopPropagation();
+    const dd = document.getElementById('prodPickDd');
+    if (!dd) return;
+    const opening = !dd.classList.contains('open');
+    dd.classList.toggle('open', opening);
+    if (opening) {
+      const si = document.getElementById('prodPickSearch');
+      if (si) { si.value = ''; renderProdPicker(''); setTimeout(() => si.focus(), 40); }
+    }
+  };
+
+  window.renderProdPicker = function(search) {
+    const list = document.getElementById('prodPickList');
+    if (!list) return;
+    const produkte = JSON.parse(localStorage.getItem('max4work_produkte') || '[]');
+    if (!produkte.length) {
+      list.innerHTML = '<div class="prod-pick-empty">Noch keine Produkte angelegt.<br><a href="produkte.html" style="color:var(--accent);font-weight:500;text-decoration:none;">→ Produkte verwalten</a></div>';
+      return;
+    }
+    const q = (search || '').toLowerCase();
+    const filtered = produkte.filter(p =>
+      !q || p.name.toLowerCase().includes(q) || (p.artnr || '').toLowerCase().includes(q)
+    );
+    if (!filtered.length) {
+      list.innerHTML = '<div class="prod-pick-empty">Kein Treffer.</div>';
+      return;
+    }
+    list.innerHTML = filtered.map(p => {
+      const price = parseFloat(p.vk_netto) || 0;
+      const priceStr = price > 0
+        ? price.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'
+        : '—';
+      const typeLabel = p.kategorie === 'dienstleistung' ? 'Dienst.' : 'Artikel';
+      const einheit = p.einheit ? ' · ' + _escH(p.einheit) : '';
+      return `<div class="prod-pick-item" onclick="insertProdukt(${p.id})">
+        <div style="min-width:0">
+          <div class="prod-pick-name">${_escH(p.name)}</div>
+          <div class="prod-pick-sub">${typeLabel}${einheit} · Art.${_escH(p.artnr || '—')}</div>
+        </div>
+        <div class="prod-pick-price">${priceStr}</div>
+      </div>`;
+    }).join('');
+  };
+
+  window.insertProdukt = function(id) {
+    const produkte = JSON.parse(localStorage.getItem('max4work_produkte') || '[]');
+    const p = produkte.find(x => x.id === id);
+    if (!p) return;
+    positions.push({
+      desc: p.name,
+      qty: '1',
+      price: parseFloat(p.vk_netto) || 0,
+      ust: parseInt(p.ust) || 0,
+    });
+    renderPos(); rp();
+    const dd = document.getElementById('prodPickDd');
+    if (dd) dd.classList.remove('open');
+  };
+
+  document.addEventListener('click', function(e) {
+    const wrap = document.getElementById('prodPickWrap');
+    const dd = document.getElementById('prodPickDd');
+    if (dd && wrap && !wrap.contains(e.target)) dd.classList.remove('open');
+  });
+
   /* ═══ Totals ═══ */
   function calcNetto() {
     return positions.reduce((s, p) => {
