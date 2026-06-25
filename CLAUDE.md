@@ -279,6 +279,18 @@ python3 -m http.server 8080
 Dashboard → Rechnungen (Rechnungen | Zahlungen) → Kunden (Liste | Karte) → Belege → Termine →
 Produkte → Auswertung → Einstellungen (Design | Firma | Funktionen | Daten & Sync | Portale | Handbuch | Blatt-Design | E-Mail | Datentransfer | Account) → Werkzeuge (Angebot | m² | Kamera | MwSt | Stundensatz) → **Fahrtenbuch** (ganz unten)
 
+## Letzter Stand (2026-06-25)
+
+- Sessions 1–57 abgeschlossen
+- **25.06.2026 Session 57 – Blatt-Design Live-Vorschau Mobile: zoom-Fix + vollständiges Blatt:**
+  - **Root Cause:** `zoom` auf `.inv-a4-outer` (Flex-Child) wurde von iOS Safari ignoriert → `width: calc(100%/0.62)` wirkte ohne zoom → 553px breites Element → Grid-Spalte auf 553px aufgeblasen → Save-Bar abgeschnitten
+  - **Fix:** zoom von `.inv-a4-outer` auf `.inv-preview-sticky` (Block-Element, kein Flex-Child) verschoben → `zoom: 0.496 !important; width: calc(100% / 0.496) !important`
+  - **Vollständiges Blatt:** `.inv-a4-scroll { max-height: none !important; overflow-y: visible !important; }` — ganzes A4 (~417px visuell bei zoom 0.496) sichtbar ohne internen Scroll
+  - **Sicherheitsnetz:** `overflow-x: hidden !important` auf `#section-rechnung > .inv-preview-col`
+  - **Service Worker:** v11 → v12 → v13 → v14 (Cache-Busting nach jeder Änderung)
+  - **Zoom-Verlauf:** 0.62 → ×0.8 = 0.496 (−20% auf Wunsch)
+  - **Backup:** `Backups/backup_2026-06-25_session57/`
+
 ## Letzter Stand (2026-06-23)
 
 - Sessions 1–56 abgeschlossen
