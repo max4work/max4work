@@ -374,16 +374,24 @@
   #topbarActionsForm .btn-green { display: none !important; }
   #topbarActionsZahlungen .btn-ghost { display: none !important; }
 
-  /* Formular-Inputs: Standardgröße – ID-Selektor schlägt shared.css (0,6,1) */
+  /* Formular-Inputs: einheitliche Höhe auf Mobile (schlägt shared.css min-height:44px) */
   #formView .field input,
-  #formView .field select,
-  #formView .field textarea {
-    min-height: unset !important;
-    height: auto !important;
-    padding: 8px 11px !important;
+  #formView .field select {
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
+    padding: 0 11px !important;
     font-size: 13px !important;
     border-radius: 8px !important;
-    line-height: 1.4 !important;
+    box-sizing: border-box !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    line-height: 36px !important;
+  }
+  #formView .field textarea {
+    min-height: unset !important;
+    padding: 8px 11px !important;
+    font-size: 13px !important;
   }
 }
 </style>
