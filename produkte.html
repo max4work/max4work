@@ -813,6 +813,8 @@
   let products = JSON.parse(localStorage.getItem('max4work_produkte') || '[]');
   let activeTab = 'alle';
   let searchVal = '';
+  let editingId = null;
+  let parsedImportData = [];
   let artNrCounter = products.length > 0
     ? Math.max(...products.map(p => parseInt(p.artnr) || 1000)) + 1
     : 1001;
