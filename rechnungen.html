@@ -11,10 +11,10 @@
 <meta property="og:url" content="https://max4work.com/rechnungen.html">
 <title>max4work – Rechnung erstellen</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/shared.css?v=202606260038">
+<link rel="stylesheet" href="css/shared.css?v=202606260041">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="shared.js?v=202606260038"></script>
+<script src="shared.js?v=202606260041"></script>
 <style>
   
   .btn { padding: 7px 15px; border-radius: 8px; font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; border: none; transition: all 0.12s; display: inline-flex; align-items: center; gap: 6px; }
@@ -557,7 +557,6 @@
           <tbody id="posBody"></tbody>
         </table>
         <div class="pos-actions">
-          <button type="button" class="add-pos-btn" id="addPosBtn">+ Position hinzufügen</button>
           <div class="prod-pick-wrap" id="prodPickWrap">
             <button type="button" class="add-pos-btn" id="prodPickBtn" onclick="toggleProdPicker(event)" style="color:var(--text);opacity:.7;">
               <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align:-1px"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
@@ -570,6 +569,7 @@
               <div class="prod-pick-list" id="prodPickList"></div>
             </div>
           </div>
+          <button type="button" class="add-pos-btn" id="addPosBtn">+ Position hinzufügen</button>
         </div>
         <div class="totals-block" id="totalsBlock"></div>
 
@@ -864,8 +864,8 @@ Bitte überweisen Sie den Rechnungsbetrag unter Angabe der Rechnungsnummer auf d
   </div>
 </div>
 
-<script src="js/rechnungen.js?v=202606260038"></script>
-<script src="js/zahlungen.js?v=202606260038"></script>
+<script src="js/rechnungen.js?v=202606260041"></script>
+<script src="js/zahlungen.js?v=202606260041"></script>
 <script>
 (function () {
   function _setView(v) {
