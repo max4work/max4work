@@ -1030,12 +1030,79 @@
     document.getElementById('importOverlay').classList.add('open');
   }
   function closeImport() {
+    parsedImportData = [];
     document.getElementById('importOverlay').classList.remove('open');
     document.getElementById('fileInput').value = '';
     document.getElementById('importBtn').disabled = true;
+    document.getElementById('importInfo').textContent = '';
   }
   function handleFile(input) {
-    document.getElementById('importBtn').disabled = !input.files.length;
+    parsedImportData = [];
+    document.getElementById('importBtn').disabled = true;
+    document.getElementById('importInfo').textContent = '';
+    if (!input.files.length) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      parsedImportData = parseCSV(e.target.result);
+      document.getElementById('importBtn').disabled = parsedImportData.length === 0;
+      const info = document.getElementById('importInfo');
+      if (parsedImportData.length > 0) {
+        info.style.color = 'var(--success)';
+        info.textContent = `${parsedImportData.length} Produkt${parsedImportData.length !== 1 ? 'e' : ''} erkannt`;
+      } else {
+        info.style.color = 'var(--danger)';
+        info.textContent = 'Keine Produkte erkannt – Spalte „Name" erforderlich';
+      }
+    };
+    reader.readAsText(input.files[0], 'UTF-8');
+  }
+
+  function parseCSV(text) {
+    const firstLine = text.split('\n')[0] || '';
+    const delim = firstLine.includes(';') ? ';' : ',';
+    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+    if (lines.length < 2) return [];
+    const headers = splitCSVLine(lines[0], delim).map(h => h.trim().toLowerCase());
+    const col = name => headers.indexOf(name);
+    if (col('name') === -1) return [];
+    const result = [];
+    for (let i = 1; i < lines.length; i++) {
+      const cells = splitCSVLine(lines[i], delim);
+      const name = (cells[col('name')] || '').trim();
+      if (!name) continue;
+      const ustRaw = (cells[col('ust.')] || '').replace('%', '').trim();
+      const ust = ['0', '7', '19'].includes(ustRaw) ? ustRaw : '19';
+      const ek = parseFloat((cells[col('ek netto')] || '').replace(',', '.')) || 0;
+      const vk = parseFloat((cells[col('vk netto')] || '').replace(',', '.')) || 0;
+      const factor = 1 + parseFloat(ust) / 100;
+      result.push({
+        id: Date.now() + i,
+        name,
+        artnr: (cells[col('art.-nr.')] || '').trim() || String(artNrCounter + result.length),
+        kategorie: (cells[col('kategorie')] || '').trim().toLowerCase() === 'dienstleistung' ? 'dienstleistung' : 'artikel',
+        einheit: (cells[col('einheit')] || '').trim() || 'Stk',
+        ust,
+        ek_netto: ek.toFixed(2),
+        vk_netto: vk.toFixed(2),
+        vk_brutto: (vk * factor).toFixed(2),
+        ek_brutto: (ek * factor).toFixed(2),
+        beschreibung: (cells[col('beschreibung')] || '').trim(),
+        bemerkung: '',
+      });
+    }
+    return result;
+  }
+
+  function splitCSVLine(line, delim) {
+    const res = [];
+    let cur = '', inQ = false;
+    for (const ch of line) {
+      if (ch === '"') { inQ = !inQ; }
+      else if (ch === delim && !inQ) { res.push(cur); cur = ''; }
+      else { cur += ch; }
+    }
+    res.push(cur);
+    return res;
   }
 
   // ── Overlay click-outside ──
@@ -1045,7 +1112,31 @@
     }
   }
 
+  // ── Export ──
+  function exportCSV() {
+    if (!products.length) return;
+    const heads = ['Name', 'Art.-Nr.', 'Kategorie', 'Einheit', 'USt.', 'EK Netto', 'VK Netto', 'VK Brutto', 'EK Brutto', 'Beschreibung', 'Bemerkung'];
+    const rows = products.map(p => [
+      p.name, p.artnr, p.kategorie, p.einheit || '', p.ust + '%',
+      p.ek_netto, p.vk_netto, p.vk_brutto, p.ek_brutto,
+      p.beschreibung || '', p.bemerkung || ''
+    ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(';'));
+    const csv = '﻿' + [heads.join(';'), ...rows].join('\r\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    a.download = `max4work_produkte_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+  }
+
   // ── Init ──
+  document.getElementById('importBtn').addEventListener('click', function() {
+    if (!parsedImportData.length) return;
+    parsedImportData.forEach(p => products.push(p));
+    artNrCounter = Math.max(...products.map(p => parseInt(p.artnr) || 1000)) + 1;
+    save();
+    render();
+    closeImport();
+  });
   render();
 </script>
 </div><!-- end main-wrap -->
