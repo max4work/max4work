@@ -507,7 +507,7 @@ async function runSimulation() {
 
     // Kassenbuch
     localStorage.setItem('max4work_kassenbuch', JSON.stringify(KASSENBUCH));
-    localStorage.setItem('max4work_kassenbuch_anfangsbestand', '500');
+    localStorage.setItem('max4work_kassenbuch_anfangsbestand', '1500');
     const einnahmen = KASSENBUCH.filter(e => e.art === 'einnahme').reduce((s,e) => s+e.betrag, 0);
     const ausgaben  = KASSENBUCH.filter(e => e.art === 'ausgabe').reduce((s,e) => s+e.betrag, 0);
     log(`✓ ${KASSENBUCH.length} Kassenbucheinträge: +${einnahmen.toLocaleString('de-DE')} € / −${ausgaben.toLocaleString('de-DE')} €`, 'ok'); step++; setProgress(step); await delay(150);
