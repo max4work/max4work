@@ -510,7 +510,10 @@ async function runSimulation() {
     localStorage.setItem('max4work_kassenbuch_anfangsbestand', '1500');
     const einnahmen = KASSENBUCH.filter(e => e.art === 'einnahme').reduce((s,e) => s+e.betrag, 0);
     const ausgaben  = KASSENBUCH.filter(e => e.art === 'ausgabe').reduce((s,e) => s+e.betrag, 0);
-    log(`✓ ${KASSENBUCH.length} Kassenbucheinträge: +${einnahmen.toLocaleString('de-DE')} € / −${ausgaben.toLocaleString('de-DE')} €`, 'ok'); step++; setProgress(step); await delay(150);
+    const saldo = 1500 + einnahmen - ausgaben;
+    log(`✓ ${KASSENBUCH.length} Kassenbucheinträge: +${einnahmen.toLocaleString('de-DE')} € / −${ausgaben.toLocaleString('de-DE')} €`, 'ok');
+    log(`  Anfangsbestand 1.500 € → Kassenbestand: ${saldo.toLocaleString('de-DE', {minimumFractionDigits:2})} €`, 'info');
+    step++; setProgress(step); await delay(150);
 
     // Belege
     localStorage.setItem('max4work_belege', JSON.stringify(BELEGE));
