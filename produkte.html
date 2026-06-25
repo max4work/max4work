@@ -10,7 +10,7 @@
 <meta property="og:site_name" content="max4work">
 <meta property="og:url" content="https://max4work.com/produkte.html">
 <title>max4work – Produkte</title>
-<script src="shared.js?v=202606260017"></script>
+<script src="shared.js?v=202606260018"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 
@@ -887,13 +887,42 @@
 
   // ── Modal: Create ──
   function openCreate() {
+    editingId = null;
     resetForm();
     document.getElementById('c_artnr').value = artNrCounter;
+    document.getElementById('createModalTitle').textContent = 'Neues Produkt';
+    document.getElementById('saveProductBtn').textContent = 'Erstellen';
+    document.getElementById('saveAndNewBtn').style.display = '';
     document.getElementById('createOverlay').classList.add('open');
   }
 
   function closeCreate() {
+    editingId = null;
+    document.getElementById('createModalTitle').textContent = 'Neues Produkt';
+    document.getElementById('saveProductBtn').textContent = 'Erstellen';
+    document.getElementById('saveAndNewBtn').style.display = '';
     document.getElementById('createOverlay').classList.remove('open');
+  }
+
+  function openEdit(id) {
+    const p = products.find(x => x.id === id);
+    if (!p) return;
+    editingId = id;
+    resetForm();
+    document.getElementById('c_name').value = p.name;
+    document.getElementById('c_artnr').value = p.artnr;
+    document.getElementById('c_einheit').value = p.einheit || 'Stk';
+    document.getElementById('c_ust').value = p.ust;
+    document.getElementById('c_kategorie').value = p.kategorie;
+    document.getElementById('c_vk_netto').value = p.vk_netto || '';
+    document.getElementById('c_ek_netto').value = p.ek_netto || '';
+    document.getElementById('c_beschreibung').value = p.beschreibung || '';
+    document.getElementById('c_bemerkung').value = p.bemerkung || '';
+    calcPreise();
+    document.getElementById('createModalTitle').textContent = 'Produkt bearbeiten';
+    document.getElementById('saveProductBtn').textContent = 'Speichern';
+    document.getElementById('saveAndNewBtn').style.display = 'none';
+    document.getElementById('createOverlay').classList.add('open');
   }
 
   function resetForm() {
