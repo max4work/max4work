@@ -281,7 +281,23 @@ Produkte → Auswertung → Einstellungen (Design | Firma | Funktionen | Daten &
 
 ## Letzter Stand (2026-06-26)
 
-- Sessions 1–58 abgeschlossen
+- Sessions 1–59 abgeschlossen
+- **26.06.2026 Session 59 – Simulation, Bug-Fixes, Formularfelder einheitlich:**
+
+  **tests/simulation.html – Kassenbuch-Anfangsbestand:**
+  - `max4work_kassenbuch_anfangsbestand` von `'500'` auf `'1500'` erhöht (Kassenbestand war −696,80 €, jetzt +303,20 € am Jahresende)
+  - Log-Ausgabe zeigt neuen Kassenbestand: `Anfangsbestand 1.500 € → Kassenbestand: 303,20 €`
+
+  **js/rechnungen.js – Bug-Fix Doppelklick „Neue Rechnung":**
+  - **Problem:** Doppelklick auf `+ Neue Rechnung` löste PDF-Download aus. Ursache: Klick 1 tauscht Topbar-Actions (`topbarActionsListe` ↔ `topbarActionsForm`), Klick 2 landet auf dem nun sichtbaren `pdfBtn` an derselben Bildschirmposition.
+  - **Fix:** In `showForm()` (2 Stellen: regulär + Parken-Wiederherstellung) wird `pdfBtn` für 400 ms disabled → `_pb.disabled = true; setTimeout(() => _pb.disabled = false, 400)`
+
+  **rechnungen.html – Formularfelder einheitliche Größe:**
+  - **Desktop-Regel** (`.field input, .field select`): `height: 36px; box-sizing: border-box; -webkit-appearance: none; appearance: none` — entfernt browser-native Mindesthöhen (Safari erzwingt für `input[type=date]` und `select` unterschiedliche Defaulthöhen)
+  - `<select>` bekommt eigenes Chevron-SVG als `background-image` (weil `-webkit-appearance: none` den nativen Pfeil entfernt)
+  - **Mobile-Override** (`@media (max-width: 768px)`, Selektor `#formView .field input/select`): `height: 36px !important; min-height: 36px !important; max-height: 36px !important; box-sizing: border-box !important; -webkit-appearance: none !important; line-height: 36px !important` — ID-Selektor (`1,1,1`) schlägt shared.css `input:not(...)×7` (`0,7,1`)
+  - **SW:** v19 → v20 → v21 → v22
+
 - **26.06.2026 Session 58 – Produkte Bearbeiten/Import/Export + Rechnungen Produkt-Picker:**
 
   **produkte.html:**
