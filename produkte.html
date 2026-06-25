@@ -842,7 +842,7 @@
     } else {
       empty.style.display = 'none';
       body.innerHTML = filtered.map((p) => `
-        <tr>
+        <tr onclick="openEdit(${p.id})" style="cursor:pointer">
           <td class="td-name">${esc(p.name)}</td>
           <td class="td-num">${esc(p.artnr)}</td>
           <td><span class="badge badge-${p.kategorie}">${p.kategorie === 'artikel' ? 'Artikel' : 'Dienstleistung'}</span></td>
