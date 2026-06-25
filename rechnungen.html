@@ -11,10 +11,10 @@
 <meta property="og:url" content="https://max4work.com/rechnungen.html">
 <title>max4work – Rechnung erstellen</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/shared.css?v=202606260024">
+<link rel="stylesheet" href="css/shared.css?v=202606260037">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="shared.js?v=202606260024"></script>
+<script src="shared.js?v=202606260037"></script>
 <style>
   
   .btn { padding: 7px 15px; border-radius: 8px; font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; border: none; transition: all 0.12s; display: inline-flex; align-items: center; gap: 6px; }
@@ -311,6 +311,37 @@
   /* Zahlungen Modal */
   .z-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: none; align-items: center; justify-content: center; z-index: 100; }
   .z-overlay.open { display: flex; }
+
+  /* ── Produkt-Picker ── */
+  .pos-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 0; }
+  .prod-pick-wrap { position: relative; }
+  .prod-pick-dd {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    width: 340px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 8px 28px rgba(0,0,0,.16);
+    z-index: 200;
+    max-height: 300px;
+    overflow: hidden;
+    flex-direction: column;
+  }
+  .prod-pick-dd.open { display: flex; }
+  .prod-pick-search { padding: 8px 10px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .prod-pick-search input { width: 100%; padding: 6px 10px; border: 1px solid var(--border); border-radius: 7px; font-size: 12px; font-family: inherit; background: var(--surface); color: var(--text); outline: none; }
+  .prod-pick-search input:focus { border-color: var(--accent); }
+  .prod-pick-list { overflow-y: auto; flex: 1; }
+  .prod-pick-item { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background .1s; gap: 8px; }
+  .prod-pick-item:last-child { border-bottom: none; }
+  .prod-pick-item:hover { background: var(--soft); }
+  .prod-pick-name { font-size: 13px; font-weight: 500; }
+  .prod-pick-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .prod-pick-price { font-size: 12.5px; font-weight: 600; white-space: nowrap; color: var(--text); flex-shrink: 0; }
+  .prod-pick-empty { padding: 24px 16px; text-align: center; font-size: 12.5px; color: var(--muted); line-height: 1.6; }
 </style>
 
 <!-- mob-only-injected -->
@@ -819,8 +850,8 @@ Bitte überweisen Sie den Rechnungsbetrag unter Angabe der Rechnungsnummer auf d
   </div>
 </div>
 
-<script src="js/rechnungen.js?v=202606260024"></script>
-<script src="js/zahlungen.js?v=202606260024"></script>
+<script src="js/rechnungen.js?v=202606260037"></script>
+<script src="js/zahlungen.js?v=202606260037"></script>
 <script>
 (function () {
   function _setView(v) {
