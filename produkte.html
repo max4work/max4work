@@ -10,7 +10,7 @@
 <meta property="og:site_name" content="max4work">
 <meta property="og:url" content="https://max4work.com/produkte.html">
 <title>max4work – Produkte</title>
-<script src="shared.js?v=202606260018"></script>
+<script src="shared.js?v=202606260020"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 
@@ -969,8 +969,13 @@
   function saveProduct() {
     const p = collectProduct();
     if (!p) return;
-    products.push(p);
-    artNrCounter++;
+    if (editingId !== null) {
+      const idx = products.findIndex(x => x.id === editingId);
+      if (idx !== -1) products[idx] = { ...p, id: editingId };
+    } else {
+      products.push(p);
+      artNrCounter++;
+    }
     save();
     render();
     closeCreate();
