@@ -1906,6 +1906,7 @@ ${lineItems}
     document.getElementById('topbarActionsListe').style.display = 'none';
     document.getElementById('topbarActionsForm').style.display = 'flex';
     const _tL2 = document.getElementById('topbarLeft'); if (_tL2) _tL2.style.display = '';
+    const _pb2 = document.getElementById('pdfBtn'); if (_pb2) { _pb2.disabled = true; setTimeout(() => { _pb2.disabled = false; }, 400); }
     document.getElementById('topbarTitle').textContent = 'Neue Rechnung';
 
     const d = entry.draft;
