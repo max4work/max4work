@@ -575,7 +575,8 @@
   }
 
   function speichern() {
-    const data = {};
+    let data = {};
+    try { data = JSON.parse(localStorage.getItem(SAVE_KEY) || '{}'); } catch(e) {}
     FIELDS.forEach(id => { const el = document.getElementById(id); if (el) data[id] = el.value; });
     try {
       // Theme speichern
