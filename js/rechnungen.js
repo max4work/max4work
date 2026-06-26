@@ -784,6 +784,7 @@
     const wrap = document.getElementById('prodPickWrap');
     const dd = document.getElementById('prodPickDd');
     if (dd && wrap && !wrap.contains(e.target)) dd.classList.remove('open');
+    if (!e.target.closest('#unitPicker') && !e.target.closest('[data-field="unit-btn"]')) closeUnitPicker();
   });
 
   /* ═══ Totals ═══ */
