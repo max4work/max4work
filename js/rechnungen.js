@@ -773,6 +773,7 @@
       qty: '1',
       price: parseFloat(p.vk_netto) || 0,
       ust: parseInt(p.ust) || 0,
+      unit: p.einheit || '',
     });
     renderPos(); rp();
     const dd = document.getElementById('prodPickDd');
