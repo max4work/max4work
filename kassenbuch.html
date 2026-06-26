@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Kassenbuch – max4work</title>
-<script src="shared.js?v=202606260454"></script>
+<script src="shared.js?v=202606260455"></script>
 <link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/shared.css?v=202606260454">
+<link rel="stylesheet" href="css/shared.css?v=202606260455">
 <style>
 .content { padding: 28px 32px; max-width: 1100px; }
 
@@ -229,6 +229,24 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); }
         <button class="ftab" data-f="einnahmen" onclick="setFilter('einnahmen')">Einnahmen</button>
         <button class="ftab" data-f="ausgaben" onclick="setFilter('ausgaben')">Ausgaben</button>
       </div>
+      <select id="filterYear" class="filter-select" onchange="setYear(this.value)">
+        <option value="">Alle Jahre</option>
+      </select>
+      <select id="filterMonth" class="filter-select" onchange="setMonth(this.value)" style="display:none">
+        <option value="">Alle Monate</option>
+        <option value="01">Januar</option>
+        <option value="02">Februar</option>
+        <option value="03">März</option>
+        <option value="04">April</option>
+        <option value="05">Mai</option>
+        <option value="06">Juni</option>
+        <option value="07">Juli</option>
+        <option value="08">August</option>
+        <option value="09">September</option>
+        <option value="10">Oktober</option>
+        <option value="11">November</option>
+        <option value="12">Dezember</option>
+      </select>
     </div>
 
     <div class="panel">
@@ -311,7 +329,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); }
   </div>
 </div>
 
-<script src="js/kassenbuch.js?v=202606260454"></script>
+<script src="js/kassenbuch.js?v=202606260455"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   initSidebarSubNav();
