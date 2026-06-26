@@ -557,6 +557,8 @@
       const raw = localStorage.getItem(SAVE_KEY);
       const data = raw ? JSON.parse(raw) : DEFAULTS;
       FIELDS.forEach(id => { const el = document.getElementById(id); if (el) el.value = data[id] ?? DEFAULTS[id]; });
+      const ku = document.getElementById('isKleinunternehmer');
+      if (ku) ku.checked = !!data.isKleinunternehmer;
       const fb = document.getElementById('isFreiberufler');
       if (fb) fb.checked = !!data.isFreiberufler;
     } catch(e) {
