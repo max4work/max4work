@@ -693,6 +693,17 @@
   });
 
   document.getElementById('posBody').addEventListener('click', function(e) {
+    const unitBtnEl = e.target.closest('[data-field="unit-btn"]');
+    if (unitBtnEl) {
+      e.stopPropagation();
+      const idx = parseInt(unitBtnEl.dataset.idx);
+      if (_unitPickerIdx === idx && document.getElementById('unitPicker').classList.contains('open')) {
+        closeUnitPicker();
+      } else {
+        openUnitPicker(idx, unitBtnEl);
+      }
+      return;
+    }
     const btn = e.target.closest('[data-del]');
     if (!btn) return;
     const i = parseInt(btn.dataset.del);
@@ -700,7 +711,7 @@
   });
 
   document.getElementById('addPosBtn').addEventListener('click', function() {
-    positions.push({ desc: '', qty: '1', price: 0, ust: _defaultUst() }); renderPos(); rp();
+    positions.push({ desc: '', qty: '1', price: 0, ust: _defaultUst(), unit: '' }); renderPos(); rp();
   });
 
   /* ═══ Produkt-Picker ═══ */
