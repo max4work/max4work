@@ -2741,7 +2741,8 @@ ${lineItems}
               desc: pos.desc || '',
               qty: pos.qty || '1',
               price: parseFloat(pos.price) || 0,
-              ust: pos.vat || pos.ust || _defaultUst()
+              ust: pos.vat || pos.ust || _defaultUst(),
+              unit: pos.unit || '',
             }));
             renderPos();
           }
