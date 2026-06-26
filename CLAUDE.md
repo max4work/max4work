@@ -281,7 +281,26 @@ Produkte → Auswertung → Einstellungen (Design | Firma | Funktionen | Daten &
 
 ## Letzter Stand (2026-06-26)
 
-- Sessions 1–59 abgeschlossen
+- Sessions 1–60 abgeschlossen
+- **26.06.2026 Session 60 – Einheit-Picker (Leistungen) + DOM-Bug-Fix:**
+
+  **rechnungen.html + js/rechnungen.js – Einheit-Picker für Leistungspositionen:**
+  - **Neue Spalte:** Tabellenheader „Menge / Einheit" (kombiniert, `width:16%`); Beschreibung 36%
+  - **`.qty-cell`:** Flex-Container; Qty-Input (`flex:1`) + `.unit-btn` (26×27px, `border-radius:6px`, muted)
+  - **`.unit-btn.has-unit`:** Akzentfarbe wenn Einheit gesetzt (blau-grün, fett)
+  - **`#unitPicker`:** `position:fixed; z-index:9999` — öffnet als Popup unter dem Button
+  - **`.unit-chip-grid`:** 3×N-Grid, 12 Einheiten: `['Std','Tg','Wo','Min','Stk','Psch','km','m','m²','kg','l','Set']`
+  - **JS-Funktionen:** `openUnitPicker(idx, anchorEl)`, `closeUnitPicker()`, `_unitPickerIdx`
+  - **Event-Delegierung** auf `#posBody` für `[data-field="unit-btn"]`-Klicks (Toggle-Verhalten)
+  - **PDF/jsPDF:** `p.qty + ' ' + p.unit` in Tabelle; HTML-Vorschau zeigt Unit in `<span color:#aaa>`
+  - **Angebots-Import:** `unit: pos.unit || ''` übernommen
+
+  **Kritischer DOM-Load-Order-Bug behoben:**
+  - **Problem:** `<div id="unitPicker">` stand bei Zeile ~972 NACH dem `<script src="js/rechnungen.js">` Tag (Zeile ~903). Script lief synchron → `getElementById('unitPicker')` = `null` → `TypeError: Cannot read properties of null (reading 'addEventListener')` → gesamter Einheit-Picker nicht funktionsfähig
+  - **Fix:** `#unitPicker`-Div VOR den Script-Tag verschoben (jetzt Zeile 903, Script bei Zeile 908); Duplikat am Dateiende entfernt
+  - **Service Worker:** v24 → v25 (Cache-Busting)
+  - **Backup:** `Backups/backup_2026-06-26_session60/`
+
 - **26.06.2026 Session 59 – Simulation, Bug-Fixes, Formularfelder einheitlich:**
 
   **tests/simulation.html – Kassenbuch-Anfangsbestand:**
