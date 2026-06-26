@@ -571,10 +571,17 @@
       const data = JSON.parse(localStorage.getItem(SAVE_KEY) || '{}');
       data.isKleinunternehmer = checked;
       localStorage.setItem(SAVE_KEY, JSON.stringify(data));
-      // Blatt-Design-Config synchron halten: felder.ust19 = KU-Status
-      const cfgRaw = localStorage.getItem('max4work_rechnung_config');
-      const cfg = cfgRaw ? JSON.parse(cfgRaw) : {};
-      if (!cfg.felder) cfg.felder = {};
+      // Blatt-Design-Config synchron halten — felder.ust19 steuert §19-Hinweis im PDF.
+      // _loadInvConfig() erfordert BEIDE felder UND texte, sonst greift Default (ust19:false).
+      let cfg = null;
+      try { cfg = JSON.parse(localStorage.getItem('max4work_rechnung_config') || 'null'); } catch(e) {}
+      if (!cfg || !cfg.felder || !cfg.texte) {
+        cfg = {
+          template: 'standard', logoPos: 'rechts', logoGroesse: 'mittel',
+          felder: { logo:true, adresse:true, tel:true, email:true, web:false, steuernr:true, kundennr:false, faellig:true, bank:true, girocode:true, ust19:false, trennlinien:true },
+          texte:  { einleitung:'', schluss:'', hinweise:'' }
+        };
+      }
       cfg.felder.ust19 = checked;
       localStorage.setItem('max4work_rechnung_config', JSON.stringify(cfg));
     } catch(e) {}
