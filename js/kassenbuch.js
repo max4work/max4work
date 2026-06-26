@@ -3,8 +3,10 @@
 const KB_KEY   = 'max4work_kassenbuch';
 const KB_START = 'max4work_kassenbuch_anfangsbestand';
 
-let _filter = 'alle';
-let _editId = null;
+let _filter      = 'alle';
+let _filterYear  = '';
+let _filterMonth = '';
+let _editId      = null;
 
 function _load()  { try { return JSON.parse(localStorage.getItem(KB_KEY)   || '[]'); } catch { return []; } }
 function _save(a) { localStorage.setItem(KB_KEY, JSON.stringify(a)); }
@@ -20,7 +22,6 @@ function fmtD(v) {
 }
 function todayIso() { return new Date().toISOString().split('T')[0]; }
 
-// Laufender Saldo aller Einträge berechnen
 function _saldoMap(entries) {
   const sorted = [...entries].sort((a, b) => (a.datum||'').localeCompare(b.datum||'') || a.id - b.id);
   const map = {};
@@ -32,7 +33,31 @@ function _saldoMap(entries) {
   return map;
 }
 
+// Gemeinsamer Filter — gilt für renderList() und exportCSV()
+function _applyFilters(all) {
+  let f = all;
+  const today   = todayIso();
+  const week    = new Date(); week.setDate(week.getDate() - 6);
+  const weekStr = week.toISOString().split('T')[0];
+  const month   = today.slice(0, 7);
+
+  if (_filter === 'einnahmen') f = f.filter(e => e.art === 'einnahme');
+  else if (_filter === 'ausgaben') f = f.filter(e => e.art === 'ausgabe');
+  else if (_filter === 'heute')   f = f.filter(e => e.datum === today);
+  else if (_filter === 'woche')   f = f.filter(e => (e.datum||'') >= weekStr);
+  else if (_filter === 'monat')   f = f.filter(e => (e.datum||'').startsWith(month));
+
+  if (_filterYear && _filterMonth) {
+    f = f.filter(e => (e.datum||'').startsWith(`${_filterYear}-${_filterMonth}`));
+  } else if (_filterYear) {
+    f = f.filter(e => (e.datum||'').startsWith(_filterYear));
+  }
+
+  return f;
+}
+
 function load() {
+  _buildYearSelect();
   renderStats();
   renderList();
 }
@@ -41,11 +66,7 @@ function renderStats() {
   const entries = _load();
   const today = todayIso();
 
-  const saldo = _saldoMap(entries);
-  const ids = Object.keys(saldo);
-  const stand = ids.length ? saldo[ids[ids.length - 1]] : _anfang();
-
-  // Für einen korrekten Kassenstand nehmen wir den letzten Saldo-Wert
+  const saldo  = _saldoMap(entries);
   const sorted = [...entries].sort((a, b) => (a.datum||'').localeCompare(b.datum||'') || a.id - b.id);
   const standAktuell = sorted.length ? saldo[sorted[sorted.length - 1].id] : _anfang();
 
@@ -63,19 +84,8 @@ function renderStats() {
 }
 
 function renderList() {
-  const all    = _load();
-  const today  = todayIso();
-  const week   = new Date(); week.setDate(week.getDate() - 6);
-  const weekStr = week.toISOString().split('T')[0];
-  const month  = today.slice(0, 7);
-
-  let filtered = all;
-  if (_filter === 'einnahmen') filtered = all.filter(e => e.art === 'einnahme');
-  else if (_filter === 'ausgaben') filtered = all.filter(e => e.art === 'ausgabe');
-  else if (_filter === 'heute')   filtered = all.filter(e => e.datum === today);
-  else if (_filter === 'woche')   filtered = all.filter(e => (e.datum||'') >= weekStr);
-  else if (_filter === 'monat')   filtered = all.filter(e => (e.datum||'').startsWith(month));
-
+  const all      = _load();
+  let filtered   = _applyFilters(all);
   filtered = [...filtered].sort((a, b) => (b.datum||'').localeCompare(a.datum||'') || b.id - a.id);
 
   const saldo = _saldoMap(all);
@@ -111,6 +121,34 @@ function setFilter(f) {
   renderList();
 }
 
+function setYear(y) {
+  _filterYear  = y;
+  _filterMonth = '';
+  const mSel = document.getElementById('filterMonth');
+  if (mSel) {
+    mSel.value = '';
+    mSel.style.display = y ? 'inline-block' : 'none';
+  }
+  renderList();
+}
+
+function setMonth(m) {
+  _filterMonth = m;
+  renderList();
+}
+
+function _buildYearSelect() {
+  const entries = _load();
+  const years = [...new Set(entries.map(e => (e.datum||'').slice(0, 4)).filter(Boolean))].sort((a, b) => b - a);
+  const curY = new Date().getFullYear().toString();
+  if (!years.includes(curY)) years.unshift(curY);
+  const sel = document.getElementById('filterYear');
+  if (!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">Alle Jahre</option>' +
+    years.map(y => `<option value="${y}"${y === cur ? ' selected' : ''}>${y}</option>`).join('');
+}
+
 function openModal(id) {
   _editId = id || null;
   const e = id ? _load().find(x => x.id === id) : null;
@@ -140,10 +178,10 @@ function _updateKatOptions(selected) {
 }
 
 function save() {
-  const datum    = document.getElementById('mDatum').value;
-  const art      = document.getElementById('mArt').value;
-  const betrag   = parseFloat(document.getElementById('mBetrag').value.replace(',', '.'));
-  const notiz    = document.getElementById('mNotiz').value.trim();
+  const datum     = document.getElementById('mDatum').value;
+  const art       = document.getElementById('mArt').value;
+  const betrag    = parseFloat(document.getElementById('mBetrag').value.replace(',', '.'));
+  const notiz     = document.getElementById('mNotiz').value.trim();
   const kategorie = document.getElementById('mKat').value;
 
   if (!datum)               return alert('Bitte Datum eingeben.');
@@ -157,6 +195,7 @@ function save() {
     entries.push({ id: Date.now(), datum, art, betrag, notiz, kategorie });
   }
   _save(entries);
+  _buildYearSelect();
   closeModal();
   renderStats();
   renderList();
@@ -165,6 +204,7 @@ function save() {
 function del(id) {
   if (!confirm('Buchung löschen?')) return;
   _save(_load().filter(e => e.id !== id));
+  _buildYearSelect();
   renderStats();
   renderList();
 }
@@ -186,15 +226,14 @@ function openAbschluss() {
   const todayE  = entries.filter(e => e.datum === today).sort((a, b) => a.id - b.id);
   const saldo   = _saldoMap(entries);
 
-  // Kassenstand vor heute
   const sortedAll = [...entries].sort((a, b) => (a.datum||'').localeCompare(b.datum||'') || a.id - b.id);
   let standVor = _anfang();
   sortedAll.filter(e => e.datum < today).forEach(e => {
     standVor += e.art === 'einnahme' ? +e.betrag : -e.betrag;
   });
 
-  const todayEin = todayE.filter(e => e.art === 'einnahme').reduce((s, e) => s + +e.betrag, 0);
-  const todayAus = todayE.filter(e => e.art === 'ausgabe').reduce((s, e) => s + +e.betrag, 0);
+  const todayEin  = todayE.filter(e => e.art === 'einnahme').reduce((s, e) => s + +e.betrag, 0);
+  const todayAus  = todayE.filter(e => e.art === 'ausgabe').reduce((s, e) => s + +e.betrag, 0);
   const standNach = standVor + todayEin - todayAus;
 
   document.getElementById('abschlussContent').innerHTML = `
@@ -222,19 +261,8 @@ function closeAbschluss() {
 }
 
 function exportCSV() {
-  const all    = _load();
-  const today  = todayIso();
-  const week   = new Date(); week.setDate(week.getDate() - 6);
-  const weekStr = week.toISOString().split('T')[0];
-  const month  = today.slice(0, 7);
-
-  let filtered = all;
-  if (_filter === 'einnahmen') filtered = all.filter(e => e.art === 'einnahme');
-  else if (_filter === 'ausgaben') filtered = all.filter(e => e.art === 'ausgabe');
-  else if (_filter === 'heute')   filtered = all.filter(e => e.datum === today);
-  else if (_filter === 'woche')   filtered = all.filter(e => (e.datum||'') >= weekStr);
-  else if (_filter === 'monat')   filtered = all.filter(e => (e.datum||'').startsWith(month));
-
+  const all      = _load();
+  let filtered   = _applyFilters(all);
   filtered = [...filtered].sort((a, b) => (a.datum||'').localeCompare(b.datum||'') || a.id - b.id);
   if (!filtered.length) { alert('Keine Buchungen zum Exportieren.'); return; }
 
