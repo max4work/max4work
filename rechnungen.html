@@ -11,10 +11,10 @@
 <meta property="og:url" content="https://max4work.com/rechnungen.html">
 <title>max4work – Rechnung erstellen</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/shared.css?v=202606260155">
+<link rel="stylesheet" href="css/shared.css?v=202606260230">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="shared.js?v=202606260155"></script>
+<script src="shared.js?v=202606260230"></script>
 <style>
   
   .btn { padding: 7px 15px; border-radius: 8px; font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; border: none; transition: all 0.12s; display: inline-flex; align-items: center; gap: 6px; }
@@ -63,6 +63,20 @@
   .pos-del:hover { color: var(--red); }
   .add-pos-btn { font-size: 12px; color: var(--accent); font-weight: 500; background: none; border: none; cursor: pointer; padding: 4px 0; font-family: inherit; }
   .add-pos-btn:hover { text-decoration: underline; }
+
+  /* Einheit-Picker */
+  .qty-cell { display: flex; align-items: center; gap: 2px; }
+  .qty-cell > input { flex: 1; min-width: 0; }
+  .unit-btn { flex-shrink: 0; min-width: 26px; height: 27px; padding: 0 4px; border: 1px solid var(--border); border-radius: 6px; background: var(--soft); color: var(--muted); font-size: 10px; font-family: inherit; cursor: pointer; white-space: nowrap; display: flex; align-items: center; justify-content: center; line-height: 1; }
+  .unit-btn.has-unit { color: var(--dark); border-color: var(--accent); background: var(--accent-pale); font-weight: 600; padding: 0 5px; }
+  #unitPicker { position: fixed; z-index: 9999; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 8px; box-shadow: 0 6px 24px rgba(0,0,0,.16); display: none; }
+  #unitPicker.open { display: block; }
+  .unit-chip-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; min-width: 150px; }
+  .unit-chip { padding: 5px 4px; border-radius: 6px; border: 1px solid var(--border); background: var(--soft); font-size: 11px; font-family: inherit; cursor: pointer; text-align: center; color: var(--text); transition: background 0.1s; }
+  .unit-chip:hover { background: var(--accent); color: var(--dark); border-color: var(--accent); font-weight: 600; }
+  .unit-chip.active { background: var(--accent); color: var(--dark); border-color: var(--accent); font-weight: 600; }
+  .unit-chip.clear-chip { color: var(--muted); font-size: 10px; grid-column: span 3; }
+  .unit-chip.clear-chip:hover { background: var(--soft); color: var(--red,#e53); border-color: var(--red,#e53); font-weight: normal; }
 
   .totals-block { margin-top: 12px; border-top: 1px solid var(--border); padding-top: 10px; }
   .tot-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 12.5px; }
@@ -886,8 +900,8 @@ Bitte überweisen Sie den Rechnungsbetrag unter Angabe der Rechnungsnummer auf d
   </div>
 </div>
 
-<script src="js/rechnungen.js?v=202606260155"></script>
-<script src="js/zahlungen.js?v=202606260155"></script>
+<script src="js/rechnungen.js?v=202606260230"></script>
+<script src="js/zahlungen.js?v=202606260230"></script>
 <script>
 (function () {
   function _setView(v) {
