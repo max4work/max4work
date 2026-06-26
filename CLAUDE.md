@@ -281,7 +281,32 @@ Produkte → Auswertung → Einstellungen (Design | Firma | Funktionen | Daten &
 
 ## Letzter Stand (2026-06-26)
 
-- Sessions 1–60 abgeschlossen
+- Sessions 1–61 abgeschlossen
+- **26.06.2026 Session 61 – Kleinunternehmer §19 UStG in Einstellungen:**
+
+  **einstellungen.html – Steuerliche Einordnung:**
+  - Neuer Toggle „Kleinunternehmer (§19 UStG)" oben im Panel (vor Freiberufler-Toggle)
+  - ID: `isKleinunternehmer`, `onchange="updateKleinunternehmer(this.checked)"`
+
+  **js/einstellungen.js:**
+  - `load()`: liest `data.isKleinunternehmer` → setzt Checkbox
+  - `speichern()` **Bug-Fix:** startete mit `let data = {}` → überschrieb booleans wie `isFreiberufler`. Fix: `let data = JSON.parse(localStorage.getItem(SAVE_KEY) || '{}')` als Basis
+  - `updateKleinunternehmer(checked)`: speichert `isKleinunternehmer` in `max4work_einstellungen` + synchronisiert `felder.ust19` in `max4work_rechnung_config`. Erstellt vollständige Config-Struktur (felder + texte) damit `_loadInvConfig()` in rechnungen.js sie akzeptiert (sonst Fallback auf Default mit `ust19:false`)
+
+  **js/rechnungen.js – `_defaultUst()`:**
+  - Liest jetzt zuerst `max4work_einstellungen.isKleinunternehmer` → gibt 0 zurück
+  - Fallback bleibt `cfg.felder?.ust19`
+
+  **tests/simulation.html:**
+  - `kleinunternehmer: true` → `isKleinunternehmer: true` (Key-Fix)
+
+  **Verbindungen in der App:**
+  - KU-Toggle AN → neue Positionen: 0% MwSt voreingestellt
+  - Summenblock: „Umsatzsteuer nicht erhoben gemäß §19 UStG." (bei allZero)
+  - PDF: „Gemäß § 19 Abs. 1 UStG wird keine Umsatzsteuer berechnet." (via felder.ust19)
+  - Blatt-Design: Toggle `ust19` bleibt synchron
+  - **Backup:** `Backups/backup_2026-06-26_session61/`
+
 - **26.06.2026 Session 60 – Einheit-Picker (Leistungen) + DOM-Bug-Fix:**
 
   **rechnungen.html + js/rechnungen.js – Einheit-Picker für Leistungspositionen:**
