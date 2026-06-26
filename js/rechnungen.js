@@ -1165,7 +1165,7 @@
       const total = isNaN(parseFloat(p.qty)) ? p.price : parseFloat(p.qty)*p.price;
       y += 7;
       doc.text(`${i+1}.  ${p.desc||'—'}`, M, y);
-      doc.text(p.qty||'—', 122, y);
+      doc.text(`${p.qty||'—'}${p.unit ? ' '+p.unit : ''}`, 122, y);
       doc.text(`${fmt(p.price)} EUR`, 150, y);
       doc.text(`${fmt(total)} EUR`, 190, y, {align:'right'});
       if (f.trennlinien) { doc.setDrawColor(trbR,trbG,trbB); doc.setLineWidth(0.2); doc.line(M, y+2, 190, y+2); }
