@@ -11,8 +11,8 @@
 <meta property="og:url" content="https://max4work.com/einstellungen.html">
 <title>max4work – Einstellungen</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/shared.css?v=202606260415">
-<script src="shared.js?v=202606260415"></script>
+<link rel="stylesheet" href="css/shared.css?v=202606260424">
+<script src="shared.js?v=202606260424"></script>
 <style>
     .content { padding: 28px 32px; max-width: 1221px; display: flex; flex-direction: column; gap: 20px; }
   .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
@@ -748,6 +748,16 @@ Bitte überweisen Sie den Rechnungsbetrag unter Angabe der Rechnungsnummer auf d
       <div class="panel-head">Steuerliche Einordnung</div>
       <div class="panel-body" style="gap:0;">
         <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Kleinunternehmer (§19 UStG)</div>
+            <div class="toggle-desc">Umsatzsteuer wird nicht erhoben (§19 Abs. 1 UStG). Neue Rechnungspositionen werden automatisch auf 0&thinsp;% MwSt voreingestellt. Der Pflichthinweis „Umsatzsteuer nicht erhoben gemäß §19 UStG" erscheint automatisch in der PDF-Rechnung.</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="isKleinunternehmer" onchange="updateKleinunternehmer(this.checked)">
+            <div class="toggle-track"></div>
+          </label>
+        </div>
+        <div class="toggle-row" style="border-top:1px solid var(--border);">
           <div>
             <div class="toggle-label">Freiberufler (§18 EStG)</div>
             <div class="toggle-desc">Ärzte, Anwälte, Architekten, Ingenieure, Künstler, freie Berufe – keine Gewerbesteuer (§2 GewStG). Die Gewerbesteuer-Schätzung wird in EÜR und Auswertung ausgeblendet.</div>
@@ -2033,7 +2043,7 @@ Bitte überweisen Sie den Rechnungsbetrag unter Angabe der Rechnungsnummer auf d
   </div>
 </div>
 
-<script src="js/datentransfer.js?v=202606260415"></script>
-<script src="js/einstellungen.js?v=202606260415"></script>
+<script src="js/datentransfer.js?v=202606260424"></script>
+<script src="js/einstellungen.js?v=202606260424"></script>
 </body>
 </html>
