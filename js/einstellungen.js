@@ -566,6 +566,20 @@
     }
   }
 
+  function updateKleinunternehmer(checked) {
+    try {
+      const data = JSON.parse(localStorage.getItem(SAVE_KEY) || '{}');
+      data.isKleinunternehmer = checked;
+      localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+      // Blatt-Design-Config synchron halten: felder.ust19 = KU-Status
+      const cfgRaw = localStorage.getItem('max4work_rechnung_config');
+      const cfg = cfgRaw ? JSON.parse(cfgRaw) : {};
+      if (!cfg.felder) cfg.felder = {};
+      cfg.felder.ust19 = checked;
+      localStorage.setItem('max4work_rechnung_config', JSON.stringify(cfg));
+    } catch(e) {}
+  }
+
   function updateFreiberufler(checked) {
     try {
       const data = JSON.parse(localStorage.getItem(SAVE_KEY) || '{}');
