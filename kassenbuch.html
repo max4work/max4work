@@ -122,6 +122,14 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); }
 .abs-modal { max-width: 520px; }
 .abs-scroll { max-height: 60vh; overflow-y: auto; padding: 0 22px 20px; }
 
+.filter-select {
+  width: auto; font-size: 12.5px; padding: 5px 10px;
+  border-radius: 7px; cursor: pointer; border: 1px solid var(--border);
+  background: var(--bg); color: var(--text); font-family: inherit;
+  outline: none; transition: border-color .12s;
+}
+.filter-select:focus { border-color: var(--accent); }
+
 @media (max-width: 768px) {
   .content { padding: 16px !important; }
   .stat-value { font-size: 19px; }
@@ -131,6 +139,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); }
   table th:nth-child(6), table td:nth-child(6) { display: none !important; }
   /* Topbar: nur + Buchung */
   .topbar-right .btn-ghost { display: none !important; }
+  .filter-select { font-size: 12px; padding: 4px 8px; }
 }
 </style>
 </head>
