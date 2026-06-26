@@ -598,6 +598,10 @@
 
   /* ═══ Positionen ═══ */
   function _defaultUst() {
+    try {
+      const einst = JSON.parse(localStorage.getItem('max4work_einstellungen') || '{}');
+      if (einst.isKleinunternehmer) return 0;
+    } catch(e) {}
     const cfg = _loadInvConfig();
     return cfg.felder?.ust19 ? 0 : 19;
   }
