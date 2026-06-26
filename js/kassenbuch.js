@@ -220,3 +220,40 @@ function openAbschluss() {
 function closeAbschluss() {
   document.getElementById('abschlussOverlay').classList.remove('open');
 }
+
+function exportCSV() {
+  const all    = _load();
+  const today  = todayIso();
+  const week   = new Date(); week.setDate(week.getDate() - 6);
+  const weekStr = week.toISOString().split('T')[0];
+  const month  = today.slice(0, 7);
+
+  let filtered = all;
+  if (_filter === 'einnahmen') filtered = all.filter(e => e.art === 'einnahme');
+  else if (_filter === 'ausgaben') filtered = all.filter(e => e.art === 'ausgabe');
+  else if (_filter === 'heute')   filtered = all.filter(e => e.datum === today);
+  else if (_filter === 'woche')   filtered = all.filter(e => (e.datum||'') >= weekStr);
+  else if (_filter === 'monat')   filtered = all.filter(e => (e.datum||'').startsWith(month));
+
+  filtered = [...filtered].sort((a, b) => (a.datum||'').localeCompare(b.datum||'') || a.id - b.id);
+  if (!filtered.length) { alert('Keine Buchungen zum Exportieren.'); return; }
+
+  const saldo = _saldoMap(all);
+  const hdr   = ['Datum', 'Art', 'Kategorie', 'Notiz', 'Betrag (EUR)', 'Saldo (EUR)'];
+  const rows  = filtered.map(e => [
+    fmtD(e.datum),
+    e.art === 'einnahme' ? 'Einnahme' : 'Ausgabe',
+    e.kategorie || '',
+    e.notiz || '',
+    (e.art === 'einnahme' ? '' : '-') + parseFloat(e.betrag || 0).toFixed(2).replace('.', ','),
+    parseFloat(saldo[e.id] || 0).toFixed(2).replace('.', ','),
+  ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(';'));
+
+  const csv  = [hdr.join(';'), ...rows].join('\r\n');
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = `Kassenbuch_${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
