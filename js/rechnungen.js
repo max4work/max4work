@@ -922,7 +922,7 @@
       const total = isNaN(parseFloat(p.qty)) ? p.price : parseFloat(p.qty) * p.price;
       return `<tr style="border-bottom:1px solid ${trennCol};">
         <td style="padding:4px 0;">${i+1}. ${_escHtml(p.desc || '—')}</td>
-        <td style="text-align:right;padding:4px 0;color:#555;">${_escHtml(String(p.qty || '—'))}</td>
+        <td style="text-align:right;padding:4px 0;color:#555;">${_escHtml(String(p.qty || '—'))}${p.unit ? `<span style="color:#aaa;font-size:85%;margin-left:2px;">${_escHtml(p.unit)}</span>` : ''}</td>
         <td style="text-align:right;padding:4px 0;color:#555;">${fmt(p.price)} €</td>
         <td style="text-align:right;padding:4px 0;font-weight:600;">${fmt(total)} €</td>
       </tr>`;
