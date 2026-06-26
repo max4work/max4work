@@ -627,10 +627,14 @@
     positions.forEach((p, i) => {
       const ustVal = p.ust !== undefined ? Number(p.ust) : defUst;
       const total = isNaN(parseFloat(p.qty)) ? p.price : parseFloat(p.qty) * p.price;
+      const unitCls = p.unit ? ' has-unit' : '';
+      const unitTxt = p.unit
+        ? _escH(p.unit)
+        : `<svg width="9" height="9" viewBox="0 0 9 9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4.5 1.5v6M1.5 4.5h6"/></svg>`;
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td><input value="${p.desc}" placeholder="Beschreibung" data-idx="${i}" data-field="desc"></td>
-        <td><input value="${p.qty}" placeholder="1 / pauschal" data-idx="${i}" data-field="qty"></td>
+        <td><input value="${_escH(p.desc)}" placeholder="Beschreibung" data-idx="${i}" data-field="desc"></td>
+        <td><div class="qty-cell"><input value="${_escH(p.qty)}" placeholder="1" data-idx="${i}" data-field="qty"><button type="button" class="unit-btn${unitCls}" data-idx="${i}" data-field="unit-btn" title="Einheit wählen">${unitTxt}</button></div></td>
         <td><input type="number" value="${p.price}" min="0" step="0.01" data-idx="${i}" data-field="price"></td>
         <td><select data-idx="${i}" data-field="ust" style="padding:4px 2px;font-size:12px;width:100%;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);">
           <option value="19" ${ustVal===19?'selected':''}>19 %</option>
@@ -642,6 +646,38 @@
       tb.appendChild(tr);
     });
   }
+
+  /* ── Einheit-Picker ── */
+  const UNITS = ['Std', 'Tg', 'Wo', 'Min', 'Stk', 'Psch', 'km', 'm', 'm²', 'kg', 'l', 'Set'];
+  let _unitPickerIdx = null;
+
+  function openUnitPicker(idx, anchorEl) {
+    _unitPickerIdx = idx;
+    const picker = document.getElementById('unitPicker');
+    const grid   = document.getElementById('unitChipGrid');
+    const cur    = positions[idx].unit || '';
+    grid.innerHTML = UNITS.map(u =>
+      `<button type="button" class="unit-chip${cur===u?' active':''}" data-unit="${u}">${u}</button>`
+    ).join('') +
+      `<button type="button" class="unit-chip clear-chip" data-unit="">— löschen</button>`;
+    const rect = anchorEl.getBoundingClientRect();
+    picker.style.left = Math.min(rect.left, window.innerWidth - 190) + 'px';
+    picker.style.top  = (rect.bottom + 4) + 'px';
+    picker.classList.add('open');
+  }
+
+  function closeUnitPicker() {
+    document.getElementById('unitPicker').classList.remove('open');
+    _unitPickerIdx = null;
+  }
+
+  document.getElementById('unitPicker').addEventListener('click', function(e) {
+    const chip = e.target.closest('[data-unit]');
+    if (!chip || _unitPickerIdx === null) return;
+    positions[_unitPickerIdx].unit = chip.dataset.unit;
+    renderPos(); rp();
+    closeUnitPicker();
+  });
 
   /* FIX: Event-Delegation statt inline-onclick in dynamischen Zeilen */
   document.getElementById('posBody').addEventListener('input', function(e) {
