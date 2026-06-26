@@ -281,7 +281,25 @@ Produkte → Auswertung → Einstellungen (Design | Firma | Funktionen | Daten &
 
 ## Letzter Stand (2026-06-26)
 
-- Sessions 1–61 abgeschlossen
+- Sessions 1–62 abgeschlossen
+- **26.06.2026 Session 62 – Kassenbuch: CSV-Export + Jahr/Monat-Filter:**
+
+  **js/kassenbuch.js:**
+  - `_filterYear`, `_filterMonth` als neue State-Variablen
+  - `_applyFilters(all)` — gemeinsame Filterfunktion (ersetzt duplizierten Filter-Code in `renderList()` und `exportCSV()`)
+  - `_buildYearSelect()` — befüllt `#filterYear` dynamisch aus vorhandenen Buchungen; aktuelles Jahr immer enthalten; wird bei `load()`, `save()`, `del()` aufgerufen
+  - `setYear(y)` — setzt Jahr, resettet Monat, zeigt `#filterMonth` ein/aus
+  - `setMonth(m)` — filtert innerhalb des gewählten Jahres
+  - `exportCSV()` — nutzt jetzt `_applyFilters()` statt eigenem Filter-Code
+
+  **kassenbuch.html:**
+  - `.filter-select` CSS (width:auto, passend zum App-Design)
+  - `#filterYear` — Jahr-Dropdown, immer sichtbar, dynamisch befüllt
+  - `#filterMonth` — Monat-Dropdown (Jan–Dez), erscheint erst wenn Jahr gewählt
+  - Alle Tabs (Heute / Einnahmen / etc.) + Jahr/Monat kombinierbar (AND-Logik)
+  - **SW:** v25 → v26
+  - **Backup:** `Backups/backup_2026-06-26_session62/`
+
 - **26.06.2026 Session 61 – Kleinunternehmer §19 UStG in Einstellungen:**
 
   **einstellungen.html – Steuerliche Einordnung:**
